@@ -1,0 +1,363 @@
+@import "tailwindcss";
+
+/* ==========================================
+ * BAOCOM DESIGN SYSTEM
+ * Based on: DESIGN.md (Apple-inspired)
+ * ========================================== */
+
+@theme {
+  /* === Brand: Action Blue === */
+  --color-primary: #0066cc;
+  --color-primary-focus: #0071e3;
+  --color-primary-on-dark: #2997ff;
+  --color-on-primary: #ffffff;
+  --color-primary-bg: #e7f0fa;
+
+  /* === Ink / Text (Near-Black) === */
+  --color-ink: #1d1d1f;
+  --color-body: #1d1d1f;
+  --color-body-on-dark: #ffffff;
+  --color-body-muted: #cccccc;
+  --color-ink-muted-80: #333333;
+  --color-ink-muted-48: #7a7a7a;
+
+  /* === Canvas / Surface Light === */
+  --color-canvas: #ffffff;
+  --color-canvas-parchment: #f5f5f7;
+  --color-surface-pearl: #fafafc;
+
+  /* === Surface: Elevated Containers === */
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #fafafc;
+  --color-surface-container: #f5f5f7;
+  --color-surface-container-high: #e8e6e4;
+  --color-surface-container-highest: #e0dedc;
+
+  /* === Warm Neutrals (Food Context) === */
+  --color-warm-cream: #f9f7f4;
+  --color-warm-parchment: #f5f3ef;
+  --color-warm-highlight: #fff8f0;
+
+  /* === Dark Tiles === */
+  --color-surface-tile-1: #272729;
+  --color-surface-tile-2: #2a2a2c;
+  --color-surface-tile-3: #252527;
+  --color-surface-black: #000000;
+
+  /* === Chip / Translucent === */
+  --color-surface-chip-translucent: #d2d2d7;
+
+  /* === Borders === */
+  --color-divider-soft: #f0f0f0;
+  --color-hairline: #e0e0e0;
+
+  /* === Semantic: Status === */
+  --color-success: #34c759;
+  --color-success-bg: #edfcf2;
+  --color-warning: #ff9f0a;
+  --color-warning-bg: #fff8eb;
+  --color-error: #ff3b30;
+  --color-error-bg: #fff0ee;
+
+  /* === Food Semantic (Restrained Palette) === */
+  --color-healthy: #34c759;
+  --color-healthy-bg: #edfcf2;
+  --color-warm-accent: #e8830a;
+  --color-warm-accent-bg: #fff4e6;
+  --color-nutrition: #8b5cf6;
+  --color-nutrition-bg: #f5f3ff;
+
+  /* === Legacy/Backward Compat === */
+  --color-accent: #0066cc;
+  --color-muted: #f5f5f7;
+  --color-border: #e0e0e0;
+  --color-destructive: #0066cc;
+  --color-ring: #0066cc;
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #333333;
+  --color-input-bg: #ffffff;
+  --color-input-border: #e0e0e0;
+  --color-input-border-focus: #0066cc;
+
+  /* === Spacing: 8px Base === */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-section: 80px;
+
+  /* === Typography: Apple Scale === */
+  --font-sans: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Font sizes */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 17px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 28px;
+  --text-3xl: 34px;
+  --text-4xl: 40px;
+  --text-5xl: 56px;
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.07;
+  --leading-snug: 1.19;
+  --leading-normal: 1.47;
+  --leading-relaxed: 1.5;
+
+  /* Letter spacing - negative for "Apple tight" headlines */
+  --tracking-tight: -0.02em;
+  --tracking-tight-extra: -0.03em;
+  --tracking-tightest: -0.0374em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+  --tracking-wider: 0.04em;
+
+  /* === Radius: Apple Scale === */
+  --radius-none: 0;
+  --radius-xs: 5px;
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* === Shadows: Single product-shadow only === */
+  /* No shadows on cards/buttons - only on product imagery */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-floating: 0 12px 40px rgba(0, 0, 0, 0.12);
+  /* Product shadow - ONLY for product imagery */
+  --shadow-product: 0 3px 5px 30px rgba(0, 0, 0, 0.22);
+
+  /* === Animation === */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --easing-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* === Layout === */
+  --container-max: 1140px;
+  --sidebar-width: 260px;
+
+  /* === Custom Utilities === */
+  --min-h-dvh: 100dvh;
+}
+
+/* ==========================================
+ * CSS VARIABLE MAPPINGS
+ * ========================================== */
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --primary: var(--color-primary);
+  --on-primary: var(--color-on-primary);
+  --primary-container: var(--color-primary-bg);
+  --on-primary-container: var(--color-ink);
+  --secondary: var(--color-primary);
+  --on-secondary: var(--color-on-primary);
+  --secondary-container: var(--color-primary-bg);
+  --on-secondary-container: var(--color-ink);
+  --accent: var(--color-primary);
+  --muted: var(--color-surface-container);
+  --surface: var(--color-canvas);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --error: var(--color-error);
+  --color-surface-bright: var(--color-canvas);
+}
+
+/* ==========================================
+ * BASE STYLES
+ * ========================================== */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: var(--tracking-tight);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tightest);
+  color: var(--foreground);
+}
+
+h1 { font-size: var(--text-4xl); line-height: var(--leading-tight); }
+h2 { font-size: var(--text-3xl); line-height: var(--leading-snug); letter-spacing: var(--tracking-tightest); }
+h3 { font-size: var(--text-xl); line-height: var(--leading-snug); }
+h4 { font-size: var(--text-lg); }
+
+p {
+  color: var(--color-ink-muted-80);
+}
+
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+input, button, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-normal) var(--easing-out-expo) forwards;
+}
+
+/* ==========================================
+ * SHARED ANIMATIONS
+ * ========================================== */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up var(--duration-slow) var(--easing-out-expo) forwards;
+  opacity: 0;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down var(--duration-normal) var(--easing-out-expo) forwards;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in var(--duration-normal) var(--easing-out-expo) forwards;
+}
+
+/* Button press effect - scale 0.95 as system-wide micro-interaction */
+.press-effect {
+  transition: transform var(--duration-fast) var(--easing-default);
+}
+
+.press-effect:active {
+  transform: scale(0.95);
+}
+
+/* Focus ring */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-primary-focus);
+}
+
+/* ==========================================
+ * FORM ELEMENTS
+ * ========================================== */
+
+.form-input {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--easing-default),
+              box-shadow var(--duration-fast) var(--easing-default);
+}
+
+.form-input::placeholder {
+  color: var(--color-ink-muted-48);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+ * RESPONSIVE UTILITIES
+ * ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
