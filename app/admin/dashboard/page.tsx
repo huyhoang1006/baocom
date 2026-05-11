@@ -112,7 +112,7 @@ export default function AdminDashboard() {
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
           {/* Stats Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
             <div className="rounded-2xl p-5" style={{ backgroundColor: "var(--color-healthy-bg)", border: "1px solid var(--color-healthy)" }}>
               <p className="text-sm font-medium text-healthy mb-1">Đăng ký ăn</p>
               <span className="text-3xl font-bold text-ink">{stats.registered}</span>
@@ -203,13 +203,13 @@ export default function AdminDashboard() {
             <div className="p-3 border-t border-hairline flex items-center justify-between">
               <span className="text-xs text-ink-muted-80">Hiển thị 1-8/{stats.total}</span>
               <div className="flex items-center gap-1">
-                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-ink-muted-48 hover:bg-surface-container disabled:opacity-50" disabled>
+                <button className="min-w-9 min-h-9 px-3 py-2 rounded-lg flex items-center justify-center text-ink-muted-48 hover:bg-surface-container disabled:opacity-50" disabled>
                   <span className="material-symbols-outlined text-sm">chevron_left</span>
                 </button>
-                <button className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary text-white text-xs font-medium">1</button>
-                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-ink hover:bg-surface-container text-xs">2</button>
-                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-ink hover:bg-surface-container text-xs">3</button>
-                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-ink hover:bg-surface-container">
+                <button className="min-w-9 min-h-9 px-3 py-2 rounded-lg flex items-center justify-center bg-primary text-white text-xs font-medium">1</button>
+                <button className="min-w-9 min-h-9 px-3 py-2 rounded-lg flex items-center justify-center text-ink hover:bg-surface-container text-xs">2</button>
+                <button className="min-w-9 min-h-9 px-3 py-2 rounded-lg flex items-center justify-center text-ink hover:bg-surface-container text-xs">3</button>
+                <button className="min-w-9 min-h-9 px-3 py-2 rounded-lg flex items-center justify-center text-ink hover:bg-surface-container">
                   <span className="material-symbols-outlined text-sm">chevron_right</span>
                 </button>
               </div>
