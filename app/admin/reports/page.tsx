@@ -166,8 +166,8 @@ export default function ReportsPage() {
       {/* Main Content */}
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto space-y-5">
-          {/* Report Type Selector */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Report Type Selector - Mobile: horizontal tabs */}
+          <div className="flex overflow-x-auto border-b border-hairline gap-2 px-1">
             {[
               { id: "day" as const, icon: "today", label: "Theo ngày" },
               { id: "week" as const, icon: "date_range", label: "Theo tuần" },
@@ -176,16 +176,16 @@ export default function ReportsPage() {
               <button
                 key={type.id}
                 onClick={() => { setReportType(type.id); setHasPreview(false) }}
-                className={`p-4 rounded-xl border-2 transition-all ${
+                className={`flex-shrink-0 flex flex-col items-center px-4 py-3 border-b-2 transition-all ${
                   reportType === type.id
-                    ? "border-primary bg-primary/5"
-                    : "border-hairline hover:border-primary/50"
+                    ? "border-primary"
+                    : "border-transparent hover:border-hairline"
                 }`}
               >
-                <span className={`material-symbols-outlined text-2xl mb-2 block ${reportType === type.id ? "text-primary" : "text-ink-muted-48"}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                <span className={`material-symbols-outlined text-2xl mb-1 ${reportType === type.id ? "text-primary" : "text-ink-muted-48"}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                   {type.icon}
                 </span>
-                <span className={`text-sm font-medium ${reportType === type.id ? "text-primary" : "text-ink"}`}>{type.label}</span>
+                <span className={`text-xs font-medium ${reportType === type.id ? "text-primary" : "text-ink"}`}>{type.label}</span>
               </button>
             ))}
           </div>
@@ -195,7 +195,7 @@ export default function ReportsPage() {
             {reportType === "day" && (
               <>
                 <label className="text-sm font-medium text-ink-muted-80">Ngày:</label>
-                <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} max={todayStr} className="form-input w-auto" />
+                <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} max={todayStr} placeholder="dd/mm/yyyy" className="form-input w-auto" />
               </>
             )}
             {reportType === "week" && (
@@ -218,13 +218,15 @@ export default function ReportsPage() {
                 </select>
               </>
             )}
-            <button
-              onClick={handlePreview}
-              className="ml-auto inline-flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-all"
-            >
-              <span className="material-symbols-outlined text-lg">preview</span>
-              Xem trước
-            </button>
+            <div className="flex justify-center sm:ml-auto">
+              <button
+                onClick={handlePreview}
+                className="w-full max-w-xs inline-flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-all"
+              >
+                <span className="material-symbols-outlined text-lg">preview</span>
+                Xem trước
+              </button>
+            </div>
           </div>
 
           {/* Preview */}
