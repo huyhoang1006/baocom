@@ -128,7 +128,7 @@ export default function EmployeeDashboard() {
               <div className="rounded-2xl p-5 bg-warm-cream border border-hairline">
                 <h3 className="text-sm font-semibold text-ink mb-2">Lời nhắn từ Cô Bếp</h3>
                 <p className="text-sm italic text-ink-muted-80 leading-relaxed">
-                  "Chào các bạn, hôm nay trời se lạnh, bếp hầm xương 12 tiếng cho bữa trưa thật ấm áp. Chúc mọi người ngon miệng!"
+                  &ldquo;Chào các bạn, hôm nay trời se lạnh, bếp hầm xương 12 tiếng cho bữa trưa thật ấm áp. Chúc mọi người ngon miệng!&rdquo;
                 </p>
               </div>
 

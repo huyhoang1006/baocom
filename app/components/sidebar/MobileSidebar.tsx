@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { createPortal } from "react-dom"
 
 interface Props {
@@ -10,24 +11,31 @@ interface Props {
 }
 
 export function MobileSidebar({ isOpen, onClose, children }: Props) {
-  const [mounted, setMounted] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    setIsClient(true)
+  }, [])
+
+  const handleBodyOverflow = useCallback((overflow: string) => {
+    document.body.style.overflow = overflow
   }, [])
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
-    }
-    return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isOpen])
+    if (!isClient) return
 
-  if (!mounted) return null
+    if (isOpen) {
+      handleBodyOverflow("hidden")
+    } else {
+      handleBodyOverflow("")
+    }
+
+    return () => {
+      handleBodyOverflow("")
+    }
+  }, [isOpen, isClient, handleBodyOverflow])
+
+  if (!isClient) return null
 
   return createPortal(
     <>
