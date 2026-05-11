@@ -125,7 +125,7 @@ export default function HistoryPage() {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`min-w-[80px] px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                   filter === f
                     ? "bg-primary text-white"
                     : "text-ink-muted-80 hover:text-ink"
@@ -167,8 +167,8 @@ export default function HistoryPage() {
           {/* History Table */}
           <div className="rounded-2xl bg-surface-container-low border border-hairline overflow-hidden">
             {filteredData.length === 0 ? (
-              <div className="p-10 text-center">
-                <span className="material-symbols-outlined text-4xl text-ink-muted-48 mb-3 block">history</span>
+              <div className="flex flex-col items-center justify-center gap-4 py-12">
+                <span className="material-symbols-outlined w-12 h-12 text-ink-muted-48">history</span>
                 <p className="text-sm text-ink-muted-80">Chưa có đăng ký nào trong khoảng thời gian này</p>
               </div>
             ) : (
