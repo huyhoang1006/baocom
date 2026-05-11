@@ -74,7 +74,7 @@ export default function BookPage() {
 
       {/* Main Content */}
       <main className="px-6 lg:px-10">
-        <div className="max-w-[900px] mx-auto space-y-6">
+        <div className="max-w-[900px] mx-auto space-y-8">
           {/* Week Strip */}
           <div className="rounded-2xl bg-surface-container-low p-5">
             <div className="flex items-center justify-between mb-4">
@@ -93,7 +93,7 @@ export default function BookPage() {
                     onClick={() => !isPast && setSelectedDay(day)}
                     disabled={isPast}
                     className={`
-                      relative p-3 rounded-xl transition-all duration-200 text-center text-sm
+                      relative h-24 sm:h-20 p-3 rounded-xl transition-all duration-200 text-center text-sm
                       ${isSelected ? "bg-primary text-white" : ""}
                       ${!isSelected && !isPast ? "bg-surface-container hover:bg-surface-container-high" : ""}
                       ${isPast ? "opacity-40 cursor-not-allowed" : ""}
@@ -109,7 +109,7 @@ export default function BookPage() {
                       {day.status === "eating" ? "Ăn" : day.status === "not-eating" ? "Không" : ""}
                     </div>
                     {day.isToday && (
-                      <div className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-warning text-warning-text text-[10px] font-semibold rounded-full">
+                      <div className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-warning text-warning-text text-[10px] font-semibold rounded-full">
                         Hôm nay
                       </div>
                     )}
@@ -183,7 +183,7 @@ export default function BookPage() {
               </div>
 
               {/* Submit Button */}
-              <div className="mt-6 flex justify-end">
+              <div className="mt-6 flex justify-center">
                 <button
                   onClick={handleSubmit}
                   disabled={isLoading}
