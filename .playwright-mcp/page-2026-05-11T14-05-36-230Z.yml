@@ -1,0 +1,222 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e7]: restaurant
+        - generic [ref=e8]:
+          - text: BaoCom
+          - paragraph [ref=e9]: Quản trị viên
+      - navigation [ref=e10]:
+        - link "dashboard Dashboard chevron_right" [ref=e11] [cursor=pointer]:
+          - /url: /admin/dashboard
+          - generic [ref=e12]: dashboard
+          - generic [ref=e13]: Dashboard
+          - generic [ref=e14]: chevron_right
+        - link "group Nhân sự" [ref=e15] [cursor=pointer]:
+          - /url: /admin/employees
+          - generic [ref=e16]: group
+          - generic [ref=e17]: Nhân sự
+        - link "description Báo cáo" [ref=e18] [cursor=pointer]:
+          - /url: /admin/reports
+          - generic [ref=e19]: description
+          - generic [ref=e20]: Báo cáo
+      - generic [ref=e21]:
+        - generic [ref=e23]:
+          - generic [ref=e25]: AD
+          - generic [ref=e26]:
+            - paragraph [ref=e27]: Admin
+            - paragraph [ref=e28]: Quản trị viên
+        - button "logout Đăng xuất" [ref=e29]:
+          - generic [ref=e30]: logout
+          - generic [ref=e31]: Đăng xuất
+    - main [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - paragraph [ref=e37]: Bảng quản trị
+            - heading "Dashboard" [level=1] [ref=e38]
+            - paragraph [ref=e39]: Thống kê đăng ký suất ăn trưa ngày hôm nay
+          - button "download Xuất báo cáo" [ref=e40]:
+            - generic [ref=e41]: download
+            - text: Xuất báo cáo
+        - main [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - generic [ref=e45]:
+                - paragraph [ref=e46]: Đăng ký ăn
+                - text: "142"
+                - paragraph [ref=e47]: suất ăn
+              - generic [ref=e48]:
+                - paragraph [ref=e49]: Vắng mặt
+                - text: "28"
+                - paragraph [ref=e50]: nhân viên
+              - generic [ref=e51]:
+                - paragraph [ref=e52]: Chưa đăng ký
+                - text: "15"
+                - paragraph [ref=e53]: nhân viên
+            - generic [ref=e54]:
+              - generic [ref=e55]:
+                - heading "Danh sách nhân viên" [level=3] [ref=e56]
+                - generic [ref=e57]:
+                  - generic [ref=e58]: search
+                  - textbox "Tìm kiếm..." [ref=e59]
+              - table [ref=e61]:
+                - rowgroup [ref=e62]:
+                  - row "Họ tên Phòng ban Trạng thái Thao tác" [ref=e63]:
+                    - columnheader "Họ tên" [ref=e64]
+                    - columnheader "Phòng ban" [ref=e65]
+                    - columnheader "Trạng thái" [ref=e66]
+                    - columnheader "Thao tác" [ref=e67]
+                - rowgroup [ref=e68]:
+                  - row "TA Trần Tuấn Anh Phòng Kỹ thuật check_circle Có ăn more_vert" [ref=e69]:
+                    - cell "TA Trần Tuấn Anh" [ref=e70]:
+                      - generic [ref=e71]:
+                        - generic [ref=e72]: TA
+                        - generic [ref=e73]: Trần Tuấn Anh
+                    - cell "Phòng Kỹ thuật" [ref=e74]
+                    - cell "check_circle Có ăn" [ref=e75]:
+                      - generic [ref=e76]:
+                        - generic [ref=e77]: check_circle
+                        - text: Có ăn
+                    - cell "more_vert" [ref=e78]:
+                      - generic [ref=e79] [cursor=pointer]: more_vert
+                  - row "LM Lê Thị Mai Lan Phòng Nhân sự cancel Không ăn more_vert" [ref=e80]:
+                    - cell "LM Lê Thị Mai Lan" [ref=e81]:
+                      - generic [ref=e82]:
+                        - generic [ref=e83]: LM
+                        - generic [ref=e84]: Lê Thị Mai Lan
+                    - cell "Phòng Nhân sự" [ref=e85]
+                    - cell "cancel Không ăn" [ref=e86]:
+                      - generic [ref=e87]:
+                        - generic [ref=e88]: cancel
+                        - text: Không ăn
+                    - cell "more_vert" [ref=e89]:
+                      - generic [ref=e90] [cursor=pointer]: more_vert
+                  - row "HQ Hoàng Minh Quân Phòng Kinh doanh pending Chưa đăng ký campaign Nhắc nhở" [ref=e91]:
+                    - cell "HQ Hoàng Minh Quân" [ref=e92]:
+                      - generic [ref=e93]:
+                        - generic [ref=e94]: HQ
+                        - generic [ref=e95]: Hoàng Minh Quân
+                    - cell "Phòng Kinh doanh" [ref=e96]
+                    - cell "pending Chưa đăng ký" [ref=e97]:
+                      - generic [ref=e98]:
+                        - generic [ref=e99]: pending
+                        - text: Chưa đăng ký
+                    - cell "campaign Nhắc nhở" [ref=e100]:
+                      - button "campaign Nhắc nhở" [ref=e101]:
+                        - generic [ref=e102]: campaign
+                        - text: Nhắc nhở
+                  - row "PT Phạm Phương Thảo Phòng Kế toán pending Chưa đăng ký campaign Nhắc nhở" [ref=e103]:
+                    - cell "PT Phạm Phương Thảo" [ref=e104]:
+                      - generic [ref=e105]:
+                        - generic [ref=e106]: PT
+                        - generic [ref=e107]: Phạm Phương Thảo
+                    - cell "Phòng Kế toán" [ref=e108]
+                    - cell "pending Chưa đăng ký" [ref=e109]:
+                      - generic [ref=e110]:
+                        - generic [ref=e111]: pending
+                        - text: Chưa đăng ký
+                    - cell "campaign Nhắc nhở" [ref=e112]:
+                      - button "campaign Nhắc nhở" [ref=e113]:
+                        - generic [ref=e114]: campaign
+                        - text: Nhắc nhở
+                  - row "DN Đặng Khôi Nguyên Phòng Kỹ thuật check_circle Có ăn more_vert" [ref=e115]:
+                    - cell "DN Đặng Khôi Nguyên" [ref=e116]:
+                      - generic [ref=e117]:
+                        - generic [ref=e118]: DN
+                        - generic [ref=e119]: Đặng Khôi Nguyên
+                    - cell "Phòng Kỹ thuật" [ref=e120]
+                    - cell "check_circle Có ăn" [ref=e121]:
+                      - generic [ref=e122]:
+                        - generic [ref=e123]: check_circle
+                        - text: Có ăn
+                    - cell "more_vert" [ref=e124]:
+                      - generic [ref=e125] [cursor=pointer]: more_vert
+                  - row "NH Nguyễn Thị Hương Phòng Marketing check_circle Có ăn more_vert" [ref=e126]:
+                    - cell "NH Nguyễn Thị Hương" [ref=e127]:
+                      - generic [ref=e128]:
+                        - generic [ref=e129]: NH
+                        - generic [ref=e130]: Nguyễn Thị Hương
+                    - cell "Phòng Marketing" [ref=e131]
+                    - cell "check_circle Có ăn" [ref=e132]:
+                      - generic [ref=e133]:
+                        - generic [ref=e134]: check_circle
+                        - text: Có ăn
+                    - cell "more_vert" [ref=e135]:
+                      - generic [ref=e136] [cursor=pointer]: more_vert
+                  - row "VC Vũ Đình Cường Phòng Kỹ thuật cancel Không ăn more_vert" [ref=e137]:
+                    - cell "VC Vũ Đình Cường" [ref=e138]:
+                      - generic [ref=e139]:
+                        - generic [ref=e140]: VC
+                        - generic [ref=e141]: Vũ Đình Cường
+                    - cell "Phòng Kỹ thuật" [ref=e142]
+                    - cell "cancel Không ăn" [ref=e143]:
+                      - generic [ref=e144]:
+                        - generic [ref=e145]: cancel
+                        - text: Không ăn
+                    - cell "more_vert" [ref=e146]:
+                      - generic [ref=e147] [cursor=pointer]: more_vert
+                  - row "TM Trịnh Thị Mai Phòng Nhân sự pending Chưa đăng ký campaign Nhắc nhở" [ref=e148]:
+                    - cell "TM Trịnh Thị Mai" [ref=e149]:
+                      - generic [ref=e150]:
+                        - generic [ref=e151]: TM
+                        - generic [ref=e152]: Trịnh Thị Mai
+                    - cell "Phòng Nhân sự" [ref=e153]
+                    - cell "pending Chưa đăng ký" [ref=e154]:
+                      - generic [ref=e155]:
+                        - generic [ref=e156]: pending
+                        - text: Chưa đăng ký
+                    - cell "campaign Nhắc nhở" [ref=e157]:
+                      - button "campaign Nhắc nhở" [ref=e158]:
+                        - generic [ref=e159]: campaign
+                        - text: Nhắc nhở
+              - generic [ref=e160]:
+                - generic [ref=e161]: Hiển thị 1-8/185
+                - generic [ref=e162]:
+                  - button "chevron_left" [disabled] [ref=e163]:
+                    - generic [ref=e164]: chevron_left
+                  - button "1" [ref=e165]
+                  - button "2" [ref=e166]
+                  - button "3" [ref=e167]
+                  - button "chevron_right" [ref=e168]:
+                    - generic [ref=e169]: chevron_right
+  - button "Open Next.js Dev Tools" [ref=e175] [cursor=pointer]:
+    - img [ref=e176]
+  - alert [ref=e179]
+  - generic:
+    - button "Close drawer":
+      - generic: close
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - generic:
+              - generic: restaurant
+            - generic:
+              - text: BaoCom
+              - paragraph: Quản trị viên
+        - navigation:
+          - link "dashboard Dashboard chevron_right":
+            - /url: /admin/dashboard
+            - generic: dashboard
+            - generic: Dashboard
+            - generic: chevron_right
+          - link "group Nhân sự":
+            - /url: /admin/employees
+            - generic: group
+            - generic: Nhân sự
+          - link "description Báo cáo":
+            - /url: /admin/reports
+            - generic: description
+            - generic: Báo cáo
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: AD
+              - generic:
+                - paragraph: Admin
+                - paragraph: Quản trị viên
+          - button "logout Đăng xuất":
+            - generic: logout
+            - generic: Đăng xuất

@@ -1,0 +1,67 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - button "Open menu" [ref=e3]:
+      - generic [ref=e4]: menu
+    - main [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]:
+          - paragraph [ref=e9]: Lịch sử đăng ký
+          - heading "Lịch Sử Đăng Ký" [level=1] [ref=e10]
+          - paragraph [ref=e11]: Xin chào, Phạm Xuân Hùng
+        - main [ref=e12]:
+          - generic [ref=e13]:
+            - generic [ref=e14]:
+              - button "Tuần" [ref=e15]
+              - button "Tháng" [ref=e16]
+              - button "Chọn ngày" [ref=e17]
+            - generic [ref=e18]:
+              - generic [ref=e19]:
+                - paragraph [ref=e20]: Tổng ngày
+                - text: "0"
+              - generic [ref=e21]:
+                - paragraph [ref=e22]: Có ăn
+                - text: "0"
+                - generic [ref=e23]: (0%)
+              - generic [ref=e24]:
+                - paragraph [ref=e25]: Không ăn
+                - text: "0"
+                - generic [ref=e26]: (0%)
+            - generic [ref=e28]:
+              - generic [ref=e29]: history
+              - paragraph [ref=e30]: Chưa có đăng ký nào trong khoảng thời gian này
+  - button "Open Next.js Dev Tools" [ref=e36] [cursor=pointer]:
+    - img [ref=e37]
+  - alert [ref=e40]
+  - generic:
+    - button "Close drawer":
+      - generic: close
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - generic:
+              - generic: restaurant
+            - generic:
+              - text: BaoCom
+              - paragraph: Nhân viên
+        - navigation:
+          - link "restaurant Báo cơm":
+            - /url: /book
+            - generic: restaurant
+            - generic: Báo cơm
+          - link "history Lịch sử chevron_right":
+            - /url: /my-history
+            - generic: history
+            - generic: Lịch sử
+            - generic: chevron_right
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: HU
+              - generic:
+                - paragraph: Phạm Xuân Hùng
+                - paragraph: "@hungpx"
+          - button "logout Đăng xuất":
+            - generic: logout
+            - generic: Đăng xuất

@@ -1,0 +1,198 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - button "Open menu" [ref=e3]:
+      - generic [ref=e4]: menu
+    - main [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - generic [ref=e10]: group
+            - generic [ref=e11]: Quản lý nhân sự
+          - heading "Nhân Sự" [level=1] [ref=e12]
+        - main [ref=e13]:
+          - generic [ref=e14]:
+            - generic [ref=e15]:
+              - button "person_add Thêm nhân viên" [ref=e16]:
+                - generic [ref=e17]: person_add
+                - text: Thêm nhân viên
+              - button "upload_file Import" [ref=e18]:
+                - generic [ref=e19]: upload_file
+                - text: Import
+            - generic [ref=e20]:
+              - generic [ref=e21]:
+                - generic [ref=e22]: search
+                - textbox "Tìm kiếm..." [ref=e23]
+              - combobox [ref=e24]:
+                - option "Tất cả" [selected]
+                - option "Đang hoạt động"
+                - option "Đã khóa"
+            - table [ref=e26]:
+              - rowgroup [ref=e27]:
+                - row "Họ tên Tài khoản SĐT Trạng thái Thao tác" [ref=e28]:
+                  - columnheader [ref=e29]:
+                    - checkbox [ref=e30]
+                  - columnheader "Họ tên" [ref=e31]
+                  - columnheader "Tài khoản" [ref=e32]
+                  - columnheader "SĐT" [ref=e33]
+                  - columnheader "Trạng thái" [ref=e34]
+                  - columnheader "Thao tác" [ref=e35]
+              - rowgroup [ref=e36]:
+                - row "NV Nguyễn Văn A nguyenvana 0912345678 Đang hoạt động edit delete" [ref=e37]:
+                  - cell [ref=e38]:
+                    - checkbox [ref=e39]
+                  - cell "NV Nguyễn Văn A" [ref=e40]:
+                    - generic [ref=e41]:
+                      - generic [ref=e42]: NV
+                      - generic [ref=e43]: Nguyễn Văn A
+                  - cell "nguyenvana" [ref=e44]
+                  - cell "0912345678" [ref=e45]
+                  - cell "Đang hoạt động" [ref=e46]:
+                    - generic [ref=e47]: Đang hoạt động
+                  - cell "edit delete" [ref=e48]:
+                    - generic [ref=e49]:
+                      - button "edit" [ref=e50]:
+                        - generic [ref=e51]: edit
+                      - button "delete" [ref=e52]:
+                        - generic [ref=e53]: delete
+                - row "TT Trần Thị B tranthib 0912345679 Đang hoạt động edit delete" [ref=e54]:
+                  - cell [ref=e55]:
+                    - checkbox [ref=e56]
+                  - cell "TT Trần Thị B" [ref=e57]:
+                    - generic [ref=e58]:
+                      - generic [ref=e59]: TT
+                      - generic [ref=e60]: Trần Thị B
+                  - cell "tranthib" [ref=e61]
+                  - cell "0912345679" [ref=e62]
+                  - cell "Đang hoạt động" [ref=e63]:
+                    - generic [ref=e64]: Đang hoạt động
+                  - cell "edit delete" [ref=e65]:
+                    - generic [ref=e66]:
+                      - button "edit" [ref=e67]:
+                        - generic [ref=e68]: edit
+                      - button "delete" [ref=e69]:
+                        - generic [ref=e70]: delete
+                - row "LV Lê Văn C levanc 0912345680 Đang hoạt động edit delete" [ref=e71]:
+                  - cell [ref=e72]:
+                    - checkbox [ref=e73]
+                  - cell "LV Lê Văn C" [ref=e74]:
+                    - generic [ref=e75]:
+                      - generic [ref=e76]: LV
+                      - generic [ref=e77]: Lê Văn C
+                  - cell "levanc" [ref=e78]
+                  - cell "0912345680" [ref=e79]
+                  - cell "Đang hoạt động" [ref=e80]:
+                    - generic [ref=e81]: Đang hoạt động
+                  - cell "edit delete" [ref=e82]:
+                    - generic [ref=e83]:
+                      - button "edit" [ref=e84]:
+                        - generic [ref=e85]: edit
+                      - button "delete" [ref=e86]:
+                        - generic [ref=e87]: delete
+                - row "PT Phạm Thị D phamthid 0912345681 Đã khóa edit delete" [ref=e88]:
+                  - cell [ref=e89]:
+                    - checkbox [ref=e90]
+                  - cell "PT Phạm Thị D" [ref=e91]:
+                    - generic [ref=e92]:
+                      - generic [ref=e93]: PT
+                      - generic [ref=e94]: Phạm Thị D
+                  - cell "phamthid" [ref=e95]
+                  - cell "0912345681" [ref=e96]
+                  - cell "Đã khóa" [ref=e97]:
+                    - generic [ref=e98]: Đã khóa
+                  - cell "edit delete" [ref=e99]:
+                    - generic [ref=e100]:
+                      - button "edit" [ref=e101]:
+                        - generic [ref=e102]: edit
+                      - button "delete" [ref=e103]:
+                        - generic [ref=e104]: delete
+                - row "HV Hoàng Văn E hoangvane 0912345682 Đang hoạt động edit delete" [ref=e105]:
+                  - cell [ref=e106]:
+                    - checkbox [ref=e107]
+                  - cell "HV Hoàng Văn E" [ref=e108]:
+                    - generic [ref=e109]:
+                      - generic [ref=e110]: HV
+                      - generic [ref=e111]: Hoàng Văn E
+                  - cell "hoangvane" [ref=e112]
+                  - cell "0912345682" [ref=e113]
+                  - cell "Đang hoạt động" [ref=e114]:
+                    - generic [ref=e115]: Đang hoạt động
+                  - cell "edit delete" [ref=e116]:
+                    - generic [ref=e117]:
+                      - button "edit" [ref=e118]:
+                        - generic [ref=e119]: edit
+                      - button "delete" [ref=e120]:
+                        - generic [ref=e121]: delete
+                - row "NT Nguyễn Thị F nguyenthif 0912345683 Đang hoạt động edit delete" [ref=e122]:
+                  - cell [ref=e123]:
+                    - checkbox [ref=e124]
+                  - cell "NT Nguyễn Thị F" [ref=e125]:
+                    - generic [ref=e126]:
+                      - generic [ref=e127]: NT
+                      - generic [ref=e128]: Nguyễn Thị F
+                  - cell "nguyenthif" [ref=e129]
+                  - cell "0912345683" [ref=e130]
+                  - cell "Đang hoạt động" [ref=e131]:
+                    - generic [ref=e132]: Đang hoạt động
+                  - cell "edit delete" [ref=e133]:
+                    - generic [ref=e134]:
+                      - button "edit" [ref=e135]:
+                        - generic [ref=e136]: edit
+                      - button "delete" [ref=e137]:
+                        - generic [ref=e138]: delete
+                - row "VĐ Võ Đình G vodinhg 0912345684 Đang hoạt động edit delete" [ref=e139]:
+                  - cell [ref=e140]:
+                    - checkbox [ref=e141]
+                  - cell "VĐ Võ Đình G" [ref=e142]:
+                    - generic [ref=e143]:
+                      - generic [ref=e144]: VĐ
+                      - generic [ref=e145]: Võ Đình G
+                  - cell "vodinhg" [ref=e146]
+                  - cell "0912345684" [ref=e147]
+                  - cell "Đang hoạt động" [ref=e148]:
+                    - generic [ref=e149]: Đang hoạt động
+                  - cell "edit delete" [ref=e150]:
+                    - generic [ref=e151]:
+                      - button "edit" [ref=e152]:
+                        - generic [ref=e153]: edit
+                      - button "delete" [ref=e154]:
+                        - generic [ref=e155]: delete
+  - button "Open Next.js Dev Tools" [ref=e161] [cursor=pointer]:
+    - img [ref=e162]
+  - alert [ref=e165]
+  - generic:
+    - button "Close drawer":
+      - generic: close
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - generic:
+              - generic: restaurant
+            - generic:
+              - text: BaoCom
+              - paragraph: Quản trị viên
+        - navigation:
+          - link "dashboard Dashboard":
+            - /url: /admin/dashboard
+            - generic: dashboard
+            - generic: Dashboard
+          - link "group Nhân sự chevron_right":
+            - /url: /admin/employees
+            - generic: group
+            - generic: Nhân sự
+            - generic: chevron_right
+          - link "description Báo cáo":
+            - /url: /admin/reports
+            - generic: description
+            - generic: Báo cáo
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: AD
+              - generic:
+                - paragraph: Admin
+                - paragraph: Quản trị viên
+          - button "logout Đăng xuất":
+            - generic: logout
+            - generic: Đăng xuất

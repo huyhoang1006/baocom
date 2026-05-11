@@ -1,0 +1,95 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e7]: restaurant
+        - generic [ref=e8]:
+          - text: BaoCom
+          - paragraph [ref=e9]: Quản trị viên
+      - navigation [ref=e10]:
+        - link "dashboard Dashboard" [ref=e11] [cursor=pointer]:
+          - /url: /admin/dashboard
+          - generic [ref=e12]: dashboard
+          - generic [ref=e13]: Dashboard
+        - link "group Nhân sự" [ref=e14] [cursor=pointer]:
+          - /url: /admin/employees
+          - generic [ref=e15]: group
+          - generic [ref=e16]: Nhân sự
+        - link "description Báo cáo chevron_right" [ref=e17] [cursor=pointer]:
+          - /url: /admin/reports
+          - generic [ref=e18]: description
+          - generic [ref=e19]: Báo cáo
+          - generic [ref=e20]: chevron_right
+      - generic [ref=e21]:
+        - generic [ref=e23]:
+          - generic [ref=e25]: AD
+          - generic [ref=e26]:
+            - paragraph [ref=e27]: Admin
+            - paragraph [ref=e28]: Quản trị viên
+        - button "logout Đăng xuất" [ref=e29]:
+          - generic [ref=e30]: logout
+          - generic [ref=e31]: Đăng xuất
+    - main [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e35]:
+          - paragraph [ref=e36]: Báo cáo
+          - heading "Xuất Báo Cáo" [level=1] [ref=e37]
+          - paragraph [ref=e38]: Tạo báo cáo suất ăn cho bếp nấu theo ngày, tuần hoặc tháng
+        - main [ref=e39]:
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - button "today Theo ngày" [ref=e42]:
+                - generic [ref=e43]: today
+                - text: Theo ngày
+              - button "date_range Theo tuần" [ref=e44]:
+                - generic [ref=e45]: date_range
+                - text: Theo tuần
+              - button "calendar_month Theo tháng" [ref=e46]:
+                - generic [ref=e47]: calendar_month
+                - text: Theo tháng
+            - generic [ref=e48]:
+              - generic [ref=e49]: "Ngày:"
+              - textbox [ref=e50]
+              - button "preview Xem trước" [ref=e51]:
+                - generic [ref=e52]: preview
+                - text: Xem trước
+  - button "Open Next.js Dev Tools" [ref=e58] [cursor=pointer]:
+    - img [ref=e59]
+  - alert [ref=e62]
+  - generic:
+    - button "Close drawer":
+      - generic: close
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - generic:
+              - generic: restaurant
+            - generic:
+              - text: BaoCom
+              - paragraph: Quản trị viên
+        - navigation:
+          - link "dashboard Dashboard":
+            - /url: /admin/dashboard
+            - generic: dashboard
+            - generic: Dashboard
+          - link "group Nhân sự":
+            - /url: /admin/employees
+            - generic: group
+            - generic: Nhân sự
+          - link "description Báo cáo chevron_right":
+            - /url: /admin/reports
+            - generic: description
+            - generic: Báo cáo
+            - generic: chevron_right
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: AD
+              - generic:
+                - paragraph: Admin
+                - paragraph: Quản trị viên
+          - button "logout Đăng xuất":
+            - generic: logout
+            - generic: Đăng xuất

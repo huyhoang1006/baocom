@@ -1,0 +1,157 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - button "Open menu" [ref=e3]:
+      - generic [ref=e4]: menu
+    - main [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - paragraph [ref=e10]: Bảng quản trị
+            - heading "Dashboard" [level=1] [ref=e11]
+            - paragraph [ref=e12]: Thống kê đăng ký suất ăn trưa ngày hôm nay
+          - button "download Xuất báo cáo" [ref=e13]:
+            - generic [ref=e14]: download
+            - text: Xuất báo cáo
+        - main [ref=e15]:
+          - generic [ref=e16]:
+            - generic [ref=e17]:
+              - generic [ref=e18]:
+                - paragraph [ref=e19]: Đăng ký ăn
+                - text: "142"
+                - paragraph [ref=e20]: suất ăn
+              - generic [ref=e21]:
+                - paragraph [ref=e22]: Vắng mặt
+                - text: "28"
+                - paragraph [ref=e23]: nhân viên
+              - generic [ref=e24]:
+                - paragraph [ref=e25]: Chưa đăng ký
+                - text: "15"
+                - paragraph [ref=e26]: nhân viên
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - heading "Danh sách nhân viên" [level=3] [ref=e29]
+                - generic [ref=e30]:
+                  - generic [ref=e31]: search
+                  - textbox "Tìm kiếm..." [ref=e32]
+              - table [ref=e34]:
+                - rowgroup [ref=e35]:
+                  - row "Họ tên Phòng ban Trạng thái Thao tác" [ref=e36]:
+                    - columnheader "Họ tên" [ref=e37]
+                    - columnheader "Phòng ban" [ref=e38]
+                    - columnheader "Trạng thái" [ref=e39]
+                    - columnheader "Thao tác" [ref=e40]
+                - rowgroup [ref=e41]:
+                  - row "TA Trần Tuấn Anh Phòng Kỹ thuật check_circle Có ăn more_vert" [ref=e42]:
+                    - cell "TA Trần Tuấn Anh" [ref=e43]:
+                      - generic [ref=e44]:
+                        - generic [ref=e45]: TA
+                        - generic [ref=e46]: Trần Tuấn Anh
+                    - cell "Phòng Kỹ thuật" [ref=e47]
+                    - cell "check_circle Có ăn" [ref=e48]:
+                      - generic [ref=e49]:
+                        - generic [ref=e50]: check_circle
+                        - text: Có ăn
+                    - cell "more_vert" [ref=e51]:
+                      - generic [ref=e52] [cursor=pointer]: more_vert
+                  - row "LM Lê Thị Mai Lan Phòng Nhân sự cancel Không ăn more_vert" [ref=e53]:
+                    - cell "LM Lê Thị Mai Lan" [ref=e54]:
+                      - generic [ref=e55]:
+                        - generic [ref=e56]: LM
+                        - generic [ref=e57]: Lê Thị Mai Lan
+                    - cell "Phòng Nhân sự" [ref=e58]
+                    - cell "cancel Không ăn" [ref=e59]:
+                      - generic [ref=e60]:
+                        - generic [ref=e61]: cancel
+                        - text: Không ăn
+                    - cell "more_vert" [ref=e62]:
+                      - generic [ref=e63] [cursor=pointer]: more_vert
+                  - row "HQ Hoàng Minh Quân Phòng Kinh doanh pending Chưa đăng ký campaign Nhắc nhở" [ref=e64]:
+                    - cell "HQ Hoàng Minh Quân" [ref=e65]:
+                      - generic [ref=e66]:
+                        - generic [ref=e67]: HQ
+                        - generic [ref=e68]: Hoàng Minh Quân
+                    - cell "Phòng Kinh doanh" [ref=e69]
+                    - cell "pending Chưa đăng ký" [ref=e70]:
+                      - generic [ref=e71]:
+                        - generic [ref=e72]: pending
+                        - text: Chưa đăng ký
+                    - cell "campaign Nhắc nhở" [ref=e73]:
+                      - button "campaign Nhắc nhở" [ref=e74]:
+                        - generic [ref=e75]: campaign
+                        - text: Nhắc nhở
+                  - row "PT Phạm Phương Thảo Phòng Kế toán pending Chưa đăng ký campaign Nhắc nhở" [ref=e76]:
+                    - cell "PT Phạm Phương Thảo" [ref=e77]:
+                      - generic [ref=e78]:
+                        - generic [ref=e79]: PT
+                        - generic [ref=e80]: Phạm Phương Thảo
+                    - cell "Phòng Kế toán" [ref=e81]
+                    - cell "pending Chưa đăng ký" [ref=e82]:
+                      - generic [ref=e83]:
+                        - generic [ref=e84]: pending
+                        - text: Chưa đăng ký
+                    - cell "campaign Nhắc nhở" [ref=e85]:
+                      - button "campaign Nhắc nhở" [ref=e86]:
+                        - generic [ref=e87]: campaign
+                        - text: Nhắc nhở
+                  - row "DN Đặng Khôi Nguyên Phòng Kỹ thuật check_circle Có ăn more_vert" [ref=e88]:
+                    - cell "DN Đặng Khôi Nguyên" [ref=e89]:
+                      - generic [ref=e90]:
+                        - generic [ref=e91]: DN
+                        - generic [ref=e92]: Đặng Khôi Nguyên
+                    - cell "Phòng Kỹ thuật" [ref=e93]
+                    - cell "check_circle Có ăn" [ref=e94]:
+                      - generic [ref=e95]:
+                        - generic [ref=e96]: check_circle
+                        - text: Có ăn
+                    - cell "more_vert" [ref=e97]:
+                      - generic [ref=e98] [cursor=pointer]: more_vert
+                  - row "NH Nguyễn Thị Hương Phòng Marketing check_circle Có ăn more_vert" [ref=e99]:
+                    - cell "NH Nguyễn Thị Hương" [ref=e100]:
+                      - generic [ref=e101]:
+                        - generic [ref=e102]: NH
+                        - generic [ref=e103]: Nguyễn Thị Hương
+                    - cell "Phòng Marketing" [ref=e104]
+                    - cell "check_circle Có ăn" [ref=e105]:
+                      - generic [ref=e106]:
+                        - generic [ref=e107]: check_circle
+                        - text: Có ăn
+                    - cell "more_vert" [ref=e108]:
+                      - generic [ref=e109] [cursor=pointer]: more_vert
+                  - row "VC Vũ Đình Cường Phòng Kỹ thuật cancel Không ăn more_vert" [ref=e110]:
+                    - cell "VC Vũ Đình Cường" [ref=e111]:
+                      - generic [ref=e112]:
+                        - generic [ref=e113]: VC
+                        - generic [ref=e114]: Vũ Đình Cường
+                    - cell "Phòng Kỹ thuật" [ref=e115]
+                    - cell "cancel Không ăn" [ref=e116]:
+                      - generic [ref=e117]:
+                        - generic [ref=e118]: cancel
+                        - text: Không ăn
+                    - cell "more_vert" [ref=e119]:
+                      - generic [ref=e120] [cursor=pointer]: more_vert
+                  - row "TM Trịnh Thị Mai Phòng Nhân sự pending Chưa đăng ký campaign Nhắc nhở" [ref=e121]:
+                    - cell "TM Trịnh Thị Mai" [ref=e122]:
+                      - generic [ref=e123]:
+                        - generic [ref=e124]: TM
+                        - generic [ref=e125]: Trịnh Thị Mai
+                    - cell "Phòng Nhân sự" [ref=e126]
+                    - cell "pending Chưa đăng ký" [ref=e127]:
+                      - generic [ref=e128]:
+                        - generic [ref=e129]: pending
+                        - text: Chưa đăng ký
+                    - cell "campaign Nhắc nhở" [ref=e130]:
+                      - button "campaign Nhắc nhở" [ref=e131]:
+                        - generic [ref=e132]: campaign
+                        - text: Nhắc nhở
+              - generic [ref=e133]:
+                - generic [ref=e134]: Hiển thị 1-8/185
+                - generic [ref=e135]:
+                  - button "chevron_left" [disabled] [ref=e136]:
+                    - generic [ref=e137]: chevron_left
+                  - button "1" [ref=e138]
+                  - button "2" [ref=e139]
+                  - button "3" [ref=e140]
+                  - button "chevron_right" [ref=e141]:
+                    - generic [ref=e142]: chevron_right
+  - button "Open Next.js Dev Tools" [ref=e148] [cursor=pointer]:
+    - img [ref=e149]
