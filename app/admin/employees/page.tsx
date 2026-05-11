@@ -280,16 +280,19 @@ export default function EmployeesPage() {
                 <p className="text-sm text-ink-muted-80">Không tìm thấy nhân viên</p>
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-surface-container border-b border-hairline">
                     <th className="py-3 px-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.length === filteredEmployees.length && filteredEmployees.length > 0}
-                        onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-hairline text-primary"
-                      />
+                      <div className="w-11 h-11 flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.length === filteredEmployees.length && filteredEmployees.length > 0}
+                          onChange={handleSelectAll}
+                          className="w-5 h-5 rounded border-hairline text-primary"
+                        />
+                      </div>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Họ tên</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Tài khoản</th>
@@ -302,12 +305,14 @@ export default function EmployeesPage() {
                   {filteredEmployees.map((emp) => (
                     <tr key={emp.id} className="hover:bg-surface-container-low">
                       <td className="py-3 px-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(emp.id)}
-                          onChange={() => handleSelect(emp.id)}
-                          className="w-4 h-4 rounded border-hairline text-primary"
-                        />
+                        <div className="w-11 h-11 flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(emp.id)}
+                            onChange={() => handleSelect(emp.id)}
+                            className="w-5 h-5 rounded border-hairline text-primary"
+                          />
+                        </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
@@ -329,11 +334,12 @@ export default function EmployeesPage() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="flex gap-1">
-                          <button onClick={() => openEditModal(emp)} className="p-1.5 rounded-lg hover:bg-surface-container text-ink-muted-80 hover:text-primary" title="Sửa">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openEditModal(emp)} className="w-11 h-11 rounded-lg hover:bg-surface-container text-ink-muted-80 hover:text-primary flex items-center justify-center" title="Sửa">
                             <span className="material-symbols-outlined text-base">edit</span>
                           </button>
-                          <button onClick={() => handleDelete(emp)} className="p-1.5 rounded-lg hover:bg-error-bg text-ink-muted-80 hover:text-error" title="Xóa">
+                          <span className="w-2" />
+                          <button onClick={() => handleDelete(emp)} className="w-11 h-11 rounded-lg hover:bg-error-bg text-ink-muted-80 hover:text-error flex items-center justify-center" title="Xóa">
                             <span className="material-symbols-outlined text-base">delete</span>
                           </button>
                         </div>
@@ -342,6 +348,7 @@ export default function EmployeesPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </div>
