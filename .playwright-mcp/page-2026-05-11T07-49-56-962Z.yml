@@ -1,0 +1,23 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e7]: restaurant
+      - generic [ref=e8]:
+        - heading "BaoCom" [level=1] [ref=e9]
+        - paragraph [ref=e10]: Đăng ký suất ăn trưa hàng ngày
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: Tên đăng nhập
+          - textbox "Tên đăng nhập" [ref=e15]:
+            - /placeholder: "Ví dụ: hungpx"
+        - generic [ref=e16]:
+          - generic [ref=e17]: Mật khẩu
+          - generic [ref=e18]:
+            - textbox "Mật khẩu" [ref=e19]:
+              - /placeholder: Nhập mật khẩu
+            - button "visibility" [ref=e20]:
+              - generic [ref=e21]: visibility
+        - button "Đăng nhập" [ref=e22]
+      - paragraph [ref=e23]: Quên mật khẩu? Liên hệ Admin để được hỗ trợ
+  - button "Open Next.js Dev Tools" [ref=e29] [cursor=pointer]:
+    - img [ref=e30]

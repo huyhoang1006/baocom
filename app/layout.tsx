@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi" className={`${inter.variable} ${beVietnamPro.variable}`}>
+    <html lang="vi" data-scroll-behavior="smooth" className={`${inter.variable} ${beVietnamPro.variable}`}>
       <head>
         <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
       </head>

@@ -54,14 +54,16 @@ export function MobileSidebar({ isOpen, onClose, children }: Props) {
         }`}
         style={{ pointerEvents: isOpen ? 'auto' : 'none' }}
       >
+        {/* Close button - positioned fixed relative to drawer, not inside scroll */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-container-low active:bg-surface-container-high"
+          className="absolute top-4 right-4 z-10 w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-container-low active:bg-surface-container-high"
           aria-label="Close drawer"
         >
           <span className="material-symbols-outlined">close</span>
         </button>
 
+        {/* Content - scrollable but doesn't intercept close button area */}
         <div className="h-full overflow-y-auto pt-16">
           {children}
         </div>
