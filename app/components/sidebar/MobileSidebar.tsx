@@ -11,7 +11,6 @@ interface Props {
 
 export function MobileSidebar({ isOpen, onClose, children }: Props) {
   const [mounted, setMounted] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -20,7 +19,6 @@ export function MobileSidebar({ isOpen, onClose, children }: Props) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden"
-      setIsAnimating(true)
     } else {
       document.body.style.overflow = ""
     }
