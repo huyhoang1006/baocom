@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { AdminSidebar } from "../components/sidebar/AdminSidebar"
 import { MobileSidebar } from "../components/sidebar/MobileSidebar"
 
@@ -10,6 +11,11 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    setIsDrawerOpen(false)
+  }, [pathname])
 
   const mockAdmin = {
     username: "admin",
