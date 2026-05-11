@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { EmployeeSidebar } from "../components/sidebar/EmployeeSidebar"
 import { MobileSidebar } from "../components/sidebar/MobileSidebar"
 
@@ -10,6 +11,12 @@ export default function EmployeeLayout({
   children: React.ReactNode
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  const pathname = usePathname()
+
+  useEffect(() => {
+    setIsDrawerOpen(false)
+  }, [pathname])
 
   const mockUser = {
     username: "hungpx",
