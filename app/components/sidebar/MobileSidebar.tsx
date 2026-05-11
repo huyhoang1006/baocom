@@ -62,7 +62,7 @@ export function MobileSidebar({ isOpen, onClose, children }: Props) {
           <span className="material-symbols-outlined">close</span>
         </button>
 
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-auto pt-16">
           {children}
         </div>
       </div>
