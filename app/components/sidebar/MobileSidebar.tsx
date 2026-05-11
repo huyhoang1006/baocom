@@ -7,10 +7,9 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   children: React.ReactNode
-  hamburgerRef?: React.RefObject<HTMLButtonElement>
 }
 
-export function MobileSidebar({ isOpen, onClose, children, hamburgerRef }: Props) {
+export function MobileSidebar({ isOpen, onClose, children }: Props) {
   const [mounted, setMounted] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 

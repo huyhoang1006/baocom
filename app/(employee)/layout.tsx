@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { EmployeeSidebar } from "../components/sidebar/EmployeeSidebar"
 import { MobileSidebar } from "../components/sidebar/MobileSidebar"
 
@@ -10,7 +10,6 @@ export default function EmployeeLayout({
   children: React.ReactNode
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const hamburgerRef = useRef<HTMLButtonElement>(null)
 
   const mockUser = {
     username: "hungpx",
@@ -31,7 +30,6 @@ export default function EmployeeLayout({
       <MobileSidebar
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        hamburgerRef={hamburgerRef}
       >
         <EmployeeSidebar
           username={mockUser.username}
@@ -41,7 +39,6 @@ export default function EmployeeLayout({
 
       {/* Hamburger button - changes icon based on state */}
       <button
-        ref={hamburgerRef}
         onClick={() => setIsDrawerOpen(!isDrawerOpen)}
         className={`md:hidden fixed top-4 left-4 z-[55] w-11 h-11 rounded-xl bg-surface-container-low shadow-md border border-hairline flex items-center justify-center transition-all duration-200 ${
           isDrawerOpen ? "opacity-0 scale-95" : "opacity-100 scale-100"
