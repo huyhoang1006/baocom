@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String @id @default(cuid())
+  username  String @unique
+  password  String
+  name      String
+  role      String @default("employee")
+  isActive  Boolean @default(true)
+
+  registrations Registration[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Meal {
+  id        String @id @default(cuid())
+  name      String
+  type      String
+  isActive  Boolean @default(true)
+
+  dailyMenus DailyMenuMeal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DailyMenu {
+  id      String @id @default(cuid())
+  date    DateTime @unique
+
+  meals   DailyMenuMeal[]
+
+  createdAt DateTime @default(now())
+}
+
+model DailyMenuMeal {
+  id          String @id @default(cuid())
+  dailyMenuId String
+  mealId      String
+  sortOrder   Int @default(0)
+
+  dailyMenu   DailyMenu @relation(fields: [dailyMenuId], references: [id], onDelete: Cascade)
+  meal        Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@unique([dailyMenuId, mealId])
+}
+
+model Registration {
+  id       String @id @default(cuid())
+  userId   String
+  date     DateTime
+  status   String
+  note     String?
+
+  user     User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+}
+
+model Holiday {
+  id          String @id @default(cuid())
+  date        DateTime @unique
+  description String?
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
