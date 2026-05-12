@@ -23,7 +23,6 @@ const initialEmployees: Employee[] = [
 ]
 
 const departments = ["Kỹ thuật", "Kinh doanh", "Nhân sự", "Tài chính", "Marketing"]
-const cancelReasons = ["Đi công trường", "Nghỉ phép", "Công tác", "Thai sản", "Họp/Tập huấn", "Khác"]
 
 function generateUsername(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -34,22 +33,18 @@ function generateUsername(name: string): string {
   return lastName + firstInitial + middleInitial
 }
 
+function getInitials(name: string): string {
+  return name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
+}
+
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees)
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<"add" | "edit">("add")
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null)
-  const [cancelDateRange, setCancelDateRange] = useState<"custom" | "week" | "month">("week")
-  const [cancelCustomStart, setCancelCustomStart] = useState("")
-  const [cancelCustomEnd, setCancelCustomEnd] = useState("")
-  const [cancelReason, setCancelReason] = useState("")
-  const [cancelNote, setCancelNote] = useState("")
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
   const [formData, setFormData] = useState({
@@ -99,24 +94,9 @@ export default function EmployeesPage() {
       const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.phone.includes(searchQuery)
-      const matchesStatus = statusFilter === "all" || emp.status === statusFilter
-      return matchesSearch && matchesStatus
+      return matchesSearch
     })
-  }, [employees, searchQuery, statusFilter])
-
-  const handleSelectAll = () => {
-    if (selectedIds.length === filteredEmployees.length) {
-      setSelectedIds([])
-    } else {
-      setSelectedIds(filteredEmployees.map((e) => e.id))
-    }
-  }
-
-  const handleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    )
-  }
+  }, [employees, searchQuery])
 
   const openAddModal = () => {
     setModalMode("add")
@@ -181,21 +161,6 @@ export default function EmployeesPage() {
     setDeleteTarget(null)
   }
 
-  const handleBulkCancel = () => {
-    if (selectedIds.length === 0) return
-    setIsCancelModalOpen(true)
-  }
-
-  const confirmBulkCancel = () => {
-    if (!cancelReason) {
-      showNotification("error", "Vui lòng chọn lý do hủy")
-      return
-    }
-    showNotification("success", `Đã hủy ${selectedIds.length} suất ăn cho các ngày đã chọn`)
-    setIsCancelModalOpen(false)
-    setSelectedIds([])
-  }
-
   return (
     <div className="min-h-dvh bg-canvas pb-12">
       {/* Notification Toast */}
@@ -218,11 +183,7 @@ export default function EmployeesPage() {
       {/* Page Header */}
       <header className="pt-12 pb-8 px-6 lg:px-10">
         <div className="max-w-[1140px] mx-auto">
-          <div className="flex items-center gap-3 text-ink-muted-80 mb-3">
-            <span className="material-symbols-outlined text-primary">group</span>
-            <span className="text-sm font-medium">Quản lý nhân sự</span>
-          </div>
-          <h1 className="text-4xl font-semibold tracking-tight text-ink">
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">
             Nhân Sự
           </h1>
         </div>
@@ -232,123 +193,82 @@ export default function EmployeesPage() {
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto space-y-5">
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            <button onClick={openAddModal} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-all">
+          <div className="flex gap-2">
+            <button onClick={openAddModal} className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-primary text-on-primary hover:bg-primary-hover transition-all">
               <span className="material-symbols-outlined text-lg">person_add</span>
               Thêm nhân viên
             </button>
-            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high border border-hairline transition-colors">
+            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high border border-hairline transition-colors">
               <span className="material-symbols-outlined text-lg">upload_file</span>
               Import
             </button>
-            {selectedIds.length > 0 && (
-              <button onClick={handleBulkCancel} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-error-bg text-error hover:bg-error/10 border border-error/20 transition-all">
-                <span className="material-symbols-outlined text-lg">cancel</span>
-                Hủy ({selectedIds.length})
-              </button>
-            )}
           </div>
 
-          {/* Search and Filter */}
-          <div className="flex gap-3">
-            <div className="relative flex-1 max-w-xs">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-ink-muted-48 text-lg">search</span>
-              <input
-                type="text"
-                placeholder="Tìm kiếm..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl text-sm bg-surface-container border border-hairline focus:outline-none focus:border-primary"
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-              className="px-4 py-2 rounded-xl text-sm bg-surface-container border border-hairline text-ink"
-            >
-              <option value="all">Tất cả</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Đã khóa</option>
-            </select>
+          {/* Search Bar */}
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-ink-muted-48 text-lg">search</span>
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-full text-sm bg-surface-container border border-hairline focus:outline-none focus:border-primary"
+            />
           </div>
 
-          {/* Employee Table */}
-          <div className="rounded-2xl bg-surface-container-low border border-hairline overflow-x-auto">
+          {/* Employee Cards List */}
+          <div className="space-y-3 overflow-y-auto" style={{ maxHeight: "calc(100vh - 280px)" }}>
             {filteredEmployees.length === 0 ? (
-              <div className="p-10 text-center">
-                <span className="material-symbols-outlined text-4xl text-ink-muted-48 mb-3 block">person_search</span>
+              <div className="p-10 text-center bg-canvas border border-hairline rounded-[18px]">
+                <span className="material-symbols-outlined text-5xl text-ink-muted-48 mb-3 block">person_search</span>
                 <p className="text-sm text-ink-muted-80">Không tìm thấy nhân viên</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-surface-container border-b border-hairline">
-                    <th className="py-3 px-4">
-                      <div className="w-11 h-11 flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.length === filteredEmployees.length && filteredEmployees.length > 0}
-                          onChange={handleSelectAll}
-                          className="w-5 h-5 rounded border-hairline text-primary"
-                        />
-                      </div>
-                    </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Họ tên</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Tài khoản</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">SĐT</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Trạng thái</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-hairline">
-                  {filteredEmployees.map((emp) => (
-                    <tr key={emp.id} className="hover:bg-surface-container-low">
-                      <td className="py-3 px-4">
-                        <div className="w-11 h-11 flex items-center justify-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.includes(emp.id)}
-                            onChange={() => handleSelect(emp.id)}
-                            className="w-5 h-5 rounded border-hairline text-primary"
-                          />
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs ${
-                            emp.status === "active" ? "bg-surface-container text-ink" : "bg-surface-container-low text-ink-muted-48"
-                          }`}>
-                            {emp.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
-                          </div>
-                          <span className="font-medium text-ink text-sm">{emp.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-xs text-ink-muted-80 font-mono">{emp.username}</td>
-                      <td className="py-3 px-4 text-sm text-ink-muted-80">{emp.phone}</td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                          emp.status === "active" ? "bg-success-bg text-success" : "bg-surface-container text-ink-muted-48"
-                        }`}>
-                          {emp.status === "active" ? "Đang hoạt động" : "Đã khóa"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => openEditModal(emp)} className="w-11 h-11 rounded-lg hover:bg-surface-container text-ink-muted-80 hover:text-primary flex items-center justify-center" title="Sửa">
-                            <span className="material-symbols-outlined text-base">edit</span>
-                          </button>
-                          <span className="w-2" />
-                          <button onClick={() => handleDelete(emp)} className="w-11 h-11 rounded-lg hover:bg-error-bg text-ink-muted-80 hover:text-error flex items-center justify-center" title="Xóa">
-                            <span className="material-symbols-outlined text-base">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              </div>
+              filteredEmployees.map((emp) => (
+                <div
+                  key={emp.id}
+                  className="bg-canvas border border-hairline rounded-[18px] p-4 flex items-center gap-4"
+                >
+                  {/* Avatar */}
+                  <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-semibold text-sm shrink-0">
+                    {getInitials(emp.name)}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[17px] font-semibold text-ink truncate">{emp.name}</div>
+                    <div className="text-[12px] text-ink-muted-48 font-mono">@{emp.username}</div>
+                    <div className="text-[14px] text-ink-muted-48 mt-0.5">{emp.phone}</div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="shrink-0">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                      emp.status === "active" ? "bg-success-bg text-success" : "bg-surface-container text-ink-muted-48"
+                    }`}>
+                      {emp.status === "active" ? "Đang hoạt động" : "Đã khóa"}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => openEditModal(emp)}
+                      className="w-11 h-11 rounded-full hover:bg-surface-container text-ink-muted-80 hover:text-primary flex items-center justify-center transition-colors"
+                      title="Sửa"
+                    >
+                      <span className="material-symbols-outlined text-base">edit</span>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(emp)}
+                      className="w-11 h-11 rounded-full hover:bg-error-bg text-ink-muted-80 hover:text-error flex items-center justify-center transition-colors"
+                      title="Xóa"
+                    >
+                      <span className="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>
@@ -358,7 +278,7 @@ export default function EmployeesPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setIsModalOpen(false)} />
-          <div className="relative bg-surface-container-low rounded-2xl p-6 w-full max-w-md animate-scale-in">
+          <div className="relative bg-canvas rounded-[18px] p-6 w-full max-w-[400px] animate-scale-in">
             <h2 className="text-lg font-semibold text-ink mb-4">
               {modalMode === "add" ? "Thêm nhân viên" : "Chỉnh sửa nhân viên"}
             </h2>
@@ -407,73 +327,15 @@ export default function EmployeesPage() {
                   {departments.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
-
-              {modalMode === "add" && formData.name && (
-                <div className="p-3 rounded-lg bg-surface-container text-xs text-ink-muted-80">
-                  Username: <span className="font-mono font-medium">{generateUsername(formData.name)}</span>
-                </div>
-              )}
             </div>
 
             <div className="flex justify-end gap-2 mt-5">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-ink-muted-80 hover:bg-surface-container transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high transition-colors">
                 Hủy
               </button>
-              <button onClick={handleSave} className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors">
+              <button onClick={handleSave} className="px-4 py-2 rounded-full text-sm font-medium bg-primary text-on-primary hover:bg-primary-hover transition-colors">
                 {modalMode === "add" ? "Thêm mới" : "Lưu"}
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bulk Cancel Modal */}
-      {isCancelModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setIsCancelModalOpen(false)} />
-          <div className="relative bg-surface-container-low rounded-2xl p-6 w-full max-w-md animate-scale-in">
-            <h2 className="text-lg font-semibold text-ink mb-1">Hủy Báo Cơm</h2>
-            <p className="text-sm text-ink-muted-80 mb-4">{selectedIds.length} nhân viên được chọn</p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium text-ink mb-1 block">Khoảng thời gian:</label>
-                <div className="flex gap-2">
-                  {(["week", "month", "custom"] as const).map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => setCancelDateRange(opt)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium ${cancelDateRange === opt ? "bg-primary text-white" : "bg-surface-container text-ink-muted-80"}`}
-                    >
-                      {opt === "week" ? "Tuần" : opt === "month" ? "Tháng" : "Tùy chỉnh"}
-                    </button>
-                  ))}
-                </div>
-                {cancelDateRange === "custom" && (
-                  <div className="flex gap-2 mt-2">
-                    <input type="date" value={cancelCustomStart} onChange={(e) => setCancelCustomStart(e.target.value)} className="form-input flex-1" />
-                    <input type="date" value={cancelCustomEnd} onChange={(e) => setCancelCustomEnd(e.target.value)} className="form-input flex-1" />
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-ink mb-1 block">Lý do <span className="text-error">*</span></label>
-                <select value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} className="form-input">
-                  <option value="">Chọn lý do</option>
-                  {cancelReasons.map((r) => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-ink mb-1 block">Ghi chú</label>
-                <textarea value={cancelNote} onChange={(e) => setCancelNote(e.target.value)} placeholder="Thông tin bổ sung..." rows={2} className="form-input resize-none" />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 mt-5">
-              <button onClick={() => setIsCancelModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-ink-muted-80 hover:bg-surface-container">Đóng</button>
-              <button onClick={confirmBulkCancel} className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-error hover:bg-error/90">Xác nhận hủy</button>
             </div>
           </div>
         </div>
@@ -483,14 +345,14 @@ export default function EmployeesPage() {
       {isDeleteModalOpen && deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setIsDeleteModalOpen(false)} />
-          <div className="relative bg-surface-container-low rounded-2xl p-6 w-full max-w-sm animate-scale-in">
+          <div className="relative bg-canvas rounded-[18px] p-6 w-full max-w-[400px] animate-scale-in">
             <h2 className="text-lg font-semibold text-ink mb-2">Xóa nhân viên?</h2>
             <p className="text-sm text-ink-muted-80 mb-4">
               Xóa <span className="font-medium text-ink">{deleteTarget.name}</span>? Hành động này không thể hoàn tác.
             </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setIsDeleteModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-ink-muted-80 hover:bg-surface-container">Hủy</button>
-              <button onClick={confirmDelete} className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-error hover:bg-error/90">Xóa</button>
+              <button onClick={() => setIsDeleteModalOpen(false)} className="px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high transition-colors">Hủy</button>
+              <button onClick={confirmDelete} className="px-4 py-2 rounded-full text-sm font-medium bg-error text-white hover:bg-error/90 transition-colors">Xóa</button>
             </div>
           </div>
         </div>
