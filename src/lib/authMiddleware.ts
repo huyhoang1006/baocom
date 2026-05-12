@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 
-export function withAuth(handler: (req: NextRequest, userId: string, role: string) => Promise<NextResponse>) {
-  return async (req: NextRequest) => {
+export function withAuth<T extends { params: Promise<{ id: string }> }>(handler: (req: NextRequest, userId: string, role: string, context: T) => Promise<NextResponse>) {
+  return async (req: NextRequest, context?: T) => {
     const token = req.cookies.get('token')?.value
 
     if (!token) {
@@ -15,15 +15,15 @@ export function withAuth(handler: (req: NextRequest, userId: string, role: strin
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    return handler(req, payload.userId, payload.role)
+    return handler(req, payload.userId, payload.role, context!)
   }
 }
 
-export function withAdmin(handler: (req: NextRequest, userId: string) => Promise<NextResponse>) {
-  return withAuth(async (req, userId, role) => {
+export function withAdmin<T extends { params: Promise<{ id: string }> }>(handler: (req: NextRequest, userId: string, context: T) => Promise<NextResponse>) {
+  return withAuth(async (req, userId, role, ctx) => {
     if (role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-    return handler(req, userId)
+    return handler(req, userId, ctx)
   })
 }

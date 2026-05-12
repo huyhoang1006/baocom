@@ -3,8 +3,8 @@ import { withAdmin } from '@/lib/authMiddleware'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 
-export const GET = withAdmin(async (req: NextRequest) => {
-  const { id } = req.nextUrl.pathname.split('/').pop()!
+export const GET = withAdmin(async (req: NextRequest, userId: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
   const user = await prisma.user.findUnique({
     where: { id },
     select: { id: true, username: true, name: true, role: true, createdAt: true }
@@ -13,9 +13,14 @@ export const GET = withAdmin(async (req: NextRequest) => {
   return NextResponse.json({ user })
 })
 
-export const PATCH = withAdmin(async (req: NextRequest) => {
-  const { id } = req.nextUrl.pathname.split('/').pop()!
-  const body = await req.json()
+export const PATCH = withAdmin(async (req: NextRequest, userId: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
+  let body: { name?: string; password?: string; role?: string; isActive?: boolean }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   const updateData: { name?: string; password?: string; role?: string; isActive?: boolean } = {}
   if (body.name) updateData.name = body.name
@@ -27,8 +32,8 @@ export const PATCH = withAdmin(async (req: NextRequest) => {
   return NextResponse.json({ user: { id: user.id, username: user.username, name: user.name, role: user.role } })
 })
 
-export const DELETE = withAdmin(async (req: NextRequest) => {
-  const { id } = req.nextUrl.pathname.split('/').pop()!
+export const DELETE = withAdmin(async (req: NextRequest, userId: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
   // Soft delete
   await prisma.user.update({ where: { id }, data: { isActive: false } })
   return NextResponse.json({ success: true })

@@ -18,13 +18,26 @@ export const GET = withAuth(async () => {
 })
 
 export const POST = withAdmin(async (req: NextRequest) => {
-  const { date, mealIds } = await req.json()
+  let date: string, mealIds: number[]
+  try {
+    const body = await req.json()
+    date = body.date
+    mealIds = body.mealIds
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   if (!date || !mealIds || !Array.isArray(mealIds)) {
     return NextResponse.json({ error: 'Missing date or mealIds' }, { status: 400 })
   }
 
   const dateObj = new Date(date)
+
+  // Validate mealIds exist and are active
+  const meals = await prisma.meal.findMany({ where: { id: { in: mealIds }, isActive: true } })
+  if (meals.length !== mealIds.length) {
+    return NextResponse.json({ error: 'One or more mealIds are invalid or inactive' }, { status: 400 })
+  }
 
   // Create or update daily menu
   const dailyMenu = await prisma.dailyMenu.upsert({

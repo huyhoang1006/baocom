@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin } from '@/lib/authMiddleware'
 import { prisma } from '@/lib/prisma'
 
-export const PATCH = withAdmin(async (req: NextRequest) => {
-  const { id } = req.nextUrl.pathname.split('/').pop()!
+export const GET = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
+  const meal = await prisma.meal.findUnique({ where: { id } })
+  if (!meal) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  return NextResponse.json({ meal })
+})
+
+export const PATCH = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
   const { name, type } = await req.json()
 
   const updateData: { name?: string; type?: string; isActive?: boolean } = {}
@@ -19,8 +26,8 @@ export const PATCH = withAdmin(async (req: NextRequest) => {
   return NextResponse.json({ meal })
 })
 
-export const DELETE = withAdmin(async (req: NextRequest) => {
-  const { id } = req.nextUrl.pathname.split('/').pop()!
+export const DELETE = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
   await prisma.meal.update({ where: { id }, data: { isActive: false } })
   return NextResponse.json({ success: true })
 })

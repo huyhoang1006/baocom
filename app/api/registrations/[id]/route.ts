@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth, withAdmin } from '@/lib/authMiddleware'
 import { prisma } from '@/lib/prisma'
 
-export const PATCH = withAuth(async (req: NextRequest, userId: string, role: string) => {
-  const { id } = req.nextUrl.pathname.split('/').pop()!
+export const PATCH = withAuth(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
   const { status, note } = await req.json()
 
   const registration = await prisma.registration.findUnique({ where: { id } })
@@ -28,8 +28,8 @@ export const PATCH = withAuth(async (req: NextRequest, userId: string, role: str
   return NextResponse.json({ registration: updated })
 })
 
-export const DELETE = withAdmin(async (req: NextRequest) => {
-  const { id } = req.nextUrl.pathname.split('/').pop()!
+export const DELETE = withAdmin(async (req: NextRequest, userId: string, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params
   await prisma.registration.delete({ where: { id } })
   return NextResponse.json({ success: true })
 })

@@ -3,8 +3,8 @@ import { withAuth } from '@/lib/authMiddleware'
 import { withAdmin } from '@/lib/authMiddleware'
 import { prisma } from '@/lib/prisma'
 
-export const GET = withAuth(async (req: NextRequest) => {
-  const dateStr = req.nextUrl.pathname.split('/').pop()!
+export const GET = withAuth(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ date: string }> }) => {
+  const { date: dateStr } = await context.params
   const date = new Date(dateStr)
 
   const menu = await prisma.dailyMenu.findUnique({
@@ -20,13 +20,25 @@ export const GET = withAuth(async (req: NextRequest) => {
   return NextResponse.json({ dailyMenu: menu })
 })
 
-export const PUT = withAdmin(async (req: NextRequest) => {
-  const dateStr = req.nextUrl.pathname.split('/').pop()!
+export const PUT = withAdmin(async (req: NextRequest, userId: string, context: { params: Promise<{ date: string }> }) => {
+  const { date: dateStr } = await context.params
   const date = new Date(dateStr)
-  const { mealIds } = await req.json()
+  let mealIds: number[]
+  try {
+    const body = await req.json()
+    mealIds = body.mealIds
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   if (!mealIds || !Array.isArray(mealIds)) {
     return NextResponse.json({ error: 'Missing mealIds' }, { status: 400 })
+  }
+
+  // Validate mealIds exist
+  const meals = await prisma.meal.findMany({ where: { id: { in: mealIds }, isActive: true } })
+  if (meals.length !== mealIds.length) {
+    return NextResponse.json({ error: 'One or more mealIds are invalid' }, { status: 400 })
   }
 
   const dailyMenu = await prisma.dailyMenu.upsert({
