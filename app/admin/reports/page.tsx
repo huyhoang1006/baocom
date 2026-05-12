@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import * as XLSX from "xlsx"
 
 interface ReportRow {
@@ -20,7 +20,12 @@ const mockEmployees = [
   { id: "7", name: "Đặng Văn G", phone: "0912345684" },
 ]
 
-function generateReportData(type: "day" | "week" | "month", dateStr?: string): ReportRow[] {
+function generateReportData(
+  type: "day" | "week" | "month",
+  dateStr?: string,
+  weekStart?: Date,
+  monthYear?: { year: number; month: number }
+): ReportRow[] {
   const result: ReportRow[] = []
   let dates: string[] = []
 
@@ -33,9 +38,7 @@ function generateReportData(type: "day" | "week" | "month", dateStr?: string): R
 
   if (type === "day" && dateStr) {
     dates = [dateStr]
-  } else if (type === "week") {
-    const weekStart = new Date(now)
-    weekStart.setDate(now.getDate() - now.getDay() + 1)
+  } else if (type === "week" && weekStart) {
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart)
       d.setDate(weekStart.getDate() + i)
@@ -43,10 +46,10 @@ function generateReportData(type: "day" | "week" | "month", dateStr?: string): R
         dates.push(formatDateStr(d))
       }
     }
-  } else if (type === "month") {
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+  } else if (type === "month" && monthYear) {
+    const daysInMonth = new Date(monthYear.year, monthYear.month, 0).getDate()
     for (let i = 1; i <= daysInMonth; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth(), i)
+      const d = new Date(monthYear.year, monthYear.month - 1, i)
       if (d.getDay() !== 0) {
         dates.push(formatDateStr(d))
       }
@@ -124,14 +127,20 @@ export default function ReportsPage() {
 
   const handlePreview = () => {
     let date: string | undefined
+    let weekStart: Date | undefined
+    let monthYear: { year: number; month: number } | undefined
     if (reportType === "day") {
       date = selectedDate
     } else if (reportType === "week") {
-      date = weekOptions[selectedWeekIndex]?.label
+      const opt = weekOptions[selectedWeekIndex]
+      date = opt?.label
+      weekStart = opt?.start
     } else if (reportType === "month") {
-      date = monthOptions[selectedMonthIndex]?.label
+      const opt = monthOptions[selectedMonthIndex]
+      date = opt?.label
+      monthYear = opt ? { year: opt.year, month: opt.month } : undefined
     }
-    const data = generateReportData(reportType, date)
+    const data = generateReportData(reportType, date, weekStart, monthYear)
     setPreviewData(data)
     setShowAll(false)
   }
@@ -142,8 +151,11 @@ export default function ReportsPage() {
 
   const handleReportTypeChange = (type: "day" | "week" | "month") => {
     setReportType(type)
-    setTimeout(handlePreview, 0)
   }
+
+  useEffect(() => {
+    handlePreview()
+  }, [reportType])
 
   const handleExport = () => {
     if (previewData.length === 0) return
