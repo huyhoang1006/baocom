@@ -38,7 +38,7 @@ export function MobileSidebar({ isOpen, onClose, children }: Props) {
 
   return createPortal(
     <>
-      {/* Backdrop: bg-black/50 (40% opacity), z-60 */}
+      {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ease-out ${
           isOpen ? "opacity-100" : "opacity-0"
@@ -55,7 +55,7 @@ export function MobileSidebar({ isOpen, onClose, children }: Props) {
         }`}
         style={{ pointerEvents: isOpen ? 'auto' : 'none' }}
       >
-        {/* Close button: 44px, circular */}
+        {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-container active:bg-surface-container-high"
@@ -65,7 +65,7 @@ export function MobileSidebar({ isOpen, onClose, children }: Props) {
         </button>
 
         {/* Content */}
-        <div className="h-full overflow-y-auto pt-16">
+        <div className="h-full overflow-y-auto pt-16 px-4">
           {children}
         </div>
       </div>

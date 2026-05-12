@@ -53,7 +53,7 @@ export function EmployeeSidebar({ username, fullName }: Props) {
               <span className="material-symbols-outlined">{item.icon}</span>
               <span className="font-medium" style={{ fontSize: '12px' }}>{item.label}</span>
               {isActive && (
-                <span className="ml-auto material-symbols-outlined text-sm">chevron_right</span>
+                <span className="ml-auto ml-2 material-symbols-outlined text-sm">chevron_right</span>
               )}
             </Link>
           )
