@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "baocom",
+  "project_id": "265dd89c-11ba-4f20-86c2-b40d83547d15"
+}
