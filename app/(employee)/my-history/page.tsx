@@ -4,221 +4,229 @@ import { useState, useMemo } from "react"
 
 interface HistoryEntry {
   date: string
-  status: "Có ăn" | "Không ăn"
+  status: "eating" | "not-eating"
   note?: string
 }
 
-const mockHistoryData: HistoryEntry[] = [
-  { date: "2024-05-06", status: "Có ăn", note: "" },
-  { date: "2024-05-07", status: "Có ăn", note: "" },
-  { date: "2024-05-08", status: "Không ăn", note: "Đi công trường" },
-  { date: "2024-05-09", status: "Có ăn", note: "" },
-  { date: "2024-05-10", status: "Không ăn", note: "Nghỉ phép" },
-  { date: "2024-05-13", status: "Có ăn", note: "" },
-  { date: "2024-05-14", status: "Có ăn", note: "" },
-  { date: "2024-05-15", status: "Có ăn", note: "" },
-  { date: "2024-05-16", status: "Không ăn", note: "Công tác" },
-  { date: "2024-05-17", status: "Có ăn", note: "" },
-  { date: "2024-05-20", status: "Có ăn", note: "" },
-  { date: "2024-05-21", status: "Có ăn", note: "" },
-  { date: "2024-05-22", status: "Không ăn", note: "Họp/Tập huấn" },
-  { date: "2024-05-23", status: "Có ăn", note: "" },
-  { date: "2024-05-24", status: "Có ăn", note: "" },
+const mockHistory: HistoryEntry[] = [
+  { date: "2026-05-05", status: "eating" },
+  { date: "2026-05-06", status: "eating" },
+  { date: "2026-05-07", status: "not-eating", note: "Đi công trường" },
+  { date: "2026-05-08", status: "eating" },
+  { date: "2026-05-11", status: "not-eating", note: "Nghỉ phép" },
+  { date: "2026-05-12", status: "eating" },
+  { date: "2026-05-13", status: "eating" },
+  { date: "2026-05-14", status: "eating" },
+  { date: "2026-05-15", status: "not-eating", note: "Công tác" },
+  { date: "2026-05-16", status: "eating" },
+  { date: "2026-05-19", status: "eating" },
+  { date: "2026-05-20", status: "eating" },
+  { date: "2026-05-21", status: "not-eating", note: "Họp/Tập huấn" },
+  { date: "2026-05-22", status: "eating" },
+  { date: "2026-05-23", status: "eating" },
+  { date: "2026-05-26", status: "eating" },
+  { date: "2026-05-27", status: "not-eating" },
+  { date: "2026-05-28", status: "eating" },
 ]
 
-function formatDate(dateStr: string): { day: string; month: string; weekday: string } {
-  const date = new Date(dateStr)
-  const day = date.getDate().toString().padStart(2, "0")
-  const month = (date.getMonth() + 1).toString().padStart(2, "0")
-  const weekdays = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
-  const weekday = weekdays[date.getDay()]
-  return { day, month, weekday }
+const WEEKDAY_LABELS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
+const MONTH_NAMES = [
+  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+  "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+]
+
+function getMonthData(year: number, month: number) {
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const startOffset = firstDay.getDay()
+  const daysInMonth = lastDay.getDate()
+  const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7
+
+  return { firstDay, lastDay, startOffset, daysInMonth, totalCells }
 }
 
-function getWeekBounds(date: Date): { start: Date; end: Date } {
-  const day = date.getDay()
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
-  const start = new Date(date)
-  start.setDate(diff)
-  start.setHours(0, 0, 0, 0)
-  const end = new Date(start)
-  end.setDate(start.getDate() + 6)
-  end.setHours(23, 59, 59, 999)
-  return { start, end }
-}
-
-function getMonthBounds(date: Date): { start: Date; end: Date } {
-  const start = new Date(date.getFullYear(), date.getMonth(), 1)
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-  start.setHours(0, 0, 0, 0)
-  end.setHours(23, 59, 59, 999)
-  return { start, end }
-}
-
-function isInRange(date: Date, start: Date, end: Date): boolean {
-  return date >= start && date <= end
+function formatDateKey(year: number, month: number, day: number): string {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
 }
 
 export default function HistoryPage() {
-  const [filter, setFilter] = useState<"week" | "month" | "custom">("week")
-  const [customStart, setCustomStart] = useState("")
-  const [customEnd, setCustomEnd] = useState("")
+  const today = new Date()
+  const [currentYear, setCurrentYear] = useState(today.getFullYear())
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth())
 
   const mockUser = {
     username: "hungpx",
     fullName: "Phạm Xuân Hùng",
   }
 
-  const filteredData = useMemo(() => {
-    const now = new Date()
-
-    return mockHistoryData.filter((entry) => {
-      const entryDate = new Date(entry.date)
-
-      if (filter === "week") {
-        const { start, end } = getWeekBounds(now)
-        return isInRange(entryDate, start, end)
-      } else if (filter === "month") {
-        const { start, end } = getMonthBounds(now)
-        return isInRange(entryDate, start, end)
-      } else if (filter === "custom" && customStart && customEnd) {
-        const start = new Date(customStart)
-        const end = new Date(customEnd)
-        start.setHours(0, 0, 0, 0)
-        end.setHours(23, 59, 59, 999)
-        return isInRange(entryDate, start, end)
-      }
-      return true
+  const historyMap = useMemo(() => {
+    const map: Record<string, HistoryEntry> = {}
+    mockHistory.forEach((entry) => {
+      map[entry.date] = entry
     })
-  }, [filter, customStart, customEnd])
+    return map
+  }, [])
+
+  const calendarDays = useMemo(() => {
+    const { startOffset, daysInMonth, totalCells } = getMonthData(currentYear, currentMonth)
+    const days: Array<{ dateKey: string; day: number; isCurrentMonth: boolean }> = []
+
+    // Previous month days
+    const prevMonth = new Date(currentYear, currentMonth, 0)
+    const prevMonthDays = prevMonth.getDate()
+    for (let i = startOffset - 1; i >= 0; i--) {
+      const day = prevMonthDays - i
+      const dateKey = formatDateKey(currentYear, currentMonth - 1, day)
+      days.push({ dateKey, day, isCurrentMonth: false })
+    }
+
+    // Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateKey = formatDateKey(currentYear, currentMonth, d)
+      days.push({ dateKey, day: d, isCurrentMonth: true })
+    }
+
+    // Next month days
+    const remaining = totalCells - days.length
+    for (let d = 1; d <= remaining; d++) {
+      const dateKey = formatDateKey(currentYear, currentMonth + 1, d)
+      days.push({ dateKey, day: d, isCurrentMonth: false })
+    }
+
+    return days
+  }, [currentYear, currentMonth])
 
   const stats = useMemo(() => {
-    const total = filteredData.length
-    const eating = filteredData.filter((e) => e.status === "Có ăn").length
-    const notEating = filteredData.filter((e) => e.status === "Không ăn").length
-    return {
-      total,
-      eating,
-      notEating,
-      eatingPercent: total > 0 ? Math.round((eating / total) * 100) : 0,
-      notEatingPercent: total > 0 ? Math.round((notEating / total) * 100) : 0,
+    const entries = calendarDays
+      .filter((d) => d.isCurrentMonth)
+      .map((d) => historyMap[d.dateKey])
+      .filter(Boolean)
+
+    const total = entries.length
+    const eating = entries.filter((e) => e.status === "eating").length
+    const notEating = entries.filter((e) => e.status === "not-eating").length
+
+    return { total, eating, notEating }
+  }, [calendarDays, historyMap])
+
+  const prevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11)
+      setCurrentYear((y) => y - 1)
+    } else {
+      setCurrentMonth((m) => m - 1)
     }
-  }, [filteredData])
+  }
+
+  const nextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0)
+      setCurrentYear((y) => y + 1)
+    } else {
+      setCurrentMonth((m) => m + 1)
+    }
+  }
+
+  const isToday = (dateKey: string): boolean => {
+    const d = new Date(dateKey)
+    return (
+      d.getDate() === today.getDate() &&
+      d.getMonth() === today.getMonth() &&
+      d.getFullYear() === today.getFullYear()
+    )
+  }
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
       {/* Page Header */}
       <header className="pt-10 pb-6 px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
-          <p className="text-sm text-ink-muted-80 mb-1">Lịch sử đăng ký</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">Lịch Sử Đăng Ký</h1>
-          <p className="text-sm text-ink-muted-80 mt-1">Xin chào, <span className="font-semibold text-ink">{mockUser.fullName}</span></p>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Lịch Sử</h1>
+          <p className="text-sm text-ink-muted-80 mt-1">
+            Xin chào, <span className="font-semibold text-ink">{mockUser.fullName}</span>
+          </p>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto space-y-5">
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-3 overflow-x-auto py-2">
-            {(["week", "month", "custom"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`min-w-[80px] px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  filter === f
-                    ? "bg-primary text-white"
-                    : "text-ink-muted-80 hover:text-ink"
-                }`}
-              >
-                {f === "week" ? "Tuần" : f === "month" ? "Tháng" : "Chọn ngày"}
-              </button>
-            ))}
-          </div>
-
-          {/* Custom Date Range */}
-          {filter === "custom" && (
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-surface-container-low">
-              <label className="text-sm font-medium text-ink-muted-80">Từ:</label>
-              <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className="form-input w-auto" />
-              <label className="text-sm font-medium text-ink-muted-80">Đến:</label>
-              <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className="form-input w-auto" />
-            </div>
-          )}
-
           {/* Stats Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-surface-container-low">
-              <p className="text-xs text-ink-muted-80 mb-1">Tổng ngày</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-4 rounded-[18px] bg-surface-container-low">
+              <p className="text-xs text-ink-muted-80 mb-1">Tổng</p>
               <span className="text-2xl font-bold text-ink">{stats.total}</span>
             </div>
-            <div className="p-4 rounded-xl bg-success-bg">
+            <div className="p-4 rounded-[18px] bg-success-bg">
               <p className="text-xs font-medium text-success mb-1">Có ăn</p>
               <span className="text-2xl font-bold text-success">{stats.eating}</span>
-              <span className="text-xs text-success/80 ml-1">({stats.eatingPercent}%)</span>
             </div>
-            <div className="p-4 rounded-xl bg-error-bg">
+            <div className="p-4 rounded-[18px] bg-error-bg">
               <p className="text-xs font-medium text-error mb-1">Không ăn</p>
               <span className="text-2xl font-bold text-error">{stats.notEating}</span>
-              <span className="text-xs text-error/80 ml-1">({stats.notEatingPercent}%)</span>
             </div>
           </div>
 
-          {/* History Table */}
-          <div className="rounded-2xl bg-surface-container-low border border-hairline overflow-hidden">
-            {filteredData.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-4 py-12">
-                <span className="material-symbols-outlined w-12 h-12 text-ink-muted-48">history</span>
-                <p className="text-sm text-ink-muted-80">Chưa có đăng ký nào trong khoảng thời gian này</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-surface-container border-b border-hairline">
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Ngày</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Trạng thái</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider text-ink-muted-80">Ghi chú</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-hairline">
-                  {filteredData.map((entry, index) => {
-                    const { day, month, weekday } = formatDate(entry.date)
-                    const isEating = entry.status === "Có ăn"
+          {/* Calendar View */}
+          <div className="rounded-[18px] bg-surface-container-low border border-hairline overflow-hidden">
+            {/* Month Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-hairline">
+              <button
+                onClick={prevMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors"
+                aria-label="Tháng trước"
+              >
+                <span className="text-ink">◀</span>
+              </button>
+              <h2 className="text-base font-semibold text-ink">
+                {MONTH_NAMES[currentMonth]} {currentYear}
+              </h2>
+              <button
+                onClick={nextMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors"
+                aria-label="Tháng sau"
+              >
+                <span className="text-ink">▶</span>
+              </button>
+            </div>
 
-                    return (
-                      <tr key={index} className="hover:bg-surface-container-low">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center ${
-                              isEating ? "bg-success-bg" : "bg-error-bg"
-                            }`}>
-                              <span className={`text-sm font-bold ${isEating ? "text-success" : "text-error"}`}>{day}</span>
-                              <span className={`text-[10px] ${isEating ? "text-success/80" : "text-error/80"}`}>{month}</span>
-                            </div>
-                            <span className="text-sm font-medium text-ink">{weekday}, {day}/{month}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
-                            isEating ? "bg-success-bg text-success" : "bg-error-bg text-error"
-                          }`}>
-                            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
-                              {isEating ? "check_circle" : "cancel"}
-                            </span>
-                            {entry.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-ink-muted-80">
-                          {entry.note || "—"}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-              </div>
-            )}
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-7 border-b border-hairline">
+              {WEEKDAY_LABELS.map((label) => (
+                <div
+                  key={label}
+                  className="py-2 text-center text-xs font-semibold text-ink-muted-80"
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
+
+            {/* Day Grid */}
+            <div className="grid grid-cols-7 p-2 gap-1">
+              {calendarDays.map(({ dateKey, day, isCurrentMonth }) => {
+                const entry = historyMap[dateKey]
+                const todayHighlight = isToday(dateKey)
+
+                return (
+                  <div
+                    key={dateKey}
+                    className={`min-h-[44px] flex flex-col items-center justify-center rounded-full transition-colors ${
+                      todayHighlight ? "bg-primary text-white" : ""
+                    } ${!isCurrentMonth ? "opacity-40" : ""}`}
+                  >
+                    <span className="text-sm font-medium">{day}</span>
+                    {entry && (
+                      <div
+                        className={`w-2 h-2 rounded-full mt-0.5 ${
+                          entry.status === "eating" ? "bg-success" : "bg-error"
+                        }`}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </main>
