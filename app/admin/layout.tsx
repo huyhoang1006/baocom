@@ -31,11 +31,11 @@ export default function AdminLayout({
 
       {/* Mobile Header: 44px height, surface-black bg, white title, hamburger left, avatar right */}
       {/* z-40 for header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-11 bg-surface-black z-40 flex items-center justify-between px-4">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-11 bg-surface-tile-1 z-40 flex items-center justify-between px-4">
         {/* Hamburger: 44px tap target, rounded.sm (8px), white icon */}
         <button
           onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-          className="w-11 h-11 flex items-center justify-center rounded-sm active:bg-white/10 transition-colors"
+          className="w-11 h-11 flex items-center justify-center rounded-sm active:scale-95 transition-transform"
           aria-label={isDrawerOpen ? "Close menu" : "Open menu"}
         >
           <span className="material-symbols-outlined text-white">
@@ -44,7 +44,7 @@ export default function AdminLayout({
         </button>
 
         {/* Title */}
-        <span className="text-white font-semibold text-base tracking-tight">BaoCom Admin</span>
+        <span className="text-white text-xs tracking-[-0.12px]">BaoCom Admin</span>
 
         {/* Avatar */}
         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
