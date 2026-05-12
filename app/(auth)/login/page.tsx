@@ -10,11 +10,13 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    // Mock login - redirect based on username
-    if (username.toLowerCase().includes("admin")) {
-      router.push("/admin/dashboard")
-    } else {
-      router.push("/dashboard")
+    // Mock login - redirect based on username (password must be at least 4 chars)
+    if (username.trim() && password.length >= 4) {
+      if (username.toLowerCase().includes("admin")) {
+        router.push("/admin/dashboard")
+      } else {
+        router.push("/dashboard")
+      }
     }
   }
 
@@ -44,7 +46,8 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Tên đăng nhập"
               autoComplete="username"
-              className="form-input h-11 px-5"
+              required
+              className="form-input h-11"
             />
 
             {/* Password */}
@@ -55,7 +58,8 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Mật khẩu"
               autoComplete="current-password"
-              className="form-input h-11 px-5"
+              required
+              className="form-input h-11"
             />
 
             {/* Submit */}
@@ -69,7 +73,7 @@ export default function LoginPage() {
 
           {/* Forgot password */}
           <div className="mt-4 text-center">
-            <a href="#" className="text-sm text-primary hover:underline">
+            <a href="/forgot-password" className="text-sm text-primary hover:underline">
               Quên mật khẩu?
             </a>
           </div>
