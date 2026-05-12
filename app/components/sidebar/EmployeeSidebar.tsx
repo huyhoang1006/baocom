@@ -47,7 +47,6 @@ export function EmployeeSidebar({ username, fullName }: Props) {
                 }
               `}
               style={{
-                animationDelay: `${index * 60}ms`,
                 color: isActive ? 'white' : undefined
               }}
             >

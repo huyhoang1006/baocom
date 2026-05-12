@@ -31,7 +31,7 @@ export default function AdminLayout({
 
       {/* Mobile Header: 44px height, surface-black bg, white title, hamburger left, avatar right */}
       {/* z-40 for header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-11 bg-black z-[40] flex items-center justify-between px-4">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-11 bg-surface-black z-40 flex items-center justify-between px-4">
         {/* Hamburger: 44px tap target, rounded.sm (8px), white icon */}
         <button
           onClick={() => setIsDrawerOpen(!isDrawerOpen)}

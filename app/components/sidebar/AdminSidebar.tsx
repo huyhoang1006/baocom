@@ -35,7 +35,7 @@ export function AdminSidebar({ adminName = "Admin" }: Props) {
       {/* Nav Items - nav-link style (12px) */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item, index) => {
-          const isActive = pathname.startsWith(item.href)
+          const isActive = pathname === item.href
           return (
             <Link
               key={item.href}
@@ -47,7 +47,6 @@ export function AdminSidebar({ adminName = "Admin" }: Props) {
                 }
               `}
               style={{
-                animationDelay: `${index * 60}ms`,
                 color: isActive ? 'white' : undefined
               }}
             >
