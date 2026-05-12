@@ -16,7 +16,7 @@ export function AdminSidebar({ adminName = "Admin" }: Props) {
   const pathname = usePathname()
 
   return (
-    <aside className="w-[260px] h-dvh bg-surface-container-lowest border-r border-hairline flex flex-col fixed left-0 top-0">
+    <aside className="h-dvh bg-white flex flex-col fixed left-0 top-0">
       {/* Logo */}
       <div className="p-6 border-b border-hairline">
         <div className="flex items-center gap-3">
@@ -32,7 +32,7 @@ export function AdminSidebar({ adminName = "Admin" }: Props) {
         </div>
       </div>
 
-      {/* Nav Items */}
+      {/* Nav Items - nav-link style (12px) */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item, index) => {
           const isActive = pathname.startsWith(item.href)
@@ -52,7 +52,7 @@ export function AdminSidebar({ adminName = "Admin" }: Props) {
               }}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
+              <span className="font-medium" style={{ fontSize: '12px' }}>{item.label}</span>
               {isActive && (
                 <span className="ml-auto material-symbols-outlined text-sm">chevron_right</span>
               )}
@@ -61,25 +61,32 @@ export function AdminSidebar({ adminName = "Admin" }: Props) {
         })}
       </nav>
 
-      {/* Footer - User Info */}
+      {/* Footer - User Info + Bottom Actions */}
       <div className="p-4 border-t border-hairline">
-        <div className="bg-surface-container rounded-xl p-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-surface-tile-1 flex items-center justify-center">
-              <span className="text-sm font-semibold text-white">
-                {adminName.substring(0, 2).toUpperCase()}
-              </span>
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-ink text-sm truncate">{adminName}</p>
-              <p className="text-xs text-ink-muted-48">Quản trị viên</p>
-            </div>
+        {/* User info - avatar with initials in primary circle */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+            <span className="text-sm font-semibold text-white">
+              {adminName.substring(0, 2).toUpperCase()}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-ink text-sm truncate">{adminName}</p>
+            <p className="text-xs text-ink-muted-48">Quản trị viên</p>
           </div>
         </div>
-        <button className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-ink-muted-80 hover:bg-error-bg hover:text-error transition-colors">
-          <span className="material-symbols-outlined">logout</span>
-          <span className="font-medium text-sm">Đăng xuất</span>
-        </button>
+
+        {/* Bottom actions - button-utility style (14px), text-link style */}
+        <div className="space-y-1">
+          <button className="flex items-center gap-2 w-full px-4 py-2.5 text-ink-muted-80 hover:bg-error-bg hover:text-error transition-colors rounded-xl" style={{ fontSize: '14px' }}>
+            <span className="material-symbols-outlined">settings</span>
+            <span>Cài đặt</span>
+          </button>
+          <button className="flex items-center gap-2 w-full px-4 py-2.5 text-ink-muted-80 hover:bg-error-bg hover:text-error transition-colors rounded-xl" style={{ fontSize: '14px' }}>
+            <span className="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
+        </div>
       </div>
     </aside>
   )

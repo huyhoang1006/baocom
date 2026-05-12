@@ -29,6 +29,31 @@ export default function AdminLayout({
         <AdminSidebar adminName={mockAdmin.name} />
       </div>
 
+      {/* Mobile Header: 44px height, surface-black bg, white title, hamburger left, avatar right */}
+      {/* z-40 for header */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-11 bg-black z-[40] flex items-center justify-between px-4">
+        {/* Hamburger: 44px tap target, rounded.sm (8px), white icon */}
+        <button
+          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+          className="w-11 h-11 flex items-center justify-center rounded-sm active:bg-white/10 transition-colors"
+          aria-label={isDrawerOpen ? "Close menu" : "Open menu"}
+        >
+          <span className="material-symbols-outlined text-white">
+            {isDrawerOpen ? "close" : "menu"}
+          </span>
+        </button>
+
+        {/* Title */}
+        <span className="text-white font-semibold text-base tracking-tight">BaoCom Admin</span>
+
+        {/* Avatar */}
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+          <span className="text-xs font-semibold text-white">
+            {mockAdmin.username.substring(0, 2).toUpperCase()}
+          </span>
+        </div>
+      </header>
+
       {/* Mobile Sidebar with scroll lock and animations */}
       <MobileSidebar
         isOpen={isDrawerOpen}
@@ -37,22 +62,8 @@ export default function AdminLayout({
         <AdminSidebar adminName={mockAdmin.name} />
       </MobileSidebar>
 
-      {/* Hamburger button - changes icon based on state */}
-      <button
-        onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-        className={`md:hidden fixed top-4 left-4 z-[55] w-11 h-11 rounded-xl bg-surface-container-low shadow-md border border-hairline flex items-center justify-center transition-all duration-200 ${
-          isDrawerOpen ? "opacity-0 scale-95" : "opacity-100 scale-100"
-        }`}
-        style={{ pointerEvents: isDrawerOpen ? 'none' : 'auto' }}
-        aria-label={isDrawerOpen ? "Close menu" : "Open menu"}
-      >
-        <span className="material-symbols-outlined">
-          {isDrawerOpen ? "close" : "menu"}
-        </span>
-      </button>
-
-      {/* Main Content - offset for desktop sidebar */}
-      <main className="md:ml-[260px] min-h-dvh">
+      {/* Main Content - offset for desktop sidebar, pt-11 for mobile header */}
+      <main className="md:ml-[260px] min-h-dvh md:pt-0 pt-11">
         {children}
       </main>
     </div>
