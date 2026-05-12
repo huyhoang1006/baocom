@@ -9,6 +9,7 @@ interface DayInfo {
   dayName: string
   status: Status
   isToday?: boolean
+  isPast?: boolean
 }
 
 const mockDays: DayInfo[] = [
@@ -22,15 +23,11 @@ const mockDays: DayInfo[] = [
   { date: 18, dayName: "T2", status: "none" },
 ]
 
-function getStatusLabel(status: Status): string {
-  if (status === "eating") return "Ăn"
-  if (status === "not-eating") return "Không ăn"
-  return "Chưa chọn"
-}
-
 export default function BookPage() {
   const [days, setDays] = useState<DayInfo[]>(mockDays)
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
+
+  const today = new Date().getDate()
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
     setNotification({ type, message })
@@ -38,8 +35,10 @@ export default function BookPage() {
   }
 
   const toggleDay = (index: number) => {
+    const day = days[index]
+    if (day.isPast) return
+
     setDays((prev) => {
-      const day = prev[index]
       const newStatus: Status = day.status === "eating" ? "not-eating" : "eating"
       const message = newStatus === "eating" ? "Đã đăng ký ăn" : "Đã hủy"
       showNotification(message, "success")
@@ -48,7 +47,7 @@ export default function BookPage() {
   }
 
   const registeredCount = days.filter((d) => d.status === "eating").length
-  const thisWeekCount = days.filter((d) => d.isToday || d.date > 12).length
+  const thisWeekCount = days.filter((d) => d.isToday || (d.date > today && !d.isPast)).length
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
@@ -84,14 +83,17 @@ export default function BookPage() {
               const isNotEating = day.status === "not-eating"
               const isNone = day.status === "none"
               const isToday = day.isToday
+              const isPast = day.date < today
 
               return (
                 <button
                   key={`${day.date}-${day.dayName}`}
                   onClick={() => toggleDay(index)}
+                  disabled={isPast}
                   className={`
                     relative p-4 rounded-[18px] border-2 transition-all duration-200
                     active:scale-95 text-left
+                    ${isPast ? "opacity-50 cursor-not-allowed" : ""}
                     ${isToday ? "ring-2 ring-primary ring-offset-2" : ""}
                     ${isEating ? "border-success bg-success-bg" : ""}
                     ${isNotEating ? "border-error bg-error-bg" : ""}
@@ -110,7 +112,7 @@ export default function BookPage() {
                         isEating ? "text-success" : isNotEating ? "text-error" : "text-ink-muted-80"
                       }`}
                     >
-                      {getStatusLabel(day.status)}
+                      {isEating ? "Ăn" : isNotEating ? "Không ăn" : "Chưa chọn"}
                     </span>
                   </div>
 
