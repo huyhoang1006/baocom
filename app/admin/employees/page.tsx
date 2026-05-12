@@ -198,7 +198,7 @@ export default function EmployeesPage() {
               <span className="material-symbols-outlined text-lg">person_add</span>
               Thêm nhân viên
             </button>
-            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high border border-hairline transition-colors">
+            <button onClick={() => showNotification("error", "Tính năng đang phát triển")} className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high border border-hairline transition-colors">
               <span className="material-symbols-outlined text-lg">upload_file</span>
               Import
             </button>
@@ -227,7 +227,7 @@ export default function EmployeesPage() {
               filteredEmployees.map((emp) => (
                 <div
                   key={emp.id}
-                  className="bg-canvas border border-hairline rounded-[18px] p-4 flex items-center gap-4"
+                  className={`bg-canvas border border-hairline rounded-[18px] p-4 flex items-center gap-4 ${emp.status === "inactive" ? "opacity-60" : ""}`}
                 >
                   {/* Avatar */}
                   <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-semibold text-sm shrink-0">
@@ -244,7 +244,7 @@ export default function EmployeesPage() {
                   {/* Status Badge */}
                   <div className="shrink-0">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                      emp.status === "active" ? "bg-success-bg text-success" : "bg-surface-container text-ink-muted-48"
+                      emp.status === "active" ? "bg-success-bg text-success" : "bg-error-bg text-error"
                     }`}>
                       {emp.status === "active" ? "Đang hoạt động" : "Đã khóa"}
                     </span>
@@ -346,9 +346,9 @@ export default function EmployeesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setIsDeleteModalOpen(false)} />
           <div className="relative bg-canvas rounded-[18px] p-6 w-full max-w-[400px] animate-scale-in">
-            <h2 className="text-lg font-semibold text-ink mb-2">Xóa nhân viên?</h2>
+            <h2 className="text-lg font-semibold text-ink mb-2">Khóa tài khoản nhân viên này?</h2>
             <p className="text-sm text-ink-muted-80 mb-4">
-              Xóa <span className="font-medium text-ink">{deleteTarget.name}</span>? Hành động này không thể hoàn tác.
+              Khóa tài khoản <span className="font-medium text-ink">{deleteTarget.name}</span>? Hành động này có thể hoàn tác.
             </p>
             <div className="flex justify-end gap-2">
               <button onClick={() => setIsDeleteModalOpen(false)} className="px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high transition-colors">Hủy</button>
