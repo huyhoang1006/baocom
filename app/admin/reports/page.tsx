@@ -292,7 +292,7 @@ export default function ReportsPage() {
                 </div>
                 <button
                   onClick={handleExport}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-on-primary bg-success hover:bg-success/90 transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-on-primary bg-primary hover:bg-primary-hover transition-all"
                 >
                   <span className="material-symbols-outlined text-lg">download</span>
                   Tải Excel

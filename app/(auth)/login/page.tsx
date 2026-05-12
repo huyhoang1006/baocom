@@ -6,10 +6,14 @@ import { useRouter } from "next/navigation"
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const router = useRouter()
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
+    // Clear previous error
+    setError("")
+
     // Mock login - redirect based on username (password must be at least 4 chars)
     if (username.trim() && password.length >= 4) {
       if (username.toLowerCase().includes("admin")) {
@@ -17,6 +21,8 @@ export default function LoginPage() {
       } else {
         router.push("/dashboard")
       }
+    } else if (password.length > 0 && password.length < 4) {
+      setError("Mật khẩu phải có ít nhất 4 ký tự")
     }
   }
 
@@ -61,6 +67,13 @@ export default function LoginPage() {
               required
               className="form-input h-11"
             />
+
+            {/* Error message */}
+            {error && (
+              <p className="text-sm text-error text-center" role="alert">
+                {error}
+              </p>
+            )}
 
             {/* Submit */}
             <button
