@@ -47,7 +47,12 @@ export class InMemoryRateLimiter {
       return // Already locked
     }
 
-    state.attempts++
+    // Check if past window - reset attempts instead of incrementing
+    if (now - state.lastAttempt > this.options.windowMs) {
+      state.attempts = 1
+    } else {
+      state.attempts++
+    }
     state.lastAttempt = now
 
     if (state.attempts >= this.options.maxAttempts) {

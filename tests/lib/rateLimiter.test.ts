@@ -40,4 +40,16 @@ describe('InMemoryRateLimiter', () => {
     const state = limiter.getState('192.168.1.1')
     expect(state).toBeUndefined()
   })
+
+  it('should reset attempts after window expiry', () => {
+    limiter.recordFailedAttempt('192.168.1.1')
+    limiter.recordFailedAttempt('192.168.1.1')
+    // Simulate time passing beyond window (16 minutes ago)
+    const state = limiter.getState('192.168.1.1')
+    state!.lastAttempt = Date.now() - (16 * 60 * 1000)
+    // Next attempt should reset to 1, not increment to 3
+    limiter.recordFailedAttempt('192.168.1.1')
+    const newState = limiter.getState('192.168.1.1')
+    expect(newState?.attempts).toBe(1)
+  })
 })
