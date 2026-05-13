@@ -108,7 +108,8 @@ export default function BookPage() {
               const isNotEating = day.status === "not-eating"
               const isNone = day.status === "none"
               const isToday = day.isToday
-              const isPast = day.date < today
+              const todayStr = today.toISOString().split('T')[0]
+              const isPast = day.dateKey < todayStr
 
               return (
                 <button

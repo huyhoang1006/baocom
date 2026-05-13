@@ -107,9 +107,9 @@ describe('useDailyMenus', () => {
       id: '1',
       date: '2026-05-13',
       meals: [
-        { id: 'm1', sortOrder: 1, meal: { id: '1', name: 'Thịt kho', type: 'main' } },
-        { id: 'm2', sortOrder: 2, meal: { id: '2', name: 'Cải xào', type: 'vegetable' } },
-        { id: 'm3', sortOrder: 3, meal: { id: '3', name: 'Chuối', type: 'dessert' } },
+        { id: 'm1', sortOrder: 1, meal: { id: '1', name: 'Thịt kho', type: 'main' as const } },
+        { id: 'm2', sortOrder: 2, meal: { id: '2', name: 'Cải xào', type: 'vegetable' as const } },
+        { id: 'm3', sortOrder: 3, meal: { id: '3', name: 'Chuối', type: 'dessert' as const } },
       ],
     }
     vi.mocked(dailyMenusApi.getAll).mockResolvedValue({ menus: [mockMenu] })
