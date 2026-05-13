@@ -1,0 +1,90 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { UserService } from '@/services/UserService'
+import { CreateUserDTO, UpdateUserDTO } from '@/dto/UserDTO'
+
+export class UsersController {
+  private userService: UserService
+
+  constructor() {
+    this.userService = new UserService()
+  }
+
+  async getAll() {
+    const users = await this.userService.findAll()
+    return NextResponse.json({
+      users: users.map(u => ({
+        id: u.id,
+        username: u.username,
+        name: u.name,
+        role: u.role,
+        createdAt: u.createdAt
+      }))
+    })
+  }
+
+  async getOne(id: string) {
+    const user = await this.userService.findOne(id)
+    if (!user) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+    return NextResponse.json({ user })
+  }
+
+  async create(req: NextRequest) {
+    let body: CreateUserDTO
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    if (!body.username || !body.password || !body.name) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    try {
+      const user = await this.userService.create(body)
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          role: user.role
+        }
+      }, { status: 201 })
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Username already exists') {
+        return NextResponse.json({ error: 'Username already exists' }, { status: 409 })
+      }
+      throw error
+    }
+  }
+
+  async update(id: string, req: NextRequest) {
+    let body: UpdateUserDTO
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    try {
+      const user = await this.userService.update(id, body)
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          role: user.role
+        }
+      })
+    } catch {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+  }
+
+  async delete(id: string) {
+    await this.userService.delete(id)
+    return NextResponse.json({ success: true })
+  }
+}

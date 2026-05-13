@@ -1,0 +1,5 @@
+export * from './UserDTO'
+export * from './MealDTO'
+export * from './RegistrationDTO'
+export * from './HolidayDTO'
+export * from './DailyMenuDTO'

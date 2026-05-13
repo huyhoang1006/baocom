@@ -1,0 +1,6 @@
+export * from './BaseRepository'
+export * from './UserRepository'
+export * from './MealRepository'
+export * from './RegistrationRepository'
+export * from './HolidayRepository'
+export * from './DailyMenuRepository'

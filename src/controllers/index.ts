@@ -1,0 +1,7 @@
+export * from './UsersController'
+export * from './MealsController'
+export * from './RegistrationsController'
+export * from './HolidaysController'
+export * from './DailyMenusController'
+export * from './AdminStatsController'
+export * from './AdminReportsController'
