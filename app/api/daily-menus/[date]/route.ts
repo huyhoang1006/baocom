@@ -9,7 +9,7 @@ export const GET = withAuth(async (req: NextRequest, userId: string, role: strin
   return controller.getByDate(req, dateStr)
 })
 
-export const PUT = withAdmin(async (req: NextRequest, userId: string, context: { params: Promise<{ date: string }> }) => {
+export const PUT = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ date: string }> }) => {
   const { date: dateStr } = await context.params
   return controller.updateByDate(req, dateStr)
 })

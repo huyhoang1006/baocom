@@ -13,7 +13,7 @@ export class DailyMenuService {
   }
 
   async findAll(take?: number) {
-    return this.dailyMenuRepository.findAll(take ? { take } : undefined)
+    return this.dailyMenuRepository.findAllWithLimit(take)
   }
 
   async findByDate(date: string) {

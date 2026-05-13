@@ -2,6 +2,17 @@ import { prisma } from '@/lib/prisma'
 import { RegistrationRepository } from '@/repositories/RegistrationRepository'
 import { CreateRegistrationDTO, UpdateRegistrationDTO, RegistrationStatus } from '@/dto/RegistrationDTO'
 
+export type RegistrationWithUser = {
+  userId: string
+  status: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  date: Date
+  note: string | null
+  user: { name: string; username: string }
+}
+
 export class RegistrationService {
   private registrationRepository: RegistrationRepository
 
@@ -9,12 +20,13 @@ export class RegistrationService {
     this.registrationRepository = new RegistrationRepository(prisma)
   }
 
-  async findAll(userId: string, startDate?: string, endDate?: string) {
-    const where: Record<string, unknown> = { userId }
+  async findAll(userId?: string, startDate?: string, endDate?: string): Promise<RegistrationWithUser[]> {
+    const where: Record<string, unknown> = {}
+    if (userId) where.userId = userId
     if (startDate && endDate) {
       where.date = { gte: new Date(startDate), lte: new Date(endDate) }
     }
-    return this.registrationRepository.findAll(where)
+    return this.registrationRepository.findAll(where) as Promise<RegistrationWithUser[]>
   }
 
   async findOne(id: string) {

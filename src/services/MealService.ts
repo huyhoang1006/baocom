@@ -37,7 +37,7 @@ export class MealService {
     return this.mealRepository.delete(id)
   }
 
-  async validateMealIds(mealIds: number[]) {
+  async validateMealIds(mealIds: string[]) {
     if (!mealIds || !Array.isArray(mealIds)) {
       throw new Error('Invalid mealIds')
     }

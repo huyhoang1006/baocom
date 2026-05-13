@@ -22,7 +22,7 @@ export class AdminReportsController {
     const start = new Date(startDate)
     const end = new Date(endDate)
 
-    const registrations = await this.registrationService.findAll('all', startDate!, endDate!)
+    const registrations = await this.registrationService.findAll(startDate!, endDate!)
 
     // Filter out Sundays from results (no lunch service on Sundays)
     const filtered = registrations.filter(r => {

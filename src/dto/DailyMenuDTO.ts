@@ -5,7 +5,7 @@ export interface DailyMenuMealDTO {
 
 export interface CreateDailyMenuDTO {
   date: string
-  mealIds: number[]
+  mealIds: string[]
 }
 
 export interface DailyMenuResponseDTO {

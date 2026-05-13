@@ -50,7 +50,7 @@ export class DailyMenusController {
   }
 
   async updateByDate(req: NextRequest, dateStr: string) {
-    let body: { mealIds: number[] }
+    let body: { mealIds: string[] }
     try {
       body = await req.json()
     } catch {

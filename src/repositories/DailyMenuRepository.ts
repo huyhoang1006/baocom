@@ -24,6 +24,19 @@ export class DailyMenuRepository extends BaseRepository<
     })
   }
 
+  async findAllWithLimit(take?: number): Promise<DailyMenu[]> {
+    return this.prisma.dailyMenu.findMany({
+      include: {
+        meals: {
+          include: { meal: true },
+          orderBy: { sortOrder: 'asc' }
+        }
+      },
+      orderBy: { date: 'asc' },
+      take
+    })
+  }
+
   async findOne(id: string): Promise<DailyMenu | null> {
     return this.prisma.dailyMenu.findUnique({
       where: { id },
@@ -48,7 +61,7 @@ export class DailyMenuRepository extends BaseRepository<
     })
   }
 
-  async upsertWithMeals(date: Date, mealIds: number[]): Promise<DailyMenu> {
+  async upsertWithMeals(date: Date, mealIds: string[]): Promise<DailyMenu> {
     return this.prisma.$transaction(async (tx) => {
       const dailyMenu = await tx.dailyMenu.upsert({
         where: { date },
