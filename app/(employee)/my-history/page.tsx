@@ -1,33 +1,16 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRegistrations } from "@/hooks/useRegistrations"
+import { toUIStatus } from "@/lib/statusUtils"
 
 interface HistoryEntry {
-  date: string
-  status: "eating" | "not-eating"
-  note?: string
+  dateKey: string
+  day: number
+  isCurrentMonth: boolean
+  status: "eating" | "not-eating" | null
+  isToday: boolean
 }
-
-const mockHistory: HistoryEntry[] = [
-  { date: "2026-05-05", status: "eating" },
-  { date: "2026-05-06", status: "eating" },
-  { date: "2026-05-07", status: "not-eating", note: "Đi công trường" },
-  { date: "2026-05-08", status: "eating" },
-  { date: "2026-05-11", status: "not-eating", note: "Nghỉ phép" },
-  { date: "2026-05-12", status: "eating" },
-  { date: "2026-05-13", status: "eating" },
-  { date: "2026-05-14", status: "eating" },
-  { date: "2026-05-15", status: "not-eating", note: "Công tác" },
-  { date: "2026-05-16", status: "eating" },
-  { date: "2026-05-19", status: "eating" },
-  { date: "2026-05-20", status: "eating" },
-  { date: "2026-05-21", status: "not-eating", note: "Họp/Tập huấn" },
-  { date: "2026-05-22", status: "eating" },
-  { date: "2026-05-23", status: "eating" },
-  { date: "2026-05-26", status: "eating" },
-  { date: "2026-05-27", status: "not-eating" },
-  { date: "2026-05-28", status: "eating" },
-]
 
 const WEEKDAY_LABELS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
 const MONTH_NAMES = [
@@ -54,22 +37,35 @@ export default function HistoryPage() {
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
 
-  const mockUser = {
+  const [mockUser] = useState({
     username: "hungpx",
     fullName: "Phạm Xuân Hùng",
-  }
+  })
+
+  // Calculate date range for the current month
+  const startDate = useMemo(() => {
+    return `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-01`
+  }, [currentYear, currentMonth])
+
+  const endDate = useMemo(() => {
+    const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate()
+    return `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${lastDay}`
+  }, [currentYear, currentMonth])
+
+  const { registrations, loading, getStatusForDate } = useRegistrations(startDate, endDate)
 
   const historyMap = useMemo(() => {
-    const map: Record<string, HistoryEntry> = {}
-    mockHistory.forEach((entry) => {
-      map[entry.date] = entry
+    const map: Record<string, 'eating' | 'not-eating'> = {}
+    registrations.forEach((reg) => {
+      const dateKey = new Date(reg.date).toISOString().split('T')[0]
+      map[dateKey] = toUIStatus(reg.status as 'eating' | 'not_eating')
     })
     return map
-  }, [])
+  }, [registrations])
 
   const calendarDays = useMemo(() => {
     const { startOffset, daysInMonth, totalCells } = getMonthData(currentYear, currentMonth)
-    const days: Array<{ dateKey: string; day: number; isCurrentMonth: boolean }> = []
+    const days: HistoryEntry[] = []
 
     // Previous month days
     const prevMonth = new Date(currentYear, currentMonth, 0)
@@ -77,37 +73,46 @@ export default function HistoryPage() {
     for (let i = startOffset - 1; i >= 0; i--) {
       const day = prevMonthDays - i
       const dateKey = formatDateKey(currentYear, currentMonth - 1, day)
-      days.push({ dateKey, day, isCurrentMonth: false })
+      const d = new Date(currentYear, currentMonth - 1, day)
+      days.push({
+        dateKey,
+        day,
+        isCurrentMonth: false,
+        status: null,
+        isToday: false,
+      })
     }
 
     // Current month days
     for (let d = 1; d <= daysInMonth; d++) {
       const dateKey = formatDateKey(currentYear, currentMonth, d)
-      days.push({ dateKey, day: d, isCurrentMonth: true })
+      const status = historyMap[dateKey] || null
+      const isToday =
+        d === today.getDate() &&
+        currentMonth === today.getMonth() &&
+        currentYear === today.getFullYear()
+      days.push({ dateKey, day: d, isCurrentMonth: true, status, isToday })
     }
 
     // Next month days
     const remaining = totalCells - days.length
     for (let d = 1; d <= remaining; d++) {
       const dateKey = formatDateKey(currentYear, currentMonth + 1, d)
-      days.push({ dateKey, day: d, isCurrentMonth: false })
+      days.push({ dateKey, day: d, isCurrentMonth: false, status: null, isToday: false })
     }
 
     return days
-  }, [currentYear, currentMonth])
+  }, [currentYear, currentMonth, historyMap, today])
 
   const stats = useMemo(() => {
-    const entries = calendarDays
-      .filter((d) => d.isCurrentMonth)
-      .map((d) => historyMap[d.dateKey])
-      .filter(Boolean)
+    const entries = calendarDays.filter((d) => d.isCurrentMonth && d.status !== null)
 
     const total = entries.length
     const eating = entries.filter((e) => e.status === "eating").length
     const notEating = entries.filter((e) => e.status === "not-eating").length
 
     return { total, eating, notEating }
-  }, [calendarDays, historyMap])
+  }, [calendarDays])
 
   const prevMonth = () => {
     if (currentMonth === 0) {
@@ -125,15 +130,6 @@ export default function HistoryPage() {
     } else {
       setCurrentMonth((m) => m + 1)
     }
-  }
-
-  const isToday = (dateKey: string): boolean => {
-    const d = new Date(dateKey)
-    return (
-      d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    )
   }
 
   return (
@@ -155,15 +151,15 @@ export default function HistoryPage() {
           <div className="grid grid-cols-3 gap-3">
             <div className="p-4 rounded-[18px] bg-surface-container-low">
               <p className="text-xs text-ink-muted-80 mb-1">Tổng</p>
-              <span className="text-2xl font-bold text-ink">{stats.total}</span>
+              <span className="text-2xl font-bold text-ink">{loading ? '-' : stats.total}</span>
             </div>
             <div className="p-4 rounded-[18px] bg-success-bg">
               <p className="text-xs font-medium text-success mb-1">Có ăn</p>
-              <span className="text-2xl font-bold text-success">{stats.eating}</span>
+              <span className="text-2xl font-bold text-success">{loading ? '-' : stats.eating}</span>
             </div>
             <div className="p-4 rounded-[18px] bg-error-bg">
               <p className="text-xs font-medium text-error mb-1">Không ăn</p>
-              <span className="text-2xl font-bold text-error">{stats.notEating}</span>
+              <span className="text-2xl font-bold text-error">{loading ? '-' : stats.notEating}</span>
             </div>
           </div>
 
@@ -203,30 +199,33 @@ export default function HistoryPage() {
             </div>
 
             {/* Day Grid */}
-            <div className="grid grid-cols-7 p-2 gap-1">
-              {calendarDays.map(({ dateKey, day, isCurrentMonth }) => {
-                const entry = historyMap[dateKey]
-                const todayHighlight = isToday(dateKey)
-
-                return (
+            {loading ? (
+              <div className="p-4 grid grid-cols-7 gap-1">
+                {Array.from({ length: 35 }).map((_, i) => (
+                  <div key={i} className="h-10 bg-surface-container rounded animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-7 p-2 gap-1">
+                {calendarDays.map(({ dateKey, day, isCurrentMonth, status, isToday }) => (
                   <div
                     key={dateKey}
                     className={`min-h-[44px] flex flex-col items-center justify-center rounded-full transition-colors ${
-                      todayHighlight ? "bg-primary text-white" : ""
+                      isToday ? "bg-primary text-white" : ""
                     } ${!isCurrentMonth ? "opacity-40" : ""}`}
                   >
                     <span className="text-sm font-medium">{day}</span>
-                    {entry && (
+                    {status && (
                       <div
                         className={`w-2 h-2 rounded-full mt-0.5 ${
-                          entry.status === "eating" ? "bg-success" : "bg-error"
+                          status === "eating" ? "bg-success" : "bg-error"
                         }`}
                       />
                     )}
                   </div>
-                )
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

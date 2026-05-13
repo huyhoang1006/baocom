@@ -1,6 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import { useState, useEffect } from "react"
+import { adminStatsApi } from "@/lib/api"
 
 interface Stat {
   label: string
@@ -9,12 +11,30 @@ interface Stat {
 }
 
 export default function AdminDashboard() {
-  const stats: Stat[] = [
-    { label: "Tổng nhân viên", value: 185, icon: "group" },
-    { label: "Đang ăn hôm nay", value: 142, icon: "restaurant" },
-    { label: "Không ăn", value: 28, icon: "no_meals" },
-    { label: "Tỷ lệ đăng ký", value: "77%", icon: "pie_chart" },
-  ]
+  const [stats, setStats] = useState<Stat[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await adminStatsApi.getToday()
+        setStats([
+          { label: "Tổng nhân viên", value: data.stats.totalEmployees, icon: "group" },
+          { label: "Đang ăn hôm nay", value: data.stats.eating, icon: "restaurant" },
+          { label: "Không ăn", value: data.stats.notEating, icon: "no_meals" },
+          { label: "Tỷ lệ đăng ký", value: `${data.stats.registrationRate}%`, icon: "pie_chart" },
+        ])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load stats')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchStats()
+  }, [])
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
@@ -36,27 +56,53 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
+          {/* Error State */}
+          {error && (
+            <div className="mb-6 p-4 rounded-[18px] bg-error-bg border border-error text-error">
+              <p className="font-medium">Lỗi: {error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="text-sm underline mt-1"
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
+
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-canvas border border-hairline rounded-[18px] p-5"
-              >
-                <div className="w-10 h-10 rounded-[11px] bg-primary-bg flex items-center justify-center mb-3">
-                  <span
-                    className="material-symbols-outlined text-xl text-primary"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    {stat.icon}
-                  </span>
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-canvas border border-hairline rounded-[18px] p-5 animate-pulse"
+                >
+                  <div className="w-10 h-10 rounded-[11px] bg-surface-container mb-3" />
+                  <div className="h-4 bg-surface-container rounded w-2/3 mb-2" />
+                  <div className="h-10 bg-surface-container rounded w-1/2" />
                 </div>
-                <p className="text-[14px] text-ink-muted-48 mb-1">{stat.label}</p>
-                <p className="text-[40px] font-semibold text-ink leading-none">
-                  {stat.value}
-                </p>
-              </div>
-            ))}
+              ))
+            ) : (
+              stats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="bg-canvas border border-hairline rounded-[18px] p-5"
+                >
+                  <div className="w-10 h-10 rounded-[11px] bg-primary-bg flex items-center justify-center mb-3">
+                    <span
+                      className="material-symbols-outlined text-xl text-primary"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
+                      {stat.icon}
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-ink-muted-48 mb-1">{stat.label}</p>
+                  <p className="text-[40px] font-semibold text-ink leading-none">
+                    {stat.value}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Quick Actions */}

@@ -1,53 +1,78 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useRegistrations } from "@/hooks/useRegistrations"
+import type { UIStatus } from "@/lib/statusUtils"
 
 type Status = "eating" | "not-eating" | "none"
 
 interface DayInfo {
   date: number
+  dateKey: string
   dayName: string
   status: Status
   isToday?: boolean
   isPast?: boolean
 }
 
-const mockDays: DayInfo[] = [
-  { date: 11, dayName: "T2", status: "eating" },
-  { date: 12, dayName: "T3", status: "eating", isToday: true },
-  { date: 13, dayName: "T4", status: "none" },
-  { date: 14, dayName: "T5", status: "none" },
-  { date: 15, dayName: "T6", status: "eating" },
-  { date: 16, dayName: "T7", status: "none" },
-  { date: 17, dayName: "CN", status: "not-eating" },
-  { date: 18, dayName: "T2", status: "none" },
-]
+const WEEKDAY_NAMES = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
 
 export default function BookPage() {
-  const [days, setDays] = useState<DayInfo[]>(mockDays)
-  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const today = new Date()
+  const todayDate = today.getDate()
+  const todayMonth = today.getMonth()
+  const todayYear = today.getFullYear()
 
-  const today = new Date().getDate()
+  // Generate 8 days starting from today
+  const { registrations, loading, error, toggle, getStatusForDate } = useRegistrations()
+
+  const days = useMemo<DayInfo[]>(() => {
+    const result: DayInfo[] = []
+    for (let i = 0; i < 8; i++) {
+      const d = new Date(today)
+      d.setDate(today.getDate() + i)
+      const dayOfWeek = d.getDay()
+      const dateKey = d.toISOString().split('T')[0]
+      const status = getStatusForDate(dateKey) || 'none'
+      const isPast = d < new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+      result.push({
+        date: d.getDate(),
+        dateKey,
+        dayName: WEEKDAY_NAMES[dayOfWeek],
+        status,
+        isToday: i === 0,
+        isPast,
+      })
+    }
+    return result
+  }, [today, getStatusForDate])
+
+  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
     setNotification({ type, message })
     setTimeout(() => setNotification(null), 3000)
   }
 
-  const toggleDay = (index: number) => {
+  const handleToggle = async (index: number) => {
     const day = days[index]
     if (day.isPast) return
 
-    setDays((prev) => {
-      const newStatus: Status = day.status === "eating" ? "not-eating" : "eating"
-      const message = newStatus === "eating" ? "Đã đăng ký ăn" : "Đã hủy"
-      showNotification(message, "success")
-      return prev.map((d, i) => (i === index ? { ...d, status: newStatus } : d))
-    })
+    const currentStatus = day.status === 'none' ? 'eating' : day.status === 'eating' ? 'not-eating' : 'eating'
+    const newStatus = currentStatus === 'eating' ? 'not-eating' : 'eating'
+
+    const success = await toggle(day.dateKey, newStatus)
+    if (success) {
+      const message = newStatus === 'eating' ? 'Đã đăng ký ăn' : 'Đã hủy'
+      showNotification(message, 'success')
+    } else {
+      showNotification('Cập nhật thất bại', 'error')
+    }
   }
 
   const registeredCount = days.filter((d) => d.status === "eating").length
-  const thisWeekCount = days.filter((d) => d.isToday || (d.date > today && !d.isPast)).length
+  const thisWeekCount = days.filter((d) => d.isToday || (d.date > todayDate && !d.isPast)).length
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
@@ -88,7 +113,7 @@ export default function BookPage() {
               return (
                 <button
                   key={`${day.date}-${day.dayName}`}
-                  onClick={() => toggleDay(index)}
+                  onClick={() => handleToggle(index)}
                   disabled={isPast}
                   className={`
                     relative p-4 rounded-[18px] border-2 transition-all duration-200

@@ -2,75 +2,13 @@
 
 import { useState, useMemo, useEffect } from "react"
 import * as XLSX from "xlsx"
+import { adminReportsApi } from "@/lib/api"
 
 interface ReportRow {
   stt: number
   name: string
   phone: string
   date: string
-}
-
-const mockEmployees = [
-  { id: "1", name: "Nguyễn Văn A", phone: "0912345678" },
-  { id: "2", name: "Trần Thị B", phone: "0912345679" },
-  { id: "3", name: "Lê Văn C", phone: "0912345680" },
-  { id: "4", name: "Phạm Thị D", phone: "0912345681" },
-  { id: "5", name: "Hoàng Văn E", phone: "0912345682" },
-  { id: "6", name: "Võ Thị F", phone: "0912345683" },
-  { id: "7", name: "Đặng Văn G", phone: "0912345684" },
-]
-
-function generateReportData(
-  type: "day" | "week" | "month",
-  dateStr?: string,
-  weekStart?: Date,
-  monthYear?: { year: number; month: number }
-): ReportRow[] {
-  const result: ReportRow[] = []
-  let dates: string[] = []
-
-  const now = new Date()
-  const formatDateStr = (d: Date) => {
-    const day = d.getDate().toString().padStart(2, "0")
-    const month = (d.getMonth() + 1).toString().padStart(2, "0")
-    return `${day}/${month}`
-  }
-
-  if (type === "day" && dateStr) {
-    dates = [dateStr]
-  } else if (type === "week" && weekStart) {
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(weekStart)
-      d.setDate(weekStart.getDate() + i)
-      if (d.getDay() !== 0) {
-        dates.push(formatDateStr(d))
-      }
-    }
-  } else if (type === "month" && monthYear) {
-    const daysInMonth = new Date(monthYear.year, monthYear.month, 0).getDate()
-    for (let i = 1; i <= daysInMonth; i++) {
-      const d = new Date(monthYear.year, monthYear.month - 1, i)
-      if (d.getDay() !== 0) {
-        dates.push(formatDateStr(d))
-      }
-    }
-  }
-
-  let stt = 1
-  mockEmployees.forEach((emp) => {
-    const numDays = Math.floor(Math.random() * dates.length * 0.7) + 1
-    const registeredDays = dates.slice(0, numDays)
-    registeredDays.forEach((d) => {
-      result.push({
-        stt: stt++,
-        name: emp.name,
-        phone: emp.phone,
-        date: d,
-      })
-    })
-  })
-
-  return result
 }
 
 function formatDisplayDate(date: Date): string {
@@ -118,6 +56,8 @@ export default function ReportsPage() {
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(0)
   const [previewData, setPreviewData] = useState<ReportRow[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
 
   const weekOptions = useMemo(() => getWeekOptions(), [])
@@ -125,24 +65,54 @@ export default function ReportsPage() {
 
   const todayStr = new Date().toISOString().split("T")[0]
 
-  const handlePreview = () => {
-    let date: string | undefined
-    let weekStart: Date | undefined
-    let monthYear: { year: number; month: number } | undefined
-    if (reportType === "day") {
-      date = selectedDate
-    } else if (reportType === "week") {
-      const opt = weekOptions[selectedWeekIndex]
-      date = opt?.label
-      weekStart = opt?.start
-    } else if (reportType === "month") {
-      const opt = monthOptions[selectedMonthIndex]
-      date = opt?.label
-      monthYear = opt ? { year: opt.year, month: opt.month } : undefined
+  const handlePreview = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      let startDate: string
+      let endDate: string
+
+      if (reportType === "day" && selectedDate) {
+        startDate = endDate = selectedDate
+      } else if (reportType === "week") {
+        const opt = weekOptions[selectedWeekIndex]
+        if (opt) {
+          startDate = opt.start.toISOString().split('T')[0]
+          endDate = opt.end.toISOString().split('T')[0]
+        } else {
+          throw new Error("Vui lòng chọn tuần")
+        }
+      } else if (reportType === "month") {
+        const opt = monthOptions[selectedMonthIndex]
+        if (opt) {
+          const lastDay = new Date(opt.year, opt.month, 0).getDate()
+          startDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-01`
+          endDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-${lastDay}`
+        } else {
+          throw new Error("Vui lòng chọn tháng")
+        }
+      } else {
+        throw new Error("Vui lòng chọn ngày")
+      }
+
+      const data = await adminReportsApi.getReport(startDate, endDate, false)
+
+      const rows: ReportRow[] = (data.reportData || []).map((r, idx) => ({
+        stt: idx + 1,
+        name: r.name || '',
+        phone: r.phone || '',
+        date: r.date || '',
+      }))
+
+      setPreviewData(rows)
+      setShowAll(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không thể tải báo cáo")
+      setPreviewData([])
+    } finally {
+      setLoading(false)
     }
-    const data = generateReportData(reportType, date, weekStart, monthYear)
-    setPreviewData(data)
-    setShowAll(false)
   }
 
   const handleDateChange = () => {
@@ -151,10 +121,13 @@ export default function ReportsPage() {
 
   const handleReportTypeChange = (type: "day" | "week" | "month") => {
     setReportType(type)
+    setPreviewData([])
   }
 
   useEffect(() => {
-    handlePreview()
+    if (selectedDate) {
+      handlePreview()
+    }
   }, [reportType])
 
   const handleExport = () => {
@@ -191,6 +164,13 @@ export default function ReportsPage() {
       {/* Main Content */}
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto space-y-5">
+          {/* Error State */}
+          {error && (
+            <div className="p-4 rounded-[18px] bg-error-bg border border-error text-error">
+              <p className="font-medium">{error}</p>
+            </div>
+          )}
+
           {/* Report Type Selector - 3 pills in a row */}
           <div className="flex items-center justify-center gap-2">
             {[
@@ -274,10 +254,11 @@ export default function ReportsPage() {
           <div className="flex justify-center">
             <button
               onClick={handlePreview}
-              className="w-full max-w-xs inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-sm font-medium text-on-primary bg-primary hover:bg-primary-hover transition-all"
+              disabled={loading}
+              className="w-full max-w-xs inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-sm font-medium text-on-primary bg-primary hover:bg-primary-hover transition-all disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-lg">preview</span>
-              Xem trước
+              <span className="material-symbols-outlined text-lg">{loading ? "hourglass" : "preview"}</span>
+              {loading ? "Đang tải..." : "Xem trước"}
             </button>
           </div>
 
@@ -336,6 +317,14 @@ export default function ReportsPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && previewData.length === 0 && reportType && (
+            <div className="text-center py-12 text-ink-muted-80">
+              <span className="material-symbols-outlined text-5xl mb-3">description</span>
+              <p>Chọn ngày/tuần/tháng và nhấn "Xem trước" để xem báo cáo</p>
             </div>
           )}
         </div>

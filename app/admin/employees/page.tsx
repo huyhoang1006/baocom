@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { usersApi } from "@/lib/api"
 
 interface Employee {
   id: string
@@ -11,16 +12,6 @@ interface Employee {
   department?: string
   status: "active" | "inactive"
 }
-
-const initialEmployees: Employee[] = [
-  { id: "1", name: "Nguyễn Văn A", username: "nguyenvana", phone: "0912345678", email: "nva@company.com", department: "Kỹ thuật", status: "active" },
-  { id: "2", name: "Trần Thị B", username: "tranthib", phone: "0912345679", email: "ttb@company.com", department: "Kinh doanh", status: "active" },
-  { id: "3", name: "Lê Văn C", username: "levanc", phone: "0912345680", department: "Kỹ thuật", status: "active" },
-  { id: "4", name: "Phạm Thị D", username: "phamthid", phone: "0912345681", email: "ptd@company.com", department: "Nhân sự", status: "inactive" },
-  { id: "5", name: "Hoàng Văn E", username: "hoangvane", phone: "0912345682", department: "Kỹ thuật", status: "active" },
-  { id: "6", name: "Nguyễn Thị F", username: "nguyenthif", phone: "0912345683", department: "Marketing", status: "active" },
-  { id: "7", name: "Võ Đình G", username: "vodinhg", phone: "0912345684", department: "Kế toán", status: "active" },
-]
 
 const departments = ["Kỹ thuật", "Kinh doanh", "Nhân sự", "Tài chính", "Marketing"]
 
@@ -38,7 +29,10 @@ function getInitials(name: string): string {
 }
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<"add" | "edit">("add")
@@ -56,6 +50,31 @@ export default function EmployeesPage() {
 
   const [formErrors, setFormErrors] = useState<{ name?: string; phone?: string; email?: string }>({})
 
+  // Fetch employees on mount
+  useEffect(() => {
+    async function fetchEmployees() {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await usersApi.getAll()
+        setEmployees(data.users.map(u => ({
+          id: u.id,
+          name: u.name,
+          username: u.username,
+          phone: "", // Backend doesn't have phone field
+          email: undefined,
+          department: undefined,
+          status: "active" as const,
+        })))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load employees')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchEmployees()
+  }, [])
+
   const validateForm = (): boolean => {
     const errors: { name?: string; phone?: string; email?: string } = {}
 
@@ -63,15 +82,6 @@ export default function EmployeesPage() {
       errors.name = "Vui lòng nhập họ và tên"
     } else if (formData.name.trim().length < 2) {
       errors.name = "Họ và tên phải có ít nhất 2 ký tự"
-    }
-
-    if (!formData.phone.trim()) {
-      errors.phone = "Vui lòng nhập số điện thoại"
-    } else {
-      const phoneDigits = formData.phone.replace(/\D/g, "")
-      if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-        errors.phone = "Số điện thoại phải là 10-11 chữ số"
-      }
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -118,32 +128,48 @@ export default function EmployeesPage() {
     setIsModalOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) return
 
-    if (modalMode === "add") {
-      const newEmployee: Employee = {
-        id: Date.now().toString(),
-        name: formData.name,
-        username: generateUsername(formData.name),
-        phone: formData.phone,
-        email: formData.email || undefined,
-        department: formData.department || undefined,
-        status: "active",
-      }
-      setEmployees((prev) => [...prev, newEmployee])
-      showNotification("success", "Đã thêm nhân viên mới")
-    } else if (editingEmployee) {
-      setEmployees((prev) =>
-        prev.map((e) =>
-          e.id === editingEmployee.id
-            ? { ...e, name: formData.name, phone: formData.phone, email: formData.email || undefined, department: formData.department || undefined }
-            : e
+    setSaving(true)
+    try {
+      if (modalMode === "add") {
+        const username = generateUsername(formData.name)
+        const newEmployee = await usersApi.create({
+          username,
+          name: formData.name,
+          role: "employee",
+        })
+        const emp: Employee = {
+          id: newEmployee.user.id,
+          name: newEmployee.user.name,
+          username: newEmployee.user.username,
+          phone: formData.phone,
+          email: formData.email || undefined,
+          department: formData.department || undefined,
+          status: "active",
+        }
+        setEmployees((prev) => [...prev, emp])
+        showNotification("success", "Đã thêm nhân viên mới")
+      } else if (editingEmployee) {
+        await usersApi.update(editingEmployee.id, {
+          name: formData.name,
+        })
+        setEmployees((prev) =>
+          prev.map((e) =>
+            e.id === editingEmployee.id
+              ? { ...e, name: formData.name, phone: formData.phone, email: formData.email || undefined, department: formData.department || undefined }
+              : e
+          )
         )
-      )
-      showNotification("success", "Đã cập nhật thông tin nhân viên")
+        showNotification("success", "Đã cập nhật thông tin nhân viên")
+      }
+      setIsModalOpen(false)
+    } catch (err) {
+      showNotification("error", err instanceof Error ? err.message : "Thao tác thất bại")
+    } finally {
+      setSaving(false)
     }
-    setIsModalOpen(false)
   }
 
   const handleDelete = (emp: Employee) => {
@@ -151,14 +177,20 @@ export default function EmployeesPage() {
     setIsDeleteModalOpen(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteTarget) return
-    setEmployees((prev) =>
-      prev.map((e) => (e.id === deleteTarget.id ? { ...e, status: "inactive" } : e))
-    )
-    showNotification("success", `Đã xóa nhân viên "${deleteTarget.name}"`)
-    setIsDeleteModalOpen(false)
-    setDeleteTarget(null)
+    try {
+      await usersApi.delete(deleteTarget.id)
+      setEmployees((prev) =>
+        prev.map((e) => (e.id === deleteTarget.id ? { ...e, status: "inactive" } : e))
+      )
+      showNotification("success", `Đã khóa nhân viên "${deleteTarget.name}"`)
+    } catch (err) {
+      showNotification("error", "Xóa thất bại")
+    } finally {
+      setIsDeleteModalOpen(false)
+      setDeleteTarget(null)
+    }
   }
 
   return (
