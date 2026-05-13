@@ -18,6 +18,7 @@ describe('RegistrationService', () => {
     const today = new Date().toISOString()
     await expect(
       registrationService.create('test-user-id', {
+        userId: 'test-user-id',
         date: today,
         status: 'invalid' as any
       })
