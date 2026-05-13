@@ -11,3 +11,4 @@
 {"id":"int-66e6584b","kind":"field_change","created_at":"2026-05-13T01:26:48.4960074Z","actor":"h004888","issue_id":"baocom-phh","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
 {"id":"int-2e9862b9","kind":"field_change","created_at":"2026-05-13T01:27:47.2449103Z","actor":"h004888","issue_id":"baocom-q1j","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
 {"id":"int-489abb41","kind":"field_change","created_at":"2026-05-13T01:28:56.9541053Z","actor":"h004888","issue_id":"baocom-ofb","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
+{"id":"int-708e711b","kind":"field_change","created_at":"2026-05-13T01:33:08.023524Z","actor":"h004888","issue_id":"baocom-wt9","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
