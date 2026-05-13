@@ -1,9 +1,21 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyPassword, signToken } from '@/lib/auth'
+import { loginRateLimiter } from '@/lib/rateLimiter'
 
 export async function POST(request: Request) {
   try {
+    // Get client IP and check rate limit
+    const ip = loginRateLimiter.getClientIP(request as unknown as NextRequest)
+
+    const limitCheck = loginRateLimiter.checkLimit(ip)
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many failed attempts. Please try again after 15 minutes.', retryAfter: limitCheck.retryAfter },
+        { status: 429 }
+      )
+    }
+
     const { username, password } = await request.json()
 
     if (!username || !password) {
@@ -15,14 +27,19 @@ export async function POST(request: Request) {
     })
 
     if (!user || !user.isActive) {
+      loginRateLimiter.recordFailedAttempt(ip)
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
     const isValid = await verifyPassword(password, user.password)
 
     if (!isValid) {
+      loginRateLimiter.recordFailedAttempt(ip)
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
+
+    // Success - reset attempts
+    loginRateLimiter.recordSuccess(ip)
 
     const token = signToken(user.id, user.role)
 
