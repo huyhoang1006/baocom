@@ -92,12 +92,30 @@ JWT payload chứa:
 
 ### 4.5 Redirect Rules
 
-| Route Pattern | User Role | Redirect To |
-|--------------|----------|-------------|
-| `PROTECTED_*` | No token | `/login` |
-| `/admin/*` | `employee` | `/dashboard` |
-| `/dashboard`, `/book`, `/my-history` | `admin` | `/admin/dashboard` |
-| Any protected route | Invalid token | `/login` |
+| Route Pattern | User Role | Action |
+|--------------|----------|--------|
+| `PROTECTED_*` | No token | Redirect to `/login` |
+| `/admin/*` | `employee` | Show 403 Forbidden page |
+| `/dashboard`, `/book`, `/my-history` | `admin` | Show 403 Forbidden page |
+| Any protected route | Invalid token | Redirect to `/login` |
+
+### 4.6 403 Forbidden Page
+
+When user accesses route without proper role:
+- Create custom 403 page with BaoCom design
+- Display message: "Bạn không có quyền truy cập trang này"
+- Show "Quay về trang chủ" button (redirects to appropriate dashboard based on role)
+- Maintain consistent design with rest of app
+
+```typescript
+// In middleware - instead of redirect, show 403
+if (path.startsWith('/admin') && role !== 'admin') {
+  return NextResponse.rewrite(new URL('/403', request.url))
+}
+if (isEmployeeRoute(path) && role === 'admin') {
+  return NextResponse.rewrite(new URL('/403', request.url))
+}
+```
 
 ---
 
@@ -130,8 +148,9 @@ JWT payload chứa:
 
 ### 6.2 Files to Modify/Create
 1. **CREATE:** `middleware.ts` (root)
-2. **NO CHANGE:** `src/lib/auth.ts` (verifyToken đã có)
-3. **NO CHANGE:** API routes (withAuth/withAdmin wrappers đã có)
+2. **CREATE:** `app/403.tsx` (custom 403 page with "Quay về trang chủ" button)
+3. **NO CHANGE:** `src/lib/auth.ts` (verifyToken đã có)
+4. **NO CHANGE:** API routes (withAuth/withAdmin wrappers đã có)
 
 ### 6.3 Middleware Code Structure
 
@@ -210,8 +229,9 @@ export const config = {
 
 - [ ] Middleware created at root level
 - [ ] Unauthenticated users redirected to /login when accessing protected routes
-- [ ] Employees cannot access /admin/* routes
-- [ ] Admins redirected to /admin/dashboard when accessing employee routes
+- [ ] Employees accessing /admin/* routes see 403 page
+- [ ] Admins accessing employee routes see 403 page
+- [ ] Custom 403 page with "Quay về trang chủ" button works
 - [ ] No page flash on logout + accessing protected route
 - [ ] All existing API auth wrappers still work
 - [ ] Login/Logout flows unaffected
