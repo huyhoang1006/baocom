@@ -1,6 +1,7 @@
 "use client"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
+import { authApi } from "@/lib/api"
 
 const navItems = [
   { label: "Báo cơm", href: "/book", icon: "restaurant" },
@@ -14,6 +15,12 @@ interface Props {
 
 export function EmployeeSidebar({ username, fullName }: Props) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await authApi.logout()
+    router.push('/login')
+  }
 
   return (
     <aside className="h-dvh bg-white flex flex-col fixed left-0 top-0">
@@ -81,7 +88,7 @@ export function EmployeeSidebar({ username, fullName }: Props) {
             <span className="material-symbols-outlined">settings</span>
             <span>Cài đặt</span>
           </button>
-          <button className="flex items-center gap-2 w-full px-4 py-2.5 text-ink-muted-80 hover:bg-error-bg hover:text-error transition-colors rounded-xl" style={{ fontSize: '14px' }}>
+          <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-ink-muted-80 hover:bg-error-bg hover:text-error transition-colors rounded-xl" style={{ fontSize: '14px' }}>
             <span className="material-symbols-outlined">logout</span>
             <span>Đăng xuất</span>
           </button>
