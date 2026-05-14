@@ -230,13 +230,10 @@ input, button, textarea, select {
 }
 
 a {
-  color: var(--color-primary);
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
-}
+/* Link hover underline removed - causes unwanted underline on buttons */
 
 /* Fade in animation */
 @keyframes fade-in {
