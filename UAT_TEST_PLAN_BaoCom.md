@@ -1,6 +1,6 @@
 # Kế hoạch Kiểm thử Chấp nhận Người dùng (UAT) - Hệ thống BaoCom
 **Mã tài liệu:** BAOCOM-UAT-2026-001
-**Phiên bản:** 2.0
+**Phiên bản:** 3.0
 **Ngày:** 2026-05-14
 **Tác giả:** AI Test Engineer
 **Chuẩn:** IEEE 829-2008 (Hồ sơ UAT)
@@ -287,6 +287,80 @@ Kết quả mong đợi:
  - Truy cập URL trực tiếp đến /dashboard hoặc /admin/dashboard chuyển hướng đến đăng nhập
 
 Tiêu chí đạt: Phiên bị chấm dứt, không thể truy cập các trang được bảo vệ
+```
+
+#### UAT-AUTH-001: Employee Truy cập Admin Route → 403
+```
+Mã Test: UAT-AUTH-001
+User Story: US-A-03
+Module: Authorization
+Ưu tiên: P0 - Quan trọng
+
+Mục tiêu: Xác minh nhân viên bị chặn truy cập trang admin
+
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên (nguyenvana/employee123)
+
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên
+ 2. Truy cập /admin/dashboard (hoặc /admin/employees, /admin/reports)
+ 3. Quan sát kết quả
+
+Kết quả mong đợi:
+ - Hiển thị trang 403 Forbidden
+ - Message: "Bạn không có quyền truy cập trang này"
+ - Nút "Quay về trang chủ" hoạt động → chuyển đến /dashboard
+
+Tiêu chí đạt: Nhân viên không truy cập được trang admin
+```
+
+#### UAT-AUTH-002: Admin Truy cập Employee Route → 403
+```
+Mã Test: UAT-AUTH-002
+User Story: US-A-03
+Module: Authorization
+Ưu tiên: P0 - Quan trọng
+
+Mục tiêu: Xác minh admin bị chặn truy cập trang nhân viên
+
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên (admin/admin123)
+
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách admin
+ 2. Truy cập /dashboard (hoặc /book, /my-history)
+ 3. Quan sát kết quả
+
+Kết quả mong đợi:
+ - Hiển thị trang 403 Forbidden
+ - Message: "Bạn không có quyền truy cập trang này"
+ - Nút "Quay về trang chủ" hoạt động → chuyển đến /admin/dashboard
+
+Tiêu chí đạt: Admin không truy cập được trang nhân viên
+```
+
+#### UAT-AUTH-003: Unauthenticated User Redirect to Login
+```
+Mã Test: UAT-AUTH-003
+User Story: US-E-01
+Module: Authorization
+Ưu tiên: P0 - Quan trọng
+
+Mục tiêu: Xác minh user chưa đăng nhập bị redirect về login
+
+Điều kiện tiên quyết:
+- Không có session/token (xóa cookie)
+
+Các bước kiểm thử:
+ 1. Xóa tất cả cookie
+ 2. Truy cập /dashboard
+ 3. Quan sát kết quả
+
+Kết quả mong đợi:
+ - Redirect NGAY lập tức về /login
+ - Không thấy dashboard flash trước khi redirect
+
+Tiêu chí đạt: Không flash, redirect ngay về login
 ```
 
 ---
@@ -881,13 +955,19 @@ Hành vi thực tế: ___________
 ## 9. Tóm tắt Tiêu chí Chấp nhận
 
 ### 9.1 Xác thực
-- [ ] Nhân viên có thể đăng nhập với thông tin hợp lệ
-- [ ] Quản trị viên có thể đăng nhập với thông tin hợp lệ
-- [ ] Thông tin không hợp lệ hiển thị thông báo lỗi
-- [ ] Các trường trống được xác thực
-- [ ] Đăng xuất chấm dứt phiên
+- [x] Nhân viên có thể đăng nhập với thông tin hợp lệ ✅ (Đã fix - login API được gọi)
+- [x] Quản trị viên có thể đăng nhập với thông tin hợp lệ ✅
+- [x] Thông tin không hợp lệ hiển thị thông báo lỗi ✅ (Đã fix - màu đỏ, không reload)
+- [x] Các trường trống được xác thực ✅
+- [x] Đăng xuất chấm dứt phiên ✅ (Đã fix - middleware bảo vệ)
 
-### 9.2 Tính năng Nhân viên
+### 9.2 Phân quyền (Authorization)
+- [ ] Employee không truy cập được /admin/* (middleware redirect về 403)
+- [ ] Admin không truy cập được /dashboard, /book, /my-history (middleware redirect về 403)
+- [ ] User chưa đăng nhập truy cập protected route → redirect /login (không flash)
+- [ ] Token hết hạn → redirect /login
+
+### 9.3 Tính năng Nhân viên
 - [ ] Lưới đặt 8 ngày hiển thị đúng
 - [ ] Badge "Hôm nay" hiển thị trên thẻ đầu tiên
 - [ ] Có thể đăng ký ăn trưa
@@ -896,7 +976,7 @@ Hành vi thực tế: ___________
 - [ ] Trạng thái chu kỳ đúng
 - [ ] Thực đơn hàng tuần hiển thị
 
-### 9.3 Tính năng Quản trị
+### 9.4 Tính năng Quản trị
 - [ ] Dashboard hiển thị thống kê
 - [ ] Các thao tác nhanh điều hướng đúng
 - [ ] Danh sách nhân viên hiển thị
