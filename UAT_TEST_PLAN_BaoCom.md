@@ -1,82 +1,82 @@
-# UAT Test Plan - BaoCom Lunch Registration System
-**Document ID:** BAOCOM-UAT-2026-001
-**Version:** 2.0
-**Date:** 2026-05-14
-**Author:** AI Test Engineer
-**Standard:** IEEE 829-2008 (UAT Profile)
+# Kế hoạch Kiểm thử Chấp nhận Người dùng (UAT) - Hệ thống BaoCom
+**Mã tài liệu:** BAOCOM-UAT-2026-001
+**Phiên bản:** 2.0
+**Ngày:** 2026-05-14
+**Tác giả:** AI Test Engineer
+**Chuẩn:** IEEE 829-2008 (Hồ sơ UAT)
 
 ---
 
-## 1. Introduction
+## 1. Giới thiệu
 
-### 1.1 Purpose
-This UAT Test Plan defines acceptance testing for the BaoCom system from the **end-user perspective**. Testing focuses on user workflows, business requirements, and functional suitability - NOT internal implementation details.
+### 1.1 Mục đích
+Kế hoạch UAT này định nghĩa việc kiểm thử chấp nhận cho hệ thống BaoCom từ **góc độ người dùng cuối**. Kiểm thử tập trung vào luồng công việc của người dùng, yêu cầu kinh doanh và sự phù hợp chức năng - KHÔNG phải chi tiết triển khai nội bộ.
 
-### 1.2 Scope of Testing
-- **In Scope:** User-facing functionality, user workflows, business rules, UI/UX behavior
-- **Out of Scope:** API testing, database validation, security penetration, code-level verification
+### 1.2 Phạm vi kiểm thử
+- **Trong phạm vi:** Chức năng hướng người dùng, luồng công việc, quy tắc nghiệp vụ, hành vi UI/UX
+- **Ngoài phạm vi:** Kiểm thử API, xác thực cơ sở dữ liệu, kiểm thử bảo mật, xác minh cấp mã
 
-### 1.3 Testing Approach
+### 1.3 Phương pháp tiếp cận kiểm thử
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                  BLACKBOX TESTING MODEL                     │
+│                MÔ HÌNH KIỂM THỬ BLACKBOX                     │
 ├─────────────────────────────────────────────────────────────┤
-│  INPUT ──► [ SYSTEM UNDER TEST ] ──► OUTPUT               │
-│            (No knowledge of internal structure)            │
+│  ĐẦU VÀO ──► [ HỆ THỐNG ĐƯỢC KIỂM THỬ ] ──► ĐẦU RA       │
+│            (Không có kiến thức về cấu trúc bên trong)      │
 ├─────────────────────────────────────────────────────────────┤
-│  Testers interact ONLY through:                            │
-│  • User Interface (Web Browser)                           │
-│  • User-input actions (click, type, submit)                │
-│  • Expected vs Actual behavior                             │
+│  Người kiểm thử tương tác CHỈ thông qua:                   │
+│  • Giao diện người dùng (Trình duyệt Web)                   │
+│  • Hành động nhập liệu của người dùng (click, gõ, submit)   │
+│  • Kết quả mong đợi vs Kết quả thực tế                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.4 System Under Test Overview
+### 1.4 Tổng quan Hệ thống Được Kiểm thử
 
-| Component | Description |
-|-----------|-------------|
-| **Application** | Next.js web application |
-| **URLs** | Login, Employee Dashboard, Admin Dashboard |
-| **Users** | Admin, Employee |
-| **Core Functions** | Login, Register Lunch, View Menu, Generate Report |
+| Thành phần | Mô tả |
+|------------|-------|
+| **Ứng dụng** | Ứng dụng web Next.js |
+| **URLs** | Đăng nhập, Dashboard Nhân viên, Dashboard Admin |
+| **Người dùng** | Admin, Nhân viên |
+| **Chức năng cốt lõi** | Đăng nhập, Đăng ký suất ăn, Xem thực đơn, Tạo báo cáo |
 
 ---
 
-## 2. User Profiles & Personas
+## 2. Hồ sơ Người dùng & Persona
 
-### 2.1 Employee User
+### 2.1 Người dùng Nhân viên
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ PERSONA: Nguyễn Văn A - Nhân viên                          │
 ├─────────────────────────────────────────────────────────────┤
-│ Username: nguyenvana                                       │
-│ Password: employee123                                       │
-│ Role: Employee                                             │
+│ Tài khoản: nguyenvana                                       │
+│ Mật khẩu: employee123                                       │
+│ Vai trò: Nhân viên                                          │
 │                                                             │
-│ DAILY WORKFLOW:                                            │
-│ 1. Login vào hệ thống                                     │
-│ 2. Xem menu trưa tuần này                                  │
-│ 3. Đăng ký / hủy đăng ký ăn trưa các ngày trong tuần     │
-│ 4. Xem lịch sử đăng ký                                    │
-│ 5. Logout                                                  │
+│ LUỒNG CÔNG VIỆC HÀNG NGÀY:                                  │
+│ 1. Đăng nhập vào hệ thống                                  │
+│ 2. Xem thực đơn trưa tuần này                              │
+│ 3. Đăng ký / hủy đăng ký ăn trưa các ngày trong tuần       │
+│ 4. Xem lịch sử đăng ký                                     │
+│ 5. Đăng xuất                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 Admin User
+### 2.2 Người dùng Quản trị viên
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ PERSONA: Admin - Quản trị viên                             │
 ├─────────────────────────────────────────────────────────────┤
-│ Username: admin                                            │
-│ Password: admin123                                          │
-│ Role: Admin                                                │
+│ Tài khoản: admin                                            │
+│ Mật khẩu: admin123                                          │
+│ Vai trò: Quản trị viên                                      │
 │                                                             │
-│ DAILY WORKFLOW:                                            │
-│ 1. Login vào hệ thống                                      │
-│ 2. Xem thống kê đăng ký (tổng NV, đang ăn, không ăn)     │
-│ 3. Quản lý nhân sự (xem, thêm, sửa, xóa)                 │
-│ 4. Xuất báo cáo đăng ký                                   │
-│ 5. Logout                                                  │
+│ LUỒNG CÔNG VIỆC HÀNG NGÀY:                                  │
+│ 1. Đăng nhập vào hệ thống                                  │
+│ 2. Xem thống kê đăng ký (tổng NV, đang ăn, không ăn)       │
+│ 3. Quản lý nhân sự (xem, thêm, sửa, xóa)                   │
+│ 4. Xuất báo cáo đăng ký                                    │
+│ 5. Đăng xuất                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -84,832 +84,835 @@ This UAT Test Plan defines acceptance testing for the BaoCom system from the **e
 
 ## 3. User Stories
 
-### 3.1 Employee User Stories
+### 3.1 User Stories cho Nhân viên
 
-| Story ID | As A... | I Want To... | So That... | Priority |
-|----------|---------|--------------|------------|----------|
-| US-E-01 | Employee | Login with username/password | I can access the system securely | P0 |
-| US-E-02 | Employee | See this week's lunch menu | I know what's for lunch | P0 |
-| US-E-03 | Employee | Register for lunch (eating) | The kitchen knows I'm eating | P0 |
-| US-E-04 | Employee | Cancel lunch registration | I can opt-out if not eating | P1 |
-| US-E-05 | Employee | View my registration history | I can track my attendance | P2 |
-| US-E-06 | Employee | Logout | I can secure my session | P1 |
+| Story ID | Với tư cách... | Tôi muốn... | Để... | Ưu tiên |
+|----------|----------------|-------------|-------|---------|
+| US-E-01 | Nhân viên | Đăng nhập bằng username/password | Tôi có thể truy cập hệ thống một cách bảo mật | P0 |
+| US-E-02 | Nhân viên | Xem thực đơn trưa tuần này | Tôi biết hôm nay có gì ăn | P0 |
+| US-E-03 | Nhân viên | Đăng ký ăn trưa | Bếp biết tôi đang ăn | P0 |
+| US-E-04 | Nhân viên | Hủy đăng ký ăn trưa | Tôi có thể không ăn nếu cần | P1 |
+| US-E-05 | Nhân viên | Xem lịch sử đăng ký của tôi | Tôi theo dõi được việc điểm danh của mình | P2 |
+| US-E-06 | Nhân viên | Đăng xuất | Tôi có thể bảo vệ phiên làm việc của mình | P1 |
 
-### 3.2 Admin User Stories
+### 3.2 User Stories cho Quản trị viên
 
-| Story ID | As A... | I Want To... | So That... | Priority |
-|----------|---------|--------------|------------|----------|
-| US-A-01 | Admin | Login with username/password | I can access admin features | P0 |
-| US-A-02 | Admin | View daily registration stats | I know how many people are eating | P0 |
-| US-A-03 | Admin | View all employees | I can manage the employee list | P1 |
-| US-A-04 | Admin | Add new employee | New staff can use the system | P1 |
-| US-A-05 | Admin | Edit employee information | Employee data stays current | P2 |
-| US-A-06 | Admin | Deactivate employee | Former staff can't access system | P2 |
-| US-A-07 | Admin | Generate registration report | I can report to kitchen | P1 |
-| US-A-08 | Admin | Export report to Excel | I can share report externally | P2 |
-| US-A-09 | Admin | Logout | I can secure my session | P1 |
-
----
-
-## 4. Functional Requirements
-
-### 4.1 Authentication Requirements
-
-| Req ID | Requirement | Acceptance Criteria |
-|--------|-------------|---------------------|
-| FR-AUTH-01 | System authenticates users | Valid credentials → dashboard; Invalid → error message |
-| FR-AUTH-02 | Session persists | Closing browser and reopening → still logged in (if cookie valid) |
-| FR-AUTH-03 | Session expires | After 7 days → user must login again |
-| FR-AUTH-04 | Logout terminates session | Click logout → redirected to login page |
-
-### 4.2 Employee Requirements
-
-| Req ID | Requirement | Acceptance Criteria |
-|--------|-------------|---------------------|
-| FR-EMP-01 | View 8-day booking grid | Book page shows today + 7 days |
-| FR-EMP-02 | Today badge visible | First day card shows "Hôm nay" badge |
-| FR-EMP-03 | Toggle eating status | Click card → status cycles (none → eating → not eating) |
-| FR-EMP-04 | Past days disabled | Cannot click on past dates |
-| FR-EMP-05 | View weekly menu | Dashboard shows Mon-Fri menu with dishes |
-| FR-EMP-06 | View registration history | My History shows calendar with status dots |
-
-### 4.3 Admin Requirements
-
-| Req ID | Requirement | Acceptance Criteria |
-|--------|-------------|---------------------|
-| FR-ADMIN-01 | View stats dashboard | Shows total employees, eating count, not eating count, registration rate |
-| FR-ADMIN-02 | List employees | Shows all active employees with name, username, status |
-| FR-ADMIN-03 | Add employee | Form accepts name → generates username → creates employee |
-| FR-ADMIN-04 | Edit employee | Can update name, role (employee/admin) |
-| FR-ADMIN-05 | Deactivate employee | Sets employee status to inactive |
-| FR-ADMIN-06 | Generate report | Select date range → shows preview table |
-| FR-ADMIN-07 | Export Excel | Click export → downloads .xlsx file |
+| Story ID | Với tư cách... | Tôi muốn... | Để... | Ưu tiên |
+|----------|----------------|-------------|-------|---------|
+| US-A-01 | Quản trị viên | Đăng nhập bằng username/password | Tôi có thể truy cập các tính năng quản trị | P0 |
+| US-A-02 | Quản trị viên | Xem thống kê đăng ký hàng ngày | Tôi biết có bao nhiêu người đang ăn | P0 |
+| US-A-03 | Quản trị viên | Xem tất cả nhân viên | Tôi có thể quản lý danh sách nhân viên | P1 |
+| US-A-04 | Quản trị viên | Thêm nhân viên mới | Nhân viên mới có thể sử dụng hệ thống | P1 |
+| US-A-05 | Quản trị viên | Chỉnh sửa thông tin nhân viên | Dữ liệu nhân viên luôn cập nhật | P2 |
+| US-A-06 | Quản trị viên | Vô hiệu hóa nhân viên | Cựu nhân viên không thể truy cập hệ thống | P2 |
+| US-A-07 | Quản trị viên | Tạo báo cáo đăng ký | Tôi có thể báo cáo cho bếp | P1 |
+| US-A-08 | Quản trị viên | Xuất báo cáo ra Excel | Tôi có thể chia sẻ báo cáo bên ngoài | P2 |
+| US-A-09 | Quản trị viên | Đăng xuất | Tôi có thể bảo vệ phiên làm việc của mình | P1 |
 
 ---
 
-## 5. UAT Test Cases (Blackbox)
+## 4. Yêu cầu Chức năng
 
-### 5.1 Authentication Test Cases
+### 4.1 Yêu cầu Xác thực
 
-#### UAT-LOGIN-001: Employee Login Success
+| Mã Yêu cầu | Yêu cầu | Tiêu chí Chấp nhận |
+|------------|---------|---------------------|
+| FR-AUTH-01 | Hệ thống xác thực người dùng | Thông tin hợp lệ → dashboard; Không hợp lệ → thông báo lỗi |
+| FR-AUTH-02 | Phiên làm việc vẫn tồn tại | Đóng trình duyệt và mở lại → vẫn đăng nhập (nếu cookie còn hiệu lực) |
+| FR-AUTH-03 | Phiên hết hạn | Sau 7 ngày → người dùng phải đăng nhập lại |
+| FR-AUTH-04 | Đăng xuất kết thúc phiên | Nhấn đăng xuất → chuyển hướng đến trang đăng nhập |
+
+### 4.2 Yêu cầu Nhân viên
+
+| Mã Yêu cầu | Yêu cầu | Tiêu chí Chấp nhận |
+|------------|---------|---------------------|
+| FR-EMP-01 | Xem lưới đặt 8 ngày | Trang đặt hiển thị hôm nay + 7 ngày tiếp theo |
+| FR-EMP-02 | Badge "Hôm nay" hiển thị | Thẻ ngày đầu tiên có badge "Hôm nay" |
+| FR-EMP-03 | Chuyển đổi trạng thái ăn | Nhấn vào thẻ → trạng thái lần lượt (chưa chọn → ăn → không ăn) |
+| FR-EMP-04 | Ngày quá khứ bị vô hiệu hóa | Không thể nhấn vào ngày đã qua |
+| FR-EMP-05 | Xem thực đơn hàng tuần | Dashboard hiển thị thực đơn T2-T6 với các món |
+| FR-EMP-06 | Xem lịch sử đăng ký | Trang Lịch sử hiển thị lịch với các chấm trạng thái |
+
+### 4.3 Yêu cầu Quản trị viên
+
+| Mã Yêu cầu | Yêu cầu | Tiêu chí Chấp nhận |
+|------------|---------|---------------------|
+| FR-ADMIN-01 | Xem bảng thống kê | Hiển thị tổng nhân viên, số đang ăn, số không ăn, tỷ lệ đăng ký |
+| FR-ADMIN-02 | Danh sách nhân viên | Hiển thị tất cả nhân viên đang hoạt động với tên, username, trạng thái |
+| FR-ADMIN-03 | Thêm nhân viên | Form chấp nhận tên → tạo username → tạo nhân viên |
+| FR-ADMIN-04 | Chỉnh sửa nhân viên | Có thể cập nhật tên, vai trò (nhân viên/quản trị) |
+| FR-ADMIN-05 | Vô hiệu hóa nhân viên | Đặt trạng thái nhân viên thành không hoạt động |
+| FR-ADMIN-06 | Tạo báo cáo | Chọn khoảng ngày → hiển thị bảng xem trước |
+| FR-ADMIN-07 | Xuất Excel | Nhấn xuất → tải file .xlsx |
+
+---
+
+## 5. Các Trường hợp Kiểm thử UAT (Blackbox)
+
+### 5.1 Các Trường hợp Kiểm thử Xác thực
+
+#### UAT-LOGIN-001: Nhân viên Đăng nhập Thành công
 ```
-Test Case ID: UAT-LOGIN-001
+Mã Test: UAT-LOGIN-001
 User Story: US-E-01
-Module: Login
-Priority: P0 - Critical
+Module: Đăng nhập
+Ưu tiên: P0 - Quan trọng
 
-Objective: Verify employee can login with valid credentials
+Mục tiêu: Xác minh nhân viên có thể đăng nhập với thông tin hợp lệ
 
-Pre-conditions:
-- User has valid employee account (nguyenvana / employee123)
-- Browser is at login page
+Điều kiện tiên quyết:
+- Người dùng có tài khoản nhân viên hợp lệ (nguyenvana / employee123)
+- Trình duyệt đang ở trang đăng nhập
 
-Test Steps:
- 1. Navigate to /login
- 2. Enter "nguyenvana" in username field
- 3. Enter "employee123" in password field
- 4. Click "Đăng nhập" button
- 5. Observe URL and page content
+Các bước kiểm thử:
+ 1. Truy cập /login
+ 2. Nhập "nguyenvana" vào trường username
+ 3. Nhập "employee123" vào trường password
+ 4. Nhấn nút "Đăng nhập"
+ 5. Quan sát URL và nội dung trang
 
-Expected Results:
- - URL changes to /dashboard (not /admin/dashboard)
- - Page shows employee-specific content (weekly menu)
- - No error messages displayed
+Kết quả mong đợi:
+ - URL thay đổi thành /dashboard (không phải /admin/dashboard)
+ - Trang hiển thị nội dung dành cho nhân viên (thực đơn hàng tuần)
+ - Không có thông báo lỗi hiển thị
 
-Pass Criteria: Login succeeds, redirected to employee dashboard
+Tiêu chí đạt: Đăng nhập thành công, chuyển hướng đến dashboard nhân viên
 ```
 
-#### UAT-LOGIN-002: Admin Login Success
+#### UAT-LOGIN-002: Quản trị viên Đăng nhập Thành công
 ```
-Test Case ID: UAT-LOGIN-002
+Mã Test: UAT-LOGIN-002
 User Story: US-A-01
-Module: Login
-Priority: P0 - Critical
+Module: Đăng nhập
+Ưu tiên: P0 - Quan trọng
 
-Objective: Verify admin can login with valid credentials
+Mục tiêu: Xác minh quản trị viên có thể đăng nhập với thông tin hợp lệ
 
-Pre-conditions:
-- User has valid admin account (admin / admin123)
-- Browser is at login page
+Điều kiện tiên quyết:
+- Người dùng có tài khoản admin hợp lệ (admin / admin123)
+- Trình duyệt đang ở trang đăng nhập
 
-Test Steps:
- 1. Navigate to /login
- 2. Enter "admin" in username field
- 3. Enter "admin123" in password field
- 4. Click "Đăng nhập" button
- 5. Observe URL and page content
+Các bước kiểm thử:
+ 1. Truy cập /login
+ 2. Nhập "admin" vào trường username
+ 3. Nhập "admin123" vào trường password
+ 4. Nhấn nút "Đăng nhập"
+ 5. Quan sát URL và nội dung trang
 
-Expected Results:
- - URL changes to /admin/dashboard
- - Page shows admin-specific content (statistics)
- - No error messages displayed
+Kết quả mong đợi:
+ - URL thay đổi thành /admin/dashboard
+ - Trang hiển thị nội dung dành cho quản trị (thống kê)
+ - Không có thông báo lỗi hiển thị
 
-Pass Criteria: Login succeeds, redirected to admin dashboard
+Tiêu chí đạt: Đăng nhập thành công, chuyển hướng đến dashboard admin
 ```
 
-#### UAT-LOGIN-003: Invalid Credentials Show Error
+#### UAT-LOGIN-003: Thông tin Không hợp lệ Hiển thị Lỗi
 ```
-Test Case ID: UAT-LOGIN-003
+Mã Test: UAT-LOGIN-003
 User Story: US-E-01
-Module: Login
-Priority: P1 - High
+Module: Đăng nhập
+Ưu tiên: P1 - Cao
 
-Objective: Verify error message when entering wrong password
+Mục tiêu: Xác minh thông báo lỗi khi nhập sai mật khẩu
 
-Pre-conditions:
-- User has valid account
-- Browser is at login page
+Điều kiện tiên quyết:
+- Người dùng có tài khoản hợp lệ
+- Trình duyệt đang ở trang đăng nhập
 
-Test Steps:
- 1. Navigate to /login
- 2. Enter valid username
- 3. Enter "wrongpassword" in password field
- 4. Click "Đăng nhập" button
- 5. Observe error message
+Các bước kiểm thử:
+ 1. Truy cập /login
+ 2. Nhập username hợp lệ
+ 3. Nhập "wrongpassword" vào trường password
+ 4. Nhấn nút "Đăng nhập"
+ 5. Quan sát thông báo lỗi
 
-Expected Results:
- - User stays on /login page
- - Error message displayed: "Sai tên đăng nhập hoặc mật khẩu"
- - Username field is cleared
- - Password field is cleared
+Kết quả mong đợi:
+ - Người dùng vẫn ở trang /login
+ - Hiển thị thông báo lỗi: "Sai tên đăng nhập hoặc mật khẩu"
+ - Trường username bị xóa
+ - Trường password bị xóa
 
-Pass Criteria: Error message shown, user can retry login
+Tiêu chí đạt: Hiển thị thông báo lỗi, người dùng có thể thử lại
 ```
 
-#### UAT-LOGIN-004: Empty Fields Show Validation Error
+#### UAT-LOGIN-004: Trường Trống Hiển thị Lỗi Xác thực
 ```
-Test Case ID: UAT-LOGIN-004
+Mã Test: UAT-LOGIN-004
 User Story: US-E-01
-Module: Login
-Priority: P2 - Medium
+Module: Đăng nhập
+Ưu tiên: P2 - Trung bình
 
-Objective: Verify validation when leaving fields empty
+Mục tiêu: Xác minh xác thực khi để trống các trường
 
-Pre-conditions:
-- Browser is at login page
+Điều kiện tiên quyết:
+- Trình duyệt đang ở trang đăng nhập
 
-Test Steps:
- 1. Navigate to /login
- 2. Leave both fields empty
- 3. Click "Đăng nhập" button
- 4. Observe behavior
+Các bước kiểm thử:
+ 1. Truy cập /login
+ 2. Để trống cả hai trường
+ 3. Nhấn nút "Đăng nhập"
+ 4. Quan sát hành vi
 
-Expected Results:
- - Button is disabled OR
- - Error message shown for empty fields
- - No navigation occurs
+Kết quả mong đợi:
+ - Nút bị vô hiệu hóa HOẶC
+ - Hiển thị thông báo lỗi cho các trường trống
+ - Không có điều hướng xảy ra
 
-Pass Criteria: Form validation prevents empty submission
+Tiêu chí đạt: Xác thực form ngăn chặn gửi trống
 ```
 
-#### UAT-LOGIN-005: Logout Clears Session
+#### UAT-LOGIN-005: Đăng xuất Xóa Phiên
 ```
-Test Case ID: UAT-LOGIN-005
+Mã Test: UAT-LOGIN-005
 User Story: US-E-06, US-A-09
-Module: Login
-Priority: P1 - High
+Module: Đăng nhập
+Ưu tiên: P1 - Cao
 
-Objective: Verify logout clears session and redirects to login
+Mục tiêu: Xác minh đăng xuất xóa phiên và chuyển hướng đến đăng nhập
 
-Pre-conditions:
-- User is logged in
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập
 
-Test Steps:
- 1. Login as any user
- 2. Click logout button/menu
- 3. Observe redirect
- 4. Try to navigate directly to dashboard
- 5. Observe if access is denied
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách bất kỳ người dùng nào
+ 2. Nhấn nút/menu đăng xuất
+ 3. Quan sát điều hướng
+ 4. Thử truy cập trực tiếp đến dashboard
+ 5. Quan sát nếu truy cập bị từ chối
 
-Expected Results:
- - Redirected to /login page
- - Menu shows "Đăng nhập" option
- - Direct URL access to /dashboard or /admin/dashboard redirects to login
+Kết quả mong đợi:
+ - Chuyển hướng đến trang /login
+ - Menu hiển thị tùy chọn "Đăng nhập"
+ - Truy cập URL trực tiếp đến /dashboard hoặc /admin/dashboard chuyển hướng đến đăng nhập
 
-Pass Criteria: Session is terminated, cannot access protected pages
+Tiêu chí đạt: Phiên bị chấm dứt, không thể truy cập các trang được bảo vệ
 ```
 
 ---
 
-### 5.2 Employee Booking Test Cases
+### 5.2 Các Trường hợp Kiểm thử Đặt Ăn Nhân viên
 
-#### UAT-BOOK-001: View 8-Day Booking Grid
+#### UAT-BOOK-001: Xem Lưới Đặt 8 Ngày
 ```
-Test Case ID: UAT-BOOK-001
+Mã Test: UAT-BOOK-001
 User Story: US-E-02
-Module: Employee Booking
-Priority: P0 - Critical
+Module: Đặt Ăn Nhân viên
+Ưu tiên: P0 - Quan trọng
 
-Objective: Verify booking page displays 8 days starting from today
+Mục tiêu: Xác minh trang đặt hiển thị 8 ngày bắt đầu từ hôm nay
 
-Pre-conditions:
-- User is logged in as employee
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên
 
-Test Steps:
- 1. Login as employee (nguyenvana)
- 2. Navigate to /book
- 3. Count number of day cards displayed
- 4. Verify first card shows "Hôm nay" badge
- 5. Check dates are sequential (today, tomorrow, ...)
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên (nguyenvana)
+ 2. Truy cập /book
+ 3. Đếm số thẻ ngày được hiển thị
+ 4. Xác minh thẻ đầu tiên có badge "Hôm nay"
+ 5. Kiểm tra các ngày là liên tiếp (hôm nay, ngày mai, ...)
 
-Expected Results:
- - Exactly 8 day cards displayed
- - First card shows "Hôm nay" badge
- - Dates are: today + next 7 days
- - Each card shows: day name (T2-T7, CN), date number
+Kết quả mong đợi:
+ - Chính xác 8 thẻ ngày được hiển thị
+ - Thẻ đầu tiên có badge "Hôm nay"
+ - Ngày là: hôm nay + 7 ngày tiếp theo
+ - Mỗi thẻ hiển thị: tên ngày (T2-T7, CN), số ngày
 
-Pass Criteria: 8 sequential days displayed starting from today
+Tiêu chí đạt: 8 ngày liên tiếp được hiển thị bắt đầu từ hôm nay
 ```
 
-#### UAT-BOOK-002: Register for Lunch (Eating)
+#### UAT-BOOK-002: Đăng ký Ăn Trưa (Ăn)
 ```
-Test Case ID: UAT-BOOK-002
+Mã Test: UAT-BOOK-002
 User Story: US-E-03
-Module: Employee Booking
-Priority: P0 - Critical
+Module: Đặt Ăn Nhân viên
+Ưu tiên: P0 - Quan trọng
 
-Objective: Verify employee can register for eating on a day
+Mục tiêu: Xác minh nhân viên có thể đăng ký ăn vào một ngày
 
-Pre-conditions:
-- User is logged in as employee
-- No existing registration for target date
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên
+- Không có đăng ký hiện tại cho ngày mục tiêu
 
-Test Steps:
- 1. Login as employee (nguyenvana)
- 2. Navigate to /book
- 3. Find a future day card (not today)
- 4. Click on the card
- 5. Observe status change
- 6. Wait for success notification
- 7. Refresh page
- 8. Verify status persisted
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên (nguyenvana)
+ 2. Truy cập /book
+ 3. Tìm thẻ ngày tương lai (không phải hôm nay)
+ 4. Nhấn vào thẻ
+ 5. Quan sát thay đổi trạng thái
+ 6. Chờ thông báo thành công
+ 7. Làm mới trang
+ 8. Xác minh trạng thái được lưu
 
-Expected Results:
- - Status changes from "Chưa chọn" to "Ăn"
- - Success toast notification appears
- - After refresh, status remains "Ăn"
- - Green color indicator shown
+Kết quả mong đợi:
+ - Trạng thái thay đổi từ "Chưa chọn" thành "Ăn"
+ - Hiển thị thông báo toast thành công
+ - Sau khi làm mới, trạng thái vẫn là "Ăn"
+ - Hiển thị chỉ báo màu xanh lá
 
-Pass Criteria: Registration saved, status displays "Ăn"
+Tiêu chí đạt: Đăng ký được lưu, trạng thái hiển thị "Ăn"
 ```
 
-#### UAT-BOOK-003: Cancel Lunch Registration
+#### UAT-BOOK-003: Hủy Đăng ký Ăn Trưa
 ```
-Test Case ID: UAT-BOOK-003
+Mã Test: UAT-BOOK-003
 User Story: US-E-04
-Module: Employee Booking
-Priority: P1 - High
+Module: Đặt Ăn Nhân viên
+Ưu tiên: P1 - Cao
 
-Objective: Verify employee can cancel eating registration
+Mục tiêu: Xác minh nhân viên có thể hủy đăng ký ăn
 
-Pre-conditions:
-- User is logged in as employee
-- Has existing "Ăn" registration for a future date
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên
+- Có đăng ký "Ăn" cho một ngày tương lai
 
-Test Steps:
- 1. Login as employee
- 2. Navigate to /book
- 3. Click on a day with "Ăn" status
- 4. Observe status change
- 5. Verify notification
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên
+ 2. Truy cập /book
+ 3. Nhấn vào thẻ có trạng thái "Ăn"
+ 4. Quan sát thay đổi trạng thái
+ 5. Xác minh thông báo
 
-Expected Results:
- - Status changes from "Ăn" to "Không ăn"
- - OR cycles through to "Chưa chọn"
- - Success notification appears
- - After refresh, status persists
+Kết quả mong đợi:
+ - Trạng thái thay đổi từ "Ăn" thành "Không ăn"
+ - HOẶC chu kỳ qua "Chưa chọn"
+ - Hiển thị thông báo thành công
+ - Sau khi làm mới, trạng thái vẫn tồn tại
 
-Pass Criteria: Registration updated or cancelled
+Tiêu chí đạt: Đăng ký được cập nhật hoặc hủy
 ```
 
-#### UAT-BOOK-004: Cannot Register for Past Dates
+#### UAT-BOOK-004: Không Thể Đặt cho Ngày Quá khứ
 ```
-Test Case ID: UAT-BOOK-004
+Mã Test: UAT-BOOK-004
 User Story: US-E-04
-Module: Employee Booking
-Priority: P1 - High
+Module: Đặt Ăn Nhân viên
+Ưu tiên: P1 - Cao
 
-Objective: Verify past dates are not clickable
+Mục tiêu: Xác minh các ngày quá khứ không thể nhấp được
 
-Pre-conditions:
-- User is logged in as employee
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên
 
-Test Steps:
- 1. Login as employee
- 2. Navigate to /book
- 3. Look for any past dates (if 8-day range includes past)
- 4. Attempt to click on past date if visible
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên
+ 2. Truy cập /book
+ 3. Tìm các ngày quá khứ (nếu 8 ngày bao gồm quá khứ)
+ 4. Thử nhấn vào ngày quá khứ nếu hiển thị
 
-Expected Results:
- - Past dates appear grayed out / disabled
- - Clicking has no effect
- - No status change occurs
+Kết quả mong đợi:
+ - Các ngày quá khứ xuất hiện mờ / bị vô hiệu hóa
+ - Nhấn không có hiệu lực
+ - Không có thay đổi trạng thái
 
-Pass Criteria: Past dates are not interactive
+Tiêu chí đạt: Các ngày quá khứ không thể tương tác
 ```
 
-#### UAT-BOOK-005: Status Toggle Cycle
+#### UAT-BOOK-005: Chu kỳ Chuyển đổi Trạng thái
 ```
-Test Case ID: UAT-BOOK-005
+Mã Test: UAT-BOOK-005
 User Story: US-E-03, US-E-04
-Module: Employee Booking
-Priority: P1 - High
+Module: Đặt Ăn Nhân viên
+Ưu tiên: P1 - Cao
 
-Objective: Verify clicking cycles through statuses correctly
+Mục tiêu: Xác minh nhấn chu kỳ qua các trạng thái đúng
 
-Pre-conditions:
-- User is logged in as employee
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên
 
-Test Steps:
- 1. Login as employee
- 2. Navigate to /book
- 3. Find a day with "Chưa chọn" status
- 4. Click once → note new status
- 5. Click again → note new status
- 6. Click again → note new status
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên
+ 2. Truy cập /book
+ 3. Tìm ngày có trạng thái "Chưa chọn"
+ 4. Nhấn một lần → ghi nhận trạng thái mới
+ 5. Nhấn lần hai → ghi nhận trạng thái mới
+ 6. Nhấn lần ba → ghi nhận trạng thái mới
 
-Expected Results:
- - Cycle: Chưa chọn → Ăn → Không ăn → Ăn
- - Each click changes status
- - Notification confirms each change
+Kết quả mong đợi:
+ - Chu kỳ: Chưa chọn → Ăn → Không ăn → Ăn
+ - Mỗi lần nhấn thay đổi trạng thái
+ - Thông báo xác nhận mỗi thay đổi
 
-Pass Criteria: Status cycles through all 3 states
+Tiêu chí đạt: Trạng thái chu kỳ qua cả 3 trạng thái
 ```
 
 ---
 
-### 5.3 Employee Dashboard Test Cases
+### 5.3 Các Trường hợp Kiểm thử Dashboard Nhân viên
 
-#### UAT-DASH-001: View Weekly Menu
+#### UAT-DASH-001: Xem Thực đơn Hàng tuần
 ```
-Test Case ID: UAT-DASH-001
+Mã Test: UAT-DASH-001
 User Story: US-E-02
-Module: Employee Dashboard
-Priority: P0 - Critical
+Module: Dashboard Nhân viên
+Ưu tiên: P0 - Quan trọng
 
-Objective: Verify employee can see weekly lunch menu
+Mục tiêu: Xác minh nhân viên có thể xem thực đơn trưa hàng tuần
 
-Pre-conditions:
-- User is logged in as employee
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên
 
-Test Steps:
- 1. Login as employee
- 2. Observe automatic redirect or navigate to /dashboard
- 3. Count day tabs (T2, T3, T4, T5, T6)
- 4. Click on each day tab
- 5. Observe menu items displayed
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên
+ 2. Quan sát chuyển hướng tự động hoặc truy cập /dashboard
+ 3. Đếm các tab ngày (T2, T3, T4, T5, T6)
+ 4. Nhấn vào mỗi tab ngày
+ 5. Quan sát các món được hiển thị
 
-Expected Results:
- - Day tabs visible for Mon-Fri
- - Each day shows: main dish, vegetable dishes, dessert
- - Menu items have names displayed
+Kết quả mong đợi:
+ - Các tab ngày hiển thị cho T2-T6
+ - Mỗi ngày hiển thị: món chính, món rau, tráng miệng
+ - Các món có tên được hiển thị
 
-Pass Criteria: Weekly menu visible with all dish types
+Tiêu chí đạt: Thực đơn hàng tuần hiển thị với tất cả loại món
 ```
 
-#### UAT-DASH-002: View My Registration Status on Dashboard
+#### UAT-DASH-002: Xem Trạng thái Đăng ký của Tôi trên Dashboard
 ```
-Test Case ID: UAT-DASH-002
+Mã Test: UAT-DASH-002
 User Story: US-E-02
-Module: Employee Dashboard
-Priority: P1 - High
+Module: Dashboard Nhân viên
+Ưu tiên: P1 - Cao
 
-Objective: Verify employee sees their eating/not-eating status
+Mục tiêu: Xác minh nhân viên thấy trạng thái ăn/không ăn của mình
 
-Pre-conditions:
-- User is logged in as employee
-- Has registrations for some days
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách nhân viên
+- Có đăng ký cho một số ngày
 
-Test Steps:
- 1. Login as employee
- 2. Navigate to /dashboard
- 3. Look for status indicator on each day
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách nhân viên
+ 2. Truy cập /dashboard
+ 3. Tìm chỉ báo trạng thái trên mỗi ngày
 
-Expected Results:
- - Each day shows eating status (Ăn/Không ăn/Chưa đăng ký)
- - Status matches registrations made in /book
+Kết quả mong đợi:
+ - Mỗi ngày hiển thị trạng thái đăng ký (Ăn/Không ăn/Chưa đăng ký)
+ - Trạng thái khớp với các đăng ký đã thực hiện trong /book
 
-Pass Criteria: Status displayed and matches actual registrations
+Tiêu chí đạt: Trạng thái hiển thị và khớp với các đăng ký thực tế
 ```
 
 ---
 
-### 5.4 Admin Dashboard Test Cases
+### 5.4 Các Trường hợp Kiểm thử Dashboard Quản trị
 
-#### UAT-ADM-001: View Registration Statistics
+#### UAT-ADM-001: Xem Thống kê Đăng ký
 ```
-Test Case ID: UAT-ADM-001
+Mã Test: UAT-ADM-001
 User Story: US-A-02
-Module: Admin Dashboard
-Priority: P0 - Critical
+Module: Dashboard Quản trị
+Ưu tiên: P0 - Quan trọng
 
-Objective: Verify admin sees correct daily statistics
+Mục tiêu: Xác minh quản trị viên thấy các thống kê hàng ngày chính xác
 
-Pre-conditions:
-- User is logged in as admin
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
 
-Test Steps:
- 1. Login as admin (admin/admin123)
- 2. Observe dashboard stats cards
- 3. Note values displayed
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên (admin/admin123)
+ 2. Quan sát các thẻ thống kê dashboard
+ 3. Ghi nhận các giá trị được hiển thị
 
-Expected Results:
- - Stats card shows:
-   - Tổng nhân viên: <number>
-   - Đang ăn hôm nay: <number>
-   - Không ăn: <number>
-   - Tỷ lệ đăng ký: <percentage>%
- - Numbers are realistic (between 0 and total employees)
+Kết quả mong đợi:
+ - Thẻ thống kê hiển thị:
+   - Tổng nhân viên: <số>
+   - Đang ăn hôm nay: <số>
+   - Không ăn: <số>
+   - Tỷ lệ đăng ký: <phần trăm>%
+ - Các số là hợp lý (giữa 0 và tổng nhân viên)
 
-Pass Criteria: Stats displayed with reasonable values
+Tiêu chí đạt: Thống kê hiển thị với các giá trị hợp lý
 ```
 
-#### UAT-ADM-002: Access Quick Actions
+#### UAT-ADM-002: Truy cập Thao tác Nhanh
 ```
-Test Case ID: UAT-ADM-002
+Mã Test: UAT-ADM-002
 User Story: US-A-07
-Module: Admin Dashboard
-Priority: P1 - High
+Module: Dashboard Quản trị
+Ưu tiên: P1 - Cao
 
-Objective: Verify quick action buttons work
+Mục tiêu: Xác minh các nút thao tác nhanh hoạt động
 
-Pre-conditions:
-- User is logged in as admin
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
 
-Test Steps:
- 1. Login as admin
- 2. Scroll to "Thao tác nhanh" section
- 3. Click "Xuất báo cáo" button
- 4. Observe navigation
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Cuộn đến phần "Thao tác nhanh"
+ 3. Nhấn nút "Xuất báo cáo"
+ 4. Quan sát điều hướng
 
-Expected Results:
- - Button is visible with text "Xuất báo cáo"
- - Click navigates to /admin/reports page
+Kết quả mong đợi:
+ - Nút hiển thị với text "Xuất báo cáo"
+ - Nhấn điều hướng đến trang /admin/reports
 
-Pass Criteria: Button navigates to reports page
+Tiêu chí đạt: Nút điều hướng đến trang báo cáo
 ```
 
-#### UAT-ADM-003: Access Employee Management
+#### UAT-ADM-003: Truy cập Quản lý Nhân sự
 ```
-Test Case ID: UAT-ADM-003
+Mã Test: UAT-ADM-003
 User Story: US-A-03
-Module: Admin Dashboard
-Priority: P1 - High
+Module: Dashboard Quản trị
+Ưu tiên: P1 - Cao
 
-Objective: Verify employee management quick action works
+Mục tiêu: Xác minh thao tác nhanh quản lý nhân sự hoạt động
 
-Pre-conditions:
-- User is logged in as admin
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
 
-Test Steps:
- 1. Login as admin
- 2. Click "Quản lý nhân sự" button
- 3. Observe navigation
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Nhấn nút "Quản lý nhân sự"
+ 3. Quan sát điều hướng
 
-Expected Results:
- - Button visible with text "Quản lý nhân sự"
- - Click navigates to /admin/employees
+Kết quả mong đợi:
+ - Nút hiển thị với text "Quản lý nhân sự"
+ - Nhấn điều hướng đến /admin/employees
 
-Pass Criteria: Button navigates to employees page
+Tiêu chí đạt: Nút điều hướng đến trang nhân viên
 ```
 
 ---
 
-### 5.5 Employee Management Test Cases
+### 5.5 Các Trường hợp Kiểm thử Quản lý Nhân viên
 
-#### UAT-EMP-001: View Employee List
+#### UAT-EMP-001: Xem Danh sách Nhân viên
 ```
-Test Case ID: UAT-EMP-001
+Mã Test: UAT-EMP-001
 User Story: US-A-03
-Module: Employee Management
-Priority: P1 - High
+Module: Quản lý Nhân viên
+Ưu tiên: P1 - Cao
 
-Objective: Verify admin can view list of all employees
+Mục tiêu: Xác minh quản trị viên có thể xem danh sách tất cả nhân viên
 
-Pre-conditions:
-- User is logged in as admin
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
 
-Test Steps:
- 1. Login as admin
- 2. Navigate to /admin/employees
- 3. Observe employee list
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Truy cập /admin/employees
+ 3. Quan sát danh sách nhân viên
 
-Expected Results:
- - Table/list shows columns: Name, Username, Status
- - Admin user is listed
- - Seed employees are listed (nguyenvana, tranthib, etc.)
- - Status shows "Đang hoạt động" for active users
+Kết quả mong đợi:
+ - Bảng/danh sách hiển thị các cột: Tên, Username, Trạng thái
+ - Người dùng admin được liệt kê
+ - Các nhân viên được seed được liệt kê (nguyenvana, tranthib, v.v.)
+ - Trạng thái hiển thị "Đang hoạt động" cho người dùng active
 
-Pass Criteria: Employee list displayed with correct data
+Tiêu chí đạt: Danh sách nhân viên hiển thị với dữ liệu đúng
 ```
 
-#### UAT-EMP-002: Add New Employee
+#### UAT-EMP-002: Thêm Nhân viên Mới
 ```
-Test Case ID: UAT-EMP-002
+Mã Test: UAT-EMP-002
 User Story: US-A-04
-Module: Employee Management
-Priority: P1 - High
+Module: Quản lý Nhân viên
+Ưu tiên: P1 - Cao
 
-Objective: Verify admin can add new employee
+Mục tiêu: Xác minh quản trị viên có thể thêm nhân viên mới
 
-Pre-conditions:
-- User is logged in as admin
-- New employee name not already in system
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
+- Tên nhân viên mới chưa có trong hệ thống
 
-Test Steps:
- 1. Login as admin
- 2. Navigate to /admin/employees
- 3. Click "Thêm nhân viên" or similar add button
- 4. Fill form:
-    - Full Name: "Test Employee"
-    - (other fields as available)
- 5. Submit form
- 6. Observe new employee in list
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Truy cập /admin/employees
+ 3. Nhấn nút "Thêm nhân viên" hoặc nút thêm tương tự
+ 4. Điền form:
+    - Họ và tên: "Nhân viên Test"
+    - (các trường khác nếu có)
+ 5. Gửi form
+ 6. Quan sát nhân viên mới trong danh sách
 
-Expected Results:
- - Modal/form opens
- - Form accepts input
- - After submit, new employee appears in list
- - Success message shown
+Kết quả mong đợi:
+ - Modal/form mở
+ - Form chấp nhận input
+ - Sau khi gửi, nhân viên mới xuất hiện trong danh sách
+ - Hiển thị thông báo thành công
 
-Pass Criteria: New employee created and visible in list
+Tiêu chí đạt: Nhân viên mới được tạo và hiển thị trong danh sách
 ```
 
-#### UAT-EMP-003: Search Employees
+#### UAT-EMP-003: Tìm kiếm Nhân viên
 ```
-Test Case ID: UAT-EMP-003
+Mã Test: UAT-EMP-003
 User Story: US-A-03
-Module: Employee Management
-Priority: P2 - Medium
+Module: Quản lý Nhân viên
+Ưu tiên: P2 - Trung bình
 
-Objective: Verify admin can search for employees
+Mục tiêu: Xác minh quản trị viên có thể tìm kiếm nhân viên
 
-Pre-conditions:
-- User is logged in as admin
-- Multiple employees exist
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
+- Có nhiều nhân viên
 
-Test Steps:
- 1. Login as admin
- 2. Navigate to /admin/employees
- 3. Find search box
- 4. Type partial name (e.g., "nguyen")
- 5. Observe filtered results
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Truy cập /admin/employees
+ 3. Tìm hộp tìm kiếm
+ 4. Gõ tên một phần (ví dụ: "nguyen")
+ 5. Quan sát kết quả được lọc
 
-Expected Results:
- - List filters to show only matching employees
- - Typing in search box updates results in real-time
+Kết quả mong đợi:
+ - Danh sách lọc để hiển thị chỉ nhân viên phù hợp
+ - Gõ trong hộp tìm kiếm cập nhật kết quả theo thời gian thực
 
-Pass Criteria: Search filters employee list
+Tiêu chí đạt: Tìm kiếm lọc danh sách nhân viên
 ```
 
-#### UAT-EMP-004: Edit Employee
+#### UAT-EMP-004: Chỉnh sửa Nhân viên
 ```
-Test Case ID: UAT-EMP-004
+Mã Test: UAT-EMP-004
 User Story: US-A-05
-Module: Employee Management
-Priority: P2 - Medium
+Module: Quản lý Nhân viên
+Ưu tiên: P2 - Trung bình
 
-Objective: Verify admin can edit employee information
+Mục tiêu: Xác minh quản trị viên có thể chỉnh sửa thông tin nhân viên
 
-Pre-conditions:
-- User is logged in as admin
-- Employee exists to edit
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
+- Có nhân viên để chỉnh sửa
 
-Test Steps:
- 1. Login as admin
- 2. Navigate to /admin/employees
- 3. Find employee (not admin)
- 4. Click edit button/icon
- 5. Modify name
- 6. Save changes
- 7. Verify change persisted
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Truy cập /admin/employees
+ 3. Tìm nhân viên (không phải admin)
+ 4. Nhấn nút chỉnh sửa/biểu tượng
+ 5. Sửa đổi tên
+ 6. Lưu thay đổi
+ 7. Xác minh thay đổi được lưu
 
-Expected Results:
- - Edit form/modal opens
- - Changes save successfully
- - Updated name shown in list
+Kết quả mong đợi:
+ - Form/modal chỉnh sửa mở
+ - Thay đổi lưu thành công
+ - Tên đã cập nhật hiển thị trong danh sách
 
-Pass Criteria: Employee information updated
+Tiêu chí đạt: Thông tin nhân viên được cập nhật
 ```
 
-#### UAT-EMP-005: Deactivate Employee
+#### UAT-EMP-005: Vô hiệu hóa Nhân viên
 ```
-Test Case ID: UAT-EMP-005
+Mã Test: UAT-EMP-005
 User Story: US-A-06
-Module: Employee Management
-Priority: P2 - Medium
+Module: Quản lý Nhân viên
+Ưu tiên: P2 - Trung bình
 
-Objective: Verify admin can deactivate employee
+Mục tiêu: Xác minh quản trị viên có thể vô hiệu hóa nhân viên
 
-Pre-conditions:
-- User is logged in as admin
-- Active employee exists (not admin)
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
+- Có nhân viên đang hoạt động (không phải admin)
 
-Test Steps:
- 1. Login as admin
- 2. Navigate to /admin/employees
- 3. Find active employee
- 4. Click delete/deactivate button
- 5. Confirm action
- 6. Observe status change
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Truy cập /admin/employees
+ 3. Tìm nhân viên đang hoạt động
+ 4. Nhấn nút xóa/vô hiệu hóa
+ 5. Xác nhận hành động
+ 6. Quan sát thay đổi trạng thái
 
-Expected Results:
- - Confirmation dialog appears
- - After confirm, employee status changes
- - Employee shows as "Không hoạt động" or removed from active list
+Kết quả mong đợi:
+ - Hộp thoại xác nhận xuất hiện
+ - Sau khi xác nhận, trạng thái nhân viên thay đổi
+ - Nhân viên hiển thị là "Không hoạt động" hoặc bị xóa khỏi danh sách active
 
-Pass Criteria: Employee deactivated successfully
+Tiêu chí đạt: Nhân viên bị vô hiệu hóa thành công
 ```
 
 ---
 
-### 5.6 Report Generation Test Cases
+### 5.6 Các Trường hợp Kiểm thử Tạo Báo cáo
 
-#### UAT-RPT-001: Generate Daily Report
+#### UAT-RPT-001: Tạo Báo cáo Ngày
 ```
-Test Case ID: UAT-RPT-001
+Mã Test: UAT-RPT-001
 User Story: US-A-07
-Module: Reports
-Priority: P1 - High
+Module: Báo cáo
+Ưu tiên: P1 - Cao
 
-Objective: Verify admin can generate report for specific date
+Mục tiêu: Xác minh quản trị viên có thể tạo báo cáo cho một ngày cụ thể
 
-Pre-conditions:
-- User is logged in as admin
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
 
-Test Steps:
- 1. Login as admin
- 2. Navigate to /admin/reports
- 3. Select report type: "Ngày" or specific date
- 4. Choose a date with existing registrations
- 5. Click "Xem trước" (Preview)
- 6. Observe table
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Truy cập /admin/reports
+ 3. Chọn loại báo cáo: "Ngày" hoặc ngày cụ thể
+ 4. Chọn ngày có đăng ký hiện có
+ 5. Nhấn "Xem trước"
+ 6. Quan sát bảng
 
-Expected Results:
- - Preview table shows:
-   - STT (序号)
-   - Name (Tên)
-   - Phone (Số điện thoại)
-   - Date (Ngày)
- - Table has data rows
- - "Tổng cộng" (Total) shown
+Kết quả mong đợi:
+ - Bảng xem trước hiển thị:
+   - STT (Số thứ tự)
+   - Tên
+   - Số điện thoại
+   - Ngày
+ - Bảng có các hàng dữ liệu
+ - Hiển thị "Tổng cộng"
 
-Pass Criteria: Report preview displays correctly
+Tiêu chí đạt: Xem trước báo cáo hiển thị đúng
 ```
 
-#### UAT-RPT-002: Export Report to Excel
+#### UAT-RPT-002: Xuất Báo cáo ra Excel
 ```
-Test Case ID: UAT-RPT-002
+Mã Test: UAT-RPT-002
 User Story: US-A-08
-Module: Reports
-Priority: P2 - Medium
+Module: Báo cáo
+Ưu tiên: P2 - Trung bình
 
-Objective: Verify admin can export report as Excel file
+Mục tiêu: Xác minh quản trị viên có thể xuất báo cáo dưới dạng file Excel
 
-Pre-conditions:
-- User is logged in as admin
-- Report preview is displayed
+Điều kiện tiên quyết:
+- Người dùng đã đăng nhập với tư cách quản trị viên
+- Xem trước báo cáo đang được hiển thị
 
-Test Steps:
- 1. Login as admin
- 2. Navigate to /admin/reports
- 3. Generate a report preview
- 4. Click "Tải Excel" or export button
- 5. Observe downloaded file
+Các bước kiểm thử:
+ 1. Đăng nhập với tư cách quản trị viên
+ 2. Truy cập /admin/reports
+ 3. Tạo xem trước báo cáo
+ 4. Nhấn "Tải Excel" hoặc nút xuất
+ 5. Quan sát file được tải
 
-Expected Results:
- - File downloads
- - File is .xlsx format
- - File contains report data
+Kết quả mong đợi:
+ - File được tải
+ - File có định dạng .xlsx
+ - File chứa dữ liệu báo cáo
 
-Pass Criteria: Excel file downloaded with correct data
+Tiêu chí đạt: File Excel được tải với dữ liệu đúng
 ```
 
 ---
 
-## 6. Test Environment Setup
+## 6. Thiết lập Môi trường Kiểm thử
 
-### 6.1 Test Accounts
+### 6.1 Tài khoản Kiểm thử
 
-| Username | Password | Role | Purpose |
-|----------|----------|------|---------|
-| admin | admin123 | Admin | Test admin features |
-| nguyenvana | employee123 | Employee | Test employee features |
-| tranthib | employee123 | Employee | Test multi-user scenarios |
+| Username | Password | Vai trò | Mục đích |
+|----------|----------|---------|----------|
+| admin | admin123 | Admin | Kiểm thử tính năng admin |
+| nguyenvana | employee123 | Employee | Kiểm thử tính năng nhân viên |
+| tranthib | employee123 | Employee | Kiểm thử kịch bản đa người dùng |
+| levanc | employee123 | Employee | Nhân viên bổ sung |
+| phamthid | employee123 | Employee | Nhân viên bổ sung |
+| hoangvane | employee123 | Employee | Nhân viên bổ sung |
 
-### 6.2 Test URLs
+### 6.2 URLs Kiểm thử
 
-| URL | Purpose |
-|-----|---------|
-| http://localhost:3000/login | Login page |
-| http://localhost:3000/dashboard | Employee dashboard |
-| http://localhost:3000/book | Booking page |
-| http://localhost:3000/my-history | Registration history |
-| http://localhost:3000/admin/dashboard | Admin dashboard |
-| http://localhost:3000/admin/employees | Employee management |
-| http://localhost:3000/admin/reports | Report generation |
+| URL | Mục đích |
+|-----|----------|
+| http://localhost:3000/login | Trang đăng nhập |
+| http://localhost:3000/dashboard | Dashboard nhân viên |
+| http://localhost:3000/book | Trang đặt ăn |
+| http://localhost:3000/my-history | Lịch sử đăng ký |
+| http://localhost:3000/admin/dashboard | Dashboard quản trị |
+| http://localhost:3000/admin/employees | Quản lý nhân viên |
+| http://localhost:3000/admin/reports | Tạo báo cáo |
 
-### 6.3 Test Data Prerequisites
-- Database seeded with admin + 5 employees
-- 20 meals created (mains, vegetables, desserts)
-- Weekly menu generated for current week
-- Some registrations exist for testing
+### 6.3 Điều kiện tiên quyết Dữ liệu Kiểm thử
+- Cơ sở dữ liệu đã seed với admin + 5 nhân viên
+- 20 món ăn đã tạo (món chính, rau, tráng miệng)
+- Thực đơn hàng tuần đã tạo cho tuần hiện tại
+- Một số đăng ký tồn tại để kiểm thử
 
 ---
 
-## 7. Test Execution Checklist
+## 7. Checklist Thực thi Kiểm thử
 
-### 7.1 Pre-Test Checklist
-- [ ] Test environment is accessible
-- [ ] Test accounts are active
-- [ ] Database is seeded
-- [ ] Browser is cleared of cookies
-- [ ] UAT tester is trained on user stories
+### 7.1 Checklist Trước Kiểm thử
+- [ ] Môi trường kiểm thử có thể truy cập
+- [ ] Tài khoản kiểm thử đang hoạt động
+- [ ] Cơ sở dữ liệu đã seed
+- [ ] Trình duyệt đã xóa cookie
+- [ ] Người kiểm thử UAT đã được đào tạo về user stories
 
-### 7.2 Test Execution Log Template
+### 7.2 Mẫu Nhật ký Thực thi Kiểm thử
 
 ```
-Test Case ID: ___________
-Date: ___________
-Tester: ___________
-Pre-conditions Met: [ ] Yes [ ] No
-Test Steps Executed: [ ] All [ ] Partial
-Expected Result Matched: [ ] Yes [ ] No
-Actual Result: ________________
-Defect ID (if any): ___________
+Mã Test: ___________
+Ngày: ___________
+Người kiểm thử: ___________
+Điều kiện tiên quyết đã đáp ứng: [ ] Có [ ] Không
+Các bước kiểm thử đã thực thi: [ ] Tất cả [ ] Một phần
+Kết quả mong đợi khớp: [ ] Có [ ] Không
+Kết quả thực tế: ________________
+Mã Defect (nếu có): ___________
 Pass/Fail: ___________
-Notes: ________________
+Ghi chú: ________________
 ```
 
-### 7.3 Post-Test Checklist
-- [ ] All test cases executed
-- [ ] All failures documented
-- [ ] Screenshots captured for failures
-- [ ] Test summary report generated
+### 7.3 Checklist Sau Kiểm thử
+- [ ] Tất cả các trường hợp kiểm thử đã thực thi
+- [ ] Tất cả các lỗi đã được ghi lại
+- [ ] Ảnh chụp màn hình đã được chụp cho các lỗi
+- [ ] Báo cáo tổng hợp kiểm thử đã được tạo
 
 ---
 
-## 8. Defect Reporting
+## 8. Báo cáo Defect
 
-### 8.1 Defect Template
+### 8.1 Mẫu Defect
 ```
-Defect ID: [AUTO-GENERATED]
-Date Found: ___________
-Test Case ID: ___________
-Severity: [P0-Critical / P1-High / P2-Medium / P3-Low]
-Description: ___________
-Steps to Reproduce: ___________
-Expected Behavior: ___________
-Actual Behavior: ___________
-Screenshots: [ATTACHED]
+Mã Defect: [TỰ ĐỘNG TẠO]
+Ngày tìm thấy: ___________
+Mã Test: ___________
+Mức độ nghiêm trọng: [P0-Critical / P1-High / P2-Medium / P3-Low]
+Mô tả: ___________
+Các bước để tái tạo: ___________
+Hành vi mong đợi: ___________
+Hành vi thực tế: ___________
+Ảnh chụp màn hình: [ĐÍNH KÈM]
 ```
 
-### 8.2 Severity Definitions
+### 8.2 Định nghĩa Mức độ Nghiêm trọng
 
-| Severity | Definition | Example |
-|----------|------------|---------|
-| P0 - Critical | System unusable, blocks all users | Login broken |
-| P1 - High | Major feature broken | Cannot register for lunch |
-| P2 - Medium | Feature partially works | Report missing one column |
-| P3 - Low | Cosmetic issue | Wrong text color |
+| Mức độ | Định nghĩa | Ví dụ |
+|--------|------------|-------|
+| P0 - Critical | Hệ thống không sử dụng được, chặn tất cả người dùng | Đăng nhập bị hỏng |
+| P1 - High | Tính năng chính bị hỏng | Không thể đăng ký ăn trưa |
+| P2 - Medium | Tính năng hoạt động một phần | Báo cáo thiếu một cột |
+| P3 - Low | Vấn đề thẩm mỹ | Sai màu văn bản |
 
 ---
 
-## 9. Acceptance Criteria Summary
+## 9. Tóm tắt Tiêu chí Chấp nhận
 
-### 9.1 Authentication
-- [ ] Employee can login with valid credentials
-- [ ] Admin can login with valid credentials
-- [ ] Invalid credentials show error message
-- [ ] Empty fields are validated
-- [ ] Logout terminates session
+### 9.1 Xác thực
+- [ ] Nhân viên có thể đăng nhập với thông tin hợp lệ
+- [ ] Quản trị viên có thể đăng nhập với thông tin hợp lệ
+- [ ] Thông tin không hợp lệ hiển thị thông báo lỗi
+- [ ] Các trường trống được xác thực
+- [ ] Đăng xuất chấm dứt phiên
 
-### 9.2 Employee Features
-- [ ] 8-day booking grid displays correctly
-- [ ] Today badge visible on first card
-- [ ] Can register for lunch (eating)
-- [ ] Can cancel registration
-- [ ] Past dates are disabled
-- [ ] Status cycles correctly
-- [ ] Weekly menu displays
+### 9.2 Tính năng Nhân viên
+- [ ] Lưới đặt 8 ngày hiển thị đúng
+- [ ] Badge "Hôm nay" hiển thị trên thẻ đầu tiên
+- [ ] Có thể đăng ký ăn trưa
+- [ ] Có thể hủy đăng ký
+- [ ] Các ngày quá khứ bị vô hiệu hóa
+- [ ] Trạng thái chu kỳ đúng
+- [ ] Thực đơn hàng tuần hiển thị
 
-### 9.3 Admin Features
-- [ ] Dashboard shows statistics
-- [ ] Quick actions navigate correctly
-- [ ] Employee list displays
-- [ ] Can add new employee
-- [ ] Can search employees
-- [ ] Can edit employee
-- [ ] Can deactivate employee
-- [ ] Can generate report
-- [ ] Can export to Excel
+### 9.3 Tính năng Quản trị
+- [ ] Dashboard hiển thị thống kê
+- [ ] Các thao tác nhanh điều hướng đúng
+- [ ] Danh sách nhân viên hiển thị
+- [ ] Có thể thêm nhân viên mới
+- [ ] Có thể tìm kiếm nhân viên
+- [ ] Có thể chỉnh sửa nhân viên
+- [ ] Có thể vô hiệu hóa nhân viên
+- [ ] Có thể tạo báo cáo
+- [ ] Có thể xuất ra Excel
 
 ---
 
-## 10. Sign-Off
+## 10. Phê duyệt
 
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
+| Vai trò | Tên | Ngày | Chữ ký |
+|---------|------|------|--------|
 | UAT Lead | | | |
 | Business Owner | | | |
 | Project Manager | | | |
@@ -917,5 +920,5 @@ Screenshots: [ATTACHED]
 
 ---
 
-**Document End - UAT Test Plan v2.0**
-**Focus: Blackbox User Acceptance Testing**
+**Kết thúc Tài liệu - Kế hoạch UAT v2.0**
+**Tập trung: Kiểm thử Chấp nhận Người dùng Blackbox**
