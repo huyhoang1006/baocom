@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { authApi } from "@/lib/api"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -9,20 +10,26 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const router = useRouter()
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Clear previous error
     setError("")
 
-    // Mock login - redirect based on username (password must be at least 4 chars)
-    if (username.trim() && password.length >= 4) {
-      if (username.toLowerCase().includes("admin")) {
+    if (!username.trim() || password.length < 4) {
+      if (password.length > 0 && password.length < 4) {
+        setError("Mật khẩu phải có ít nhất 4 ký tự")
+      }
+      return
+    }
+
+    try {
+      const { user } = await authApi.login(username, password)
+      if (user.role === 'admin') {
         router.push("/admin/dashboard")
       } else {
         router.push("/dashboard")
       }
-    } else if (password.length > 0 && password.length < 4) {
-      setError("Mật khẩu phải có ít nhất 4 ký tự")
+    } catch (err) {
+      setError("Sai tên đăng nhập hoặc mật khẩu")
     }
   }
 
