@@ -23,8 +23,8 @@ export default function AdminDashboard() {
         const data = await adminStatsApi.getToday()
         setStats([
           { label: "Tổng nhân viên", value: data.stats.totalEmployees, icon: "group" },
-          { label: "Đang ăn hôm nay", value: data.stats.eating, icon: "restaurant" },
-          { label: "Không ăn", value: data.stats.notEating, icon: "no_meals" },
+          { label: "Đang ăn hôm nay", value: data.stats.eatingToday, icon: "restaurant" },
+          { label: "Không ăn", value: data.stats.notEatingToday, icon: "no_meals" },
           { label: "Tỷ lệ đăng ký", value: `${data.stats.registrationRate}%`, icon: "pie_chart" },
         ])
       } catch (err) {

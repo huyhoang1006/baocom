@@ -97,7 +97,7 @@ export const usersApi = {
 
 // Admin Stats API
 export const adminStatsApi = {
-  getToday: () => apiFetch<{ stats: { totalEmployees: number; eating: number; notEating: number; registered: number; notRegistered: number; registrationRate: number } }>('/admin/stats'),
+  getToday: () => apiFetch<{ stats: { totalEmployees: number; eating: number; notEating: number; eatingToday: number; notEatingToday: number; registered: number; notRegistered: number; registrationRate: number } }>('/admin/stats'),
 }
 
 // Admin Reports API
