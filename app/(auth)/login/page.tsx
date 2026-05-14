@@ -77,7 +77,7 @@ export default function LoginPage() {
 
             {/* Error message */}
             {error && (
-              <p className="text-sm text-error text-center" role="alert">
+              <p className="text-sm text-center" role="alert" style={{ color: 'var(--color-error)' }}>
                 {error}
               </p>
             )}
