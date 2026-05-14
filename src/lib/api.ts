@@ -25,7 +25,9 @@ export async function apiFetch<T = unknown>(
   })
 
   if (res.status === 401 || res.status === 403) {
-    window.location.href = '/login'
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login'
+    }
     throw new APIError('Unauthorized', res.status)
   }
 
