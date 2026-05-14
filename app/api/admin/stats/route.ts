@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { withAuth } from '@/lib/authMiddleware'
+import { withAdmin } from '@/lib/authMiddleware'
 import { AdminStatsController } from '@/controllers/AdminStatsController'
 
 const controller = new AdminStatsController()
 
-export const GET = withAuth(async () => {
+export const GET = withAdmin(async () => {
   return controller.getTodayStats()
 })

@@ -24,14 +24,12 @@ export class AdminStatsController {
     const notRegistered = totalEmployees - registered
 
     return NextResponse.json({
-      stats: {
-        totalEmployees,
-        eating,
-        notEating,
-        registered,
-        notRegistered,
-        registrationRate: totalEmployees > 0 ? Math.round((registered / totalEmployees) * 100) : 0
-      }
+      totalEmployees,
+      eatingToday: eating,
+      notEatingToday: notEating,
+      registered,
+      notRegistered,
+      registrationRate: totalEmployees > 0 ? Math.round((registered / totalEmployees) * 100) : 0
     })
   }
 }

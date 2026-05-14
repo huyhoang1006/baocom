@@ -26,6 +26,7 @@ export class LoginPage {
   }
 
   async getErrorMessage(): Promise<string> {
-    return this.errorMessage.textContent() || ''
+    const content = await this.errorMessage.textContent()
+    return content ?? ''
   }
 }

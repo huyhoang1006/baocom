@@ -17,16 +17,16 @@ test('TC-SEC-IDOR-001: User A Cannot Access User B\'s Registrations', async ({ b
   const contextA = await browser.newContext()
   const contextB = await browser.newContext()
 
-  // Login as User A
+  // Login as User A (nguyenvana - seeded user, password: employee123)
   const loginA = await contextA.request.post('/api/auth/login', {
-    data: { username: 'alice', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   expect(loginA.status()).toBe(200)
   const cookiesA = getCookieHeader(loginA.headers())
 
-  // Login as User B
+  // Login as User B (tranthib - seeded user, password: employee123)
   const loginB = await contextB.request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'tranthib', password: 'employee123' },
   })
   expect(loginB.status()).toBe(200)
   const cookiesB = getCookieHeader(loginB.headers())
@@ -57,14 +57,14 @@ test('TC-SEC-IDOR-002: User A Cannot Modify User B\'s Registration', async ({ br
   const contextA = await browser.newContext()
   const contextB = await browser.newContext()
 
-  // Setup both users
+  // Setup both users (nguyenvana and tranthib)
   const loginA = await contextA.request.post('/api/auth/login', {
-    data: { username: 'alice', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   const cookiesA = getCookieHeader(loginA.headers())
 
   const loginB = await contextB.request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'tranthib', password: 'employee123' },
   })
   const cookiesB = getCookieHeader(loginB.headers())
 
@@ -95,12 +95,12 @@ test('TC-SEC-IDOR-003: User A Cannot Delete User B\'s Registration', async ({ br
   const contextB = await browser.newContext()
 
   const loginA = await contextA.request.post('/api/auth/login', {
-    data: { username: 'alice', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   const cookiesA = getCookieHeader(loginA.headers())
 
   const loginB = await contextB.request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'tranthib', password: 'employee123' },
   })
   const cookiesB = getCookieHeader(loginB.headers())
 
@@ -129,9 +129,9 @@ test('TC-SEC-IDOR-004: Admin Can Access All Registrations', async ({ browser }) 
   const contextAdmin = await browser.newContext()
   const contextUser = await browser.newContext()
 
-  // User creates registration
+  // User creates registration (tranthib - seeded user)
   const loginUser = await contextUser.request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'tranthib', password: 'employee123' },
   })
   const cookiesUser = getCookieHeader(loginUser.headers())
 
