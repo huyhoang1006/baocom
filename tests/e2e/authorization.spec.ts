@@ -13,9 +13,9 @@ function getCookieHeader(headers: Record<string, string>): string {
 
 // TC-SEC-AUTHZ-001: Non-Admin Cannot Access Admin Endpoints
 test('TC-SEC-AUTHZ-001: Non-Admin Cannot Access Admin Endpoints', async ({ request }) => {
-  // Login as regular user
+  // Login as regular user (nguyenvana is a seeded employee)
   const loginResponse = await request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   const cookies = getCookieHeader(loginResponse.headers())
 
@@ -29,7 +29,7 @@ test('TC-SEC-AUTHZ-001: Non-Admin Cannot Access Admin Endpoints', async ({ reque
 // TC-SEC-AUTHZ-002: Role Field Cannot Be Modified by Users
 test('TC-SEC-AUTHZ-002: Role Field Cannot Be Modified by Users', async ({ request }) => {
   const loginResponse = await request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   const cookies = getCookieHeader(loginResponse.headers())
 
@@ -56,7 +56,7 @@ test('TC-SEC-AUTHZ-003: Admin Can Access All Registrations', async ({ browser })
   const cookiesAdmin = getCookieHeader(loginAdmin.headers())
 
   const loginUser = await contextUser.request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   const cookiesUser = getCookieHeader(loginUser.headers())
 

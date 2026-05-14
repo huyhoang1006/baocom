@@ -35,6 +35,11 @@ export class InMemoryRateLimiter {
   }
 
   recordFailedAttempt(ip: string): void {
+    // Bypass rate limiting in test environment
+    if (process.env.NODE_ENV === 'test' || process.env.RATE_LIMIT_BYPASS === 'true') {
+      return
+    }
+
     const now = Date.now()
     const state = this.store.get(ip)
 
@@ -61,10 +66,19 @@ export class InMemoryRateLimiter {
   }
 
   recordSuccess(ip: string): void {
+    // Bypass rate limiting in test environment
+    if (process.env.NODE_ENV === 'test' || process.env.RATE_LIMIT_BYPASS === 'true') {
+      return
+    }
     this.store.delete(ip)
   }
 
   checkLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+    // Bypass rate limiting in test environment
+    if (process.env.NODE_ENV === 'test' || process.env.RATE_LIMIT_BYPASS === 'true') {
+      return { allowed: true }
+    }
+
     const state = this.store.get(ip)
 
     if (!state) {

@@ -68,7 +68,7 @@ test('TC-MEAL-004: Create meal validation (invalid type)', async ({ request }) =
 // TC-MEAL-005: Admin-only create (non-admin blocked)
 test('TC-MEAL-005: Admin-only create (non-admin blocked)', async ({ request }) => {
   const loginResponse = await request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   const cookies = loginResponse.headers()['set-cookie']
   const cookieString = Array.isArray(cookies) ? cookies.join('; ') : cookies || ''
@@ -157,7 +157,7 @@ test('TC-HOL-004: Create holiday validation (missing date)', async ({ request })
 // TC-HOL-005: Admin-only holiday operations
 test('TC-HOL-005: Admin-only holiday operations', async ({ request }) => {
   const loginResponse = await request.post('/api/auth/login', {
-    data: { username: 'john', password: 'pass123' },
+    data: { username: 'nguyenvana', password: 'employee123' },
   })
   const cookies = loginResponse.headers()['set-cookie']
   const cookieString = Array.isArray(cookies) ? cookies.join('; ') : cookies || ''

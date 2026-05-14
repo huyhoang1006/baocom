@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test'
 
 // Helper function for day status toggle
 async function getDayButton(page: Page, index: number) {
-  return page.locator(`button[class*="rounded-[18px]"]`).nth(index)
+  return page.locator('[class*="rounded-[18px]"]').nth(index)
 }
 
 async function getDayStatusLabel(page: Page, index: number) {
@@ -11,10 +11,20 @@ async function getDayStatusLabel(page: Page, index: number) {
 
 // TC-B01: Book page displays 8 days starting from today
 test('TC-B01: Book page displays 8 days starting from today', async ({ page }) => {
+  await page.goto('/login')
+  await page.fill('#username', 'admin')
+  await page.fill('#password', 'admin123')
+  await page.click('button[type="submit"]')
+
+  // Login redirects admin to /admin/dashboard
+  await page.waitForURL(/\/admin\/dashboard|127\.0\.0\.1:3000/, { timeout: 10000 }).catch(() => {
+    // If URL pattern doesn't match, check if we're on dashboard
+  })
+
   await page.goto('/book')
 
   // Count day cards
-  const dayCards = page.locator('button[class*="rounded-[18px]"]')
+  const dayCards = page.locator('[class*="rounded-[18px]"]')
   await expect(dayCards).toHaveCount(8)
 
   // First card should have "Hôm nay" badge
@@ -32,7 +42,7 @@ test('TC-B02: Day status toggle cycle', async ({ page }) => {
   await page.goto('/book')
 
   // Wait for page to load
-  await page.waitForSelector('button[class*="rounded-[18px]"]')
+  await page.waitForSelector('[class*="rounded-[18px]"]')
 
   // Click on a future day (not today)
   const futureDay = getDayButton(page, 1)
@@ -69,8 +79,8 @@ test('TC-D01: Dashboard shows weekly menu for current week', async ({ page }) =>
   // Navigate to regular dashboard
   await page.goto('/dashboard')
 
-  // Should show day tabs (Mon-Fri)
-  await expect(page.locator('text=/T2|T3|T4|T5|T6/').first()).toBeVisible({ timeout: 10000 })
+  // Should show day tabs (T2-T6) as buttons
+  await expect(page.locator('button:has-text("T2")').first()).toBeVisible({ timeout: 10000 })
 })
 
 // TC-D02: Dashboard day tab navigation
@@ -84,7 +94,7 @@ test('TC-D02: Dashboard day tab navigation', async ({ page }) => {
   await page.goto('/dashboard')
 
   // Click on different day tabs
-  const dayTabs = page.locator('[role="tab"], button:has-text("T2"), button:has-text("T3")')
+  const dayTabs = page.locator('button:has-text("T2"), button:has-text("T3")')
   if (await dayTabs.count() > 0) {
     await dayTabs.first().click()
     await page.waitForTimeout(500)

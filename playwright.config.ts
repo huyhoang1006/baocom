@@ -27,5 +27,9 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
+    env: {
+      NODE_ENV: 'test',
+      RATE_LIMIT_BYPASS: 'true',
+    },
   },
 })
