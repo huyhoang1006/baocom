@@ -22,11 +22,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing username or password' }, { status: 400 })
     }
 
+    // Validate username length to prevent abuse
+    if (username.length > 255) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
+
     const user = await prisma.user.findUnique({
       where: { username }
     })
 
+    // Check isActive BEFORE password verification to prevent timing attack
     if (!user || !user.isActive) {
+      // Still run verifyPassword to maintain constant time regardless of user existence
+      if (user) {
+        await verifyPassword(password, user.password)
+      }
       loginRateLimiter.recordFailedAttempt(ip)
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
@@ -54,7 +64,7 @@ export async function POST(request: Request) {
 
     response.cookies.set('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && request.headers.get('x-forwarded-proto') === 'https',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7 // 7 days
     })

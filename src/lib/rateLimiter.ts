@@ -23,6 +23,8 @@ export class InMemoryRateLimiter {
   }
 
   getClientIP(request: NextRequest): string {
+    // Use x-forwarded-for header, but only trust first value
+    // Note: For production, this should be paired with trusted proxy configuration
     const forwarded = request.headers.get('x-forwarded-for')
     const ip = forwarded?.split(',')[0]?.trim() || 'unknown'
     return ip
@@ -35,8 +37,8 @@ export class InMemoryRateLimiter {
   }
 
   recordFailedAttempt(ip: string): void {
-    // Bypass rate limiting in test environment
-    if (process.env.NODE_ENV === 'test' || process.env.RATE_LIMIT_BYPASS === 'true') {
+    // Only bypass in test environment, never via env var
+    if (process.env.NODE_ENV === 'test') {
       return
     }
 
@@ -66,16 +68,16 @@ export class InMemoryRateLimiter {
   }
 
   recordSuccess(ip: string): void {
-    // Bypass rate limiting in test environment
-    if (process.env.NODE_ENV === 'test' || process.env.RATE_LIMIT_BYPASS === 'true') {
+    // Only bypass in test environment, never via env var
+    if (process.env.NODE_ENV === 'test') {
       return
     }
     this.store.delete(ip)
   }
 
   checkLimit(ip: string): { allowed: boolean; retryAfter?: number } {
-    // Bypass rate limiting in test environment
-    if (process.env.NODE_ENV === 'test' || process.env.RATE_LIMIT_BYPASS === 'true') {
+    // Only bypass in test environment, never via env var
+    if (process.env.NODE_ENV === 'test') {
       return { allowed: true }
     }
 

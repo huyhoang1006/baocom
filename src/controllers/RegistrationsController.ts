@@ -83,7 +83,14 @@ export class RegistrationsController {
     if (registration && role !== 'admin' && registration.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-    await this.registrationService.delete(id)
-    return NextResponse.json({ success: true })
+    try {
+      await this.registrationService.delete(id)
+      return NextResponse.json({ success: true })
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Registration not found') {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 })
+      }
+      throw error
+    }
   }
 }

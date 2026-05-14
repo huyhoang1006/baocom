@@ -1,7 +1,6 @@
 export type RegistrationStatus = 'eating' | 'not_eating'
 
 export interface CreateRegistrationDTO {
-  userId: string
   date: string
   status: RegistrationStatus
 }

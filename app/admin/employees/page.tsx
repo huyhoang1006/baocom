@@ -152,6 +152,8 @@ export default function EmployeesPage() {
         setEmployees((prev) => [...prev, emp])
         showNotification("success", "Đã thêm nhân viên mới")
       } else if (editingEmployee) {
+        // Note: Backend currently only supports name update
+        // phone, email, department fields require backend schema update
         await usersApi.update(editingEmployee.id, {
           name: formData.name,
         })

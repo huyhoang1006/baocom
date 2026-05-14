@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { adminStatsApi } from "@/lib/api"
 
 interface Stat {
@@ -15,25 +15,73 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const fetchStats = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await adminStatsApi.getToday()
+      const totalEmployees = data.stats.totalEmployees || 0
+      const registrationRate = totalEmployees > 0
+        ? Math.round((data.stats.eatingToday / totalEmployees) * 100)
+        : 0
+      setStats([
+        { label: "Tổng nhân viên", value: totalEmployees, icon: "group" },
+        { label: "Đang ăn hôm nay", value: data.stats.eatingToday, icon: "restaurant" },
+        { label: "Không ăn", value: data.stats.notEatingToday, icon: "no_meals" },
+        { label: "Tỷ lệ đăng ký", value: `${registrationRate}%`, icon: "pie_chart" },
+      ])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load stats')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    async function fetchStats() {
+    let mounted = true
+    const controller = new AbortController()
+
+    async function load() {
+      if (!mounted) return
       try {
         setLoading(true)
         setError(null)
         const data = await adminStatsApi.getToday()
+        if (!mounted) return
+        const totalEmployees = data.stats.totalEmployees || 0
+        const registrationRate = totalEmployees > 0
+          ? Math.round((data.stats.eatingToday / totalEmployees) * 100)
+          : 0
         setStats([
-          { label: "Tổng nhân viên", value: data.stats.totalEmployees, icon: "group" },
+          { label: "Tổng nhân viên", value: totalEmployees, icon: "group" },
           { label: "Đang ăn hôm nay", value: data.stats.eatingToday, icon: "restaurant" },
           { label: "Không ăn", value: data.stats.notEatingToday, icon: "no_meals" },
-          { label: "Tỷ lệ đăng ký", value: `${data.stats.registrationRate}%`, icon: "pie_chart" },
+          { label: "Tỷ lệ đăng ký", value: `${registrationRate}%`, icon: "pie_chart" },
         ])
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load stats')
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to load stats')
+        }
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
-    fetchStats()
+
+    load()
+
+    // Refresh stats when tab becomes visible (handles stale data past midnight)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        load()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      mounted = false
+      controller.abort()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   return (
@@ -61,7 +109,7 @@ export default function AdminDashboard() {
             <div className="mb-6 p-4 rounded-[18px] bg-error-bg border border-error text-error">
               <p className="font-medium">Lỗi: {error}</p>
               <button
-                onClick={() => window.location.reload()}
+                onClick={fetchStats}
                 className="text-sm underline mt-1"
               >
                 Thử lại
