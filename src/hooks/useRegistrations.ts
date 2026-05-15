@@ -49,6 +49,11 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     }
   }, [fetchRegistrations])
 
+  const toggle = useCallback(async (date: string, currentStatus: UIStatus) => {
+    const newStatus = currentStatus === 'eating' ? 'not-eating' : 'eating'
+    return setStatus(date, newStatus)
+  }, [setStatus])
+
   const getStatusForDate = useCallback((dateStr: string): UIStatus | null => {
     const reg = registrations.find(r => {
       const regDate = new Date(r.date).toISOString().split('T')[0]
@@ -62,6 +67,7 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     loading,
     error,
     setStatus,
+    toggle,
     getStatusForDate,
     refetch: fetchRegistrations,
   }
