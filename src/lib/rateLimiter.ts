@@ -37,11 +37,6 @@ export class InMemoryRateLimiter {
   }
 
   recordFailedAttempt(ip: string): void {
-    // Only bypass in test environment, never via env var
-    if (process.env.NODE_ENV === 'test') {
-      return
-    }
-
     const now = Date.now()
     const state = this.store.get(ip)
 
@@ -68,19 +63,10 @@ export class InMemoryRateLimiter {
   }
 
   recordSuccess(ip: string): void {
-    // Only bypass in test environment, never via env var
-    if (process.env.NODE_ENV === 'test') {
-      return
-    }
     this.store.delete(ip)
   }
 
   checkLimit(ip: string): { allowed: boolean; retryAfter?: number } {
-    // Only bypass in test environment, never via env var
-    if (process.env.NODE_ENV === 'test') {
-      return { allowed: true }
-    }
-
     const state = this.store.get(ip)
 
     if (!state) {
