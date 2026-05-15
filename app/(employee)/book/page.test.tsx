@@ -2,17 +2,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import BookPage from './page'
 
-const setStatus = vi.fn()
+const setStatus = vi.fn(async (dateKey: string, status: 'eating' | 'not-eating') => {
+  mockStatuses[dateKey] = status
+  return true
+})
+let mockStatuses: Record<string, 'eating' | 'not-eating'> = {}
 
 vi.mock('@/hooks/useRegistrations', () => ({
   useRegistrations: () => ({
     loading: false,
     error: null,
     setStatus,
-    getStatusForDate: (dateKey: string) => {
-      if (dateKey === '2026-05-12') return 'not-eating'
-      return null
-    },
+    getStatusForDate: (dateKey: string) => mockStatuses[dateKey] || null,
   }),
 }))
 
@@ -20,7 +21,7 @@ describe('BookPage weekly cards', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-05-15T10:00:00+07:00'))
-    setStatus.mockResolvedValue(true)
+    mockStatuses = { '2026-05-12': 'not-eating' }
     setStatus.mockClear()
   })
 
@@ -113,5 +114,23 @@ describe('BookPage weekly cards', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Tuần sau →' }))
     expect(screen.getByTestId('book-day-2026-05-18')).toBeInTheDocument()
+  })
+
+  it('shows updated status after changing next Monday from not eating to eating', async () => {
+    vi.setSystemTime(new Date('2026-05-15T10:00:00+07:00'))
+    mockStatuses = { '2026-05-18': 'not-eating' }
+
+    const { rerender } = render(<BookPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tuần sau →' }))
+    const monday = screen.getByTestId('book-day-2026-05-18')
+    fireEvent.click(within(monday).getByRole('button', { name: 'Có ăn' }))
+
+    expect(setStatus).toHaveBeenCalledWith('2026-05-18', 'eating')
+    await Promise.resolve()
+
+    rerender(<BookPage />)
+    expect(within(screen.getByTestId('book-day-2026-05-18')).getByRole('button', { name: 'Có ăn' })).toBeDisabled()
+    expect(within(screen.getByTestId('book-day-2026-05-18')).getByRole('button', { name: 'Không ăn' })).not.toBeDisabled()
   })
 })
