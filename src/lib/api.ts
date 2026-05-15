@@ -24,15 +24,19 @@ export async function apiFetch<T = unknown>(
     credentials: 'include',
   })
 
-  if (res.status === 401 || res.status === 403) {
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login'
-    }
-    throw new APIError('Unauthorized', res.status)
-  }
-
   if (!res.ok) {
     const data = await res.json().catch(() => ({}))
+
+    if (res.status === 401 || res.status === 403) {
+      const message = (data as { error?: string })?.error || 'Unauthorized'
+
+      if (endpoint !== '/auth/login' && window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+
+      throw new APIError(message, res.status, data)
+    }
+
     throw new APIError(
       (data as { error?: string })?.error || `Request failed: ${res.status}`,
       res.status,
@@ -109,4 +113,44 @@ export const adminReportsApi = {
     if (includeSundays) params.set('includeSundays', 'true')
     return apiFetch<{ reportData: Array<{ stt: number; name: string; phone: string; date: string }>; stats: { total: number; byDate: Record<string, number> } }>(`/admin/reports?${params}`)
   },
+}
+
+// Holidays API
+export const holidaysApi = {
+  getAll: () => apiFetch<{ holidays: Array<{ id: string; date: string; description?: string; isActive: boolean }> }>('/holidays'),
+  create: (data: { date: string; description?: string }) =>
+    apiFetch<{ holiday: { id: string; date: string; description?: string } }>('/holidays', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  update: (id: string, data: { date?: string; description?: string; isActive?: boolean }) =>
+    apiFetch<{ holiday: { id: string; date: string; description?: string } }>(`/holidays/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string) =>
+    apiFetch<{ success: boolean }>(`/holidays/${id}`, { method: 'DELETE' }),
+}
+
+// Daily Menus extended API
+export const dailyMenusExtendedApi = {
+  updateByDate: (date: string, mealIds: string[]) =>
+    apiFetch(`/daily-menus/${date}`, {
+      method: 'PUT',
+      body: JSON.stringify({ mealIds }),
+    }),
+  create: (date: string, mealIds: string[]) =>
+    apiFetch('/daily-menus', {
+      method: 'POST',
+      body: JSON.stringify({ date, mealIds }),
+    }),
+}
+
+// Meals extended API
+export const mealsExtendedApi = {
+  findOrCreate: (name: string, type: string) =>
+    apiFetch<{ meal: { id: string; name: string; type: string } }>('/meals/find-or-create', {
+      method: 'POST',
+      body: JSON.stringify({ name, type }),
+    }),
 }
