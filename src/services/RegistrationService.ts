@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { RegistrationRepository } from '@/repositories/RegistrationRepository'
 import { CreateRegistrationDTO, UpdateRegistrationDTO, RegistrationStatus } from '@/dto/RegistrationDTO'
+import { isAllowedRegistrationDate, startOfLocalDay } from '@/lib/registrationWindow'
 
 export type RegistrationWithUser = {
   userId: string
@@ -20,6 +21,17 @@ export class RegistrationService {
     this.registrationRepository = new RegistrationRepository(prisma)
   }
 
+  private validateEditableDate(date: Date, now = new Date()) {
+    const validation = isAllowedRegistrationDate(date, now)
+    if (validation.ok) return
+
+    if (validation.reason === 'LOCKED') {
+      throw new Error('Ngay nay da khoa bao com')
+    }
+
+    throw new Error('Ngay nay khong nam trong lich bao com')
+  }
+
   async findAll(userId?: string, startDate?: string, endDate?: string): Promise<RegistrationWithUser[]> {
     const where: Record<string, unknown> = {}
     if (userId) where.userId = userId
@@ -33,11 +45,15 @@ export class RegistrationService {
     return this.registrationRepository.findOne(id)
   }
 
-  async create(userId: string, data: CreateRegistrationDTO) {
+  async create(userId: string, data: CreateRegistrationDTO, now = new Date()) {
     if (!['eating', 'not_eating'].includes(data.status)) {
       throw new Error('Invalid status')
     }
-    return this.registrationRepository.upsert(userId, new Date(data.date), data.status)
+
+    const date = startOfLocalDay(new Date(data.date))
+    this.validateEditableDate(date, now)
+
+    return this.registrationRepository.upsert(userId, date, data.status)
   }
 
   async update(id: string, userId: string, role: string, data: UpdateRegistrationDTO) {
@@ -47,6 +63,10 @@ export class RegistrationService {
     }
     if (role !== 'admin' && registration.userId !== userId) {
       throw new Error('Forbidden')
+    }
+
+    if (role !== 'admin') {
+      this.validateEditableDate(registration.date)
     }
 
     const updateData: Record<string, unknown> = {}
