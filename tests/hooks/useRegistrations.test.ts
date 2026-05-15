@@ -83,6 +83,21 @@ describe('useRegistrations', () => {
     expect(result.current.getStatusForDate('2026-05-13')).toBe('eating')
   })
 
+  it('prefers registration dateKey when matching status', async () => {
+    const mockRegistrations = [
+      { id: '1', date: '2026-05-17T17:00:00.000Z', dateKey: '2026-05-18', status: 'eating' },
+    ]
+    vi.mocked(registrationsApi.getAll).mockResolvedValue({ registrations: mockRegistrations })
+
+    const { result } = renderHook(() => useRegistrations())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.getStatusForDate('2026-05-18')).toBe('eating')
+  })
+
   it('getStatusForDate returns null for non-matching date', async () => {
     vi.mocked(registrationsApi.getAll).mockResolvedValue({ registrations: [] })
 
@@ -109,6 +124,33 @@ describe('useRegistrations', () => {
 
     expect(success).toBe(true)
     expect(registrationsApi.create).toHaveBeenCalledWith('2026-05-13', 'not_eating')
+  })
+
+  it('updates local status from successful save response before refetch completes', async () => {
+    let resolveRefetch: (value: { registrations: Array<{ id: string; date: string; dateKey: string; status: string }> }) => void = () => {}
+    vi.mocked(registrationsApi.getAll)
+      .mockResolvedValueOnce({ registrations: [{ id: 'reg-1', date: '2026-05-18T00:00:00.000Z', dateKey: '2026-05-18', status: 'not_eating' }] })
+      .mockReturnValueOnce(new Promise((resolve) => {
+        resolveRefetch = resolve
+      }))
+    vi.mocked(registrationsApi.create).mockResolvedValue({
+      registration: { id: 'reg-1', date: '2026-05-18T00:00:00.000Z', dateKey: '2026-05-18', status: 'eating' },
+    })
+
+    const { result } = renderHook(() => useRegistrations())
+
+    await waitFor(() => {
+      expect(result.current.getStatusForDate('2026-05-18')).toBe('not-eating')
+    })
+
+    const savePromise = result.current.setStatus('2026-05-18', 'eating')
+
+    await waitFor(() => {
+      expect(result.current.getStatusForDate('2026-05-18')).toBe('eating')
+    })
+
+    resolveRefetch({ registrations: [{ id: 'reg-1', date: '2026-05-18T00:00:00.000Z', dateKey: '2026-05-18', status: 'eating' }] })
+    await expect(savePromise).resolves.toBe(true)
   })
 
   it('returns API error message when save fails', async () => {

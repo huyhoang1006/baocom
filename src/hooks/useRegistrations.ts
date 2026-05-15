@@ -5,8 +5,14 @@ import { toAPIStatus, toUIStatus, type UIStatus } from '@/lib/statusUtils'
 interface Registration {
   id: string
   date: string
+  dateKey?: string
   status: string
   note?: string
+}
+
+function getRegistrationDateKey(registration: Registration): string {
+  if (registration.dateKey) return registration.dateKey
+  return new Date(registration.date).toISOString().split('T')[0]
 }
 
 export function useRegistrations(startDate?: string, endDate?: string) {
@@ -40,7 +46,16 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     const apiStatus = toAPIStatus(status)
 
     try {
-      await registrationsApi.create(date, apiStatus)
+      const response = await registrationsApi.create(date, apiStatus)
+      const registration = response.registration as Registration | undefined
+
+      if (registration) {
+        setRegistrations((current) => {
+          const next = current.filter((item) => getRegistrationDateKey(item) !== getRegistrationDateKey(registration))
+          return [...next, registration]
+        })
+      }
+
       await fetchRegistrations()
       return true
     } catch (err) {
@@ -55,10 +70,7 @@ export function useRegistrations(startDate?: string, endDate?: string) {
   }, [setStatus])
 
   const getStatusForDate = useCallback((dateStr: string): UIStatus | null => {
-    const reg = registrations.find(r => {
-      const regDate = new Date(r.date).toISOString().split('T')[0]
-      return regDate === dateStr
-    })
+    const reg = registrations.find(r => getRegistrationDateKey(r) === dateStr)
     return reg ? toUIStatus(reg.status as 'eating' | 'not_eating') : null
   }, [registrations])
 
