@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   getCurrentWeekFutureWeekdays,
+  getCurrentWeekWeekdays,
   getCutoffAt,
   getRegistrationDayState,
   isAllowedRegistrationDate,
@@ -66,5 +67,59 @@ describe('registrationWindow', () => {
     expect(isAllowedRegistrationDate(new Date('2026-05-10T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'DATE_NOT_FUTURE' })
     expect(isAllowedRegistrationDate(new Date('2026-05-16T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'WEEKEND' })
     expect(isAllowedRegistrationDate(new Date('2026-05-18T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'OUTSIDE_CURRENT_WEEK' })
+  })
+
+  it('returns Monday through Friday for the current week when today is Monday', () => {
+    const now = new Date('2026-05-11T10:00:00+07:00')
+
+    const days = getCurrentWeekWeekdays(now)
+
+    expect(days.map((day) => day.dateKey)).toEqual([
+      '2026-05-11',
+      '2026-05-12',
+      '2026-05-13',
+      '2026-05-14',
+      '2026-05-15',
+    ])
+  })
+
+  it('returns Monday through Friday for the current week when today is Friday', () => {
+    const now = new Date('2026-05-15T10:00:00+07:00')
+
+    const days = getCurrentWeekWeekdays(now)
+
+    expect(days.map((day) => day.dateKey)).toEqual([
+      '2026-05-11',
+      '2026-05-12',
+      '2026-05-13',
+      '2026-05-14',
+      '2026-05-15',
+    ])
+  })
+
+  it('returns Monday through Friday for the same current week when today is Saturday', () => {
+    const now = new Date('2026-05-16T10:00:00+07:00')
+
+    const days = getCurrentWeekWeekdays(now)
+    expect(days.map((day) => day.dateKey)).toEqual([
+      '2026-05-11',
+      '2026-05-12',
+      '2026-05-13',
+      '2026-05-14',
+      '2026-05-15',
+    ])
+  })
+
+  it('returns Monday through Friday for the same current week when today is Sunday', () => {
+    const now = new Date('2026-05-17T10:00:00+07:00')
+
+    const days = getCurrentWeekWeekdays(now)
+    expect(days.map((day) => day.dateKey)).toEqual([
+      '2026-05-11',
+      '2026-05-12',
+      '2026-05-13',
+      '2026-05-14',
+      '2026-05-15',
+    ])
   })
 })

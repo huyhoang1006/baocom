@@ -55,6 +55,20 @@ export function isSameCurrentWeek(targetDate: Date, now: Date): boolean {
   return target >= monday && target < nextMonday
 }
 
+export function getCurrentWeekWeekdays(now = new Date()): RegistrationDayState[] {
+  const today = startOfLocalDay(now)
+  const monday = new Date(today)
+  const dayOfWeek = monday.getDay()
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  monday.setDate(monday.getDate() + diffToMonday)
+
+  return [0, 1, 2, 3, 4].map((offset) => {
+    const date = new Date(monday)
+    date.setDate(monday.getDate() + offset)
+    return getRegistrationDayState(date, now)
+  })
+}
+
 export function isAllowedRegistrationDate(targetDate: Date, now = new Date()): RegistrationDateValidation {
   const target = startOfLocalDay(targetDate)
   const today = startOfLocalDay(now)
