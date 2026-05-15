@@ -5,6 +5,8 @@ import { authApi } from "@/lib/api"
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" },
+  { label: "Thực đơn", href: "/admin/menu", icon: "restaurant_menu" },
+  { label: "Ngày lễ/ngày nghỉ", href: "/admin/holidays", icon: "event_note" },
   { label: "Nhân sự", href: "/admin/employees", icon: "group" },
   { label: "Báo cáo", href: "/admin/reports", icon: "description" },
 ]
