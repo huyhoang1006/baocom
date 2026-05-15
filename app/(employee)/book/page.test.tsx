@@ -67,4 +67,51 @@ describe('BookPage weekly cards', () => {
 
     expect(setStatus).toHaveBeenCalledWith('2026-05-13', 'not-eating')
   })
+
+  it('opens on current week with previous disabled', () => {
+    vi.setSystemTime(new Date('2026-05-15T10:00:00+07:00'))
+
+    render(<BookPage />)
+
+    expect(screen.getByText('Tuần 11/05 - 15/05')).toBeInTheDocument()
+    expect(screen.getByText('Tuần hiện tại')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '← Tuần trước' })).toBeDisabled()
+  })
+
+  it('advances to next week and returns to current week', () => {
+    vi.setSystemTime(new Date('2026-05-15T10:00:00+07:00'))
+
+    render(<BookPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tuần sau →' }))
+    expect(screen.getByText('Tuần 18/05 - 22/05')).toBeInTheDocument()
+    expect(screen.getByTestId('book-day-2026-05-18')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '← Tuần trước' }))
+    expect(screen.getByText('Tuần 11/05 - 15/05')).toBeInTheDocument()
+  })
+
+  it('disables next at week offset 4', () => {
+    vi.setSystemTime(new Date('2026-05-15T10:00:00+07:00'))
+
+    render(<BookPage />)
+
+    const nextButton = screen.getByRole('button', { name: 'Tuần sau →' })
+    fireEvent.click(nextButton)
+    fireEvent.click(nextButton)
+    fireEvent.click(nextButton)
+    fireEvent.click(nextButton)
+
+    expect(screen.getByText('Tuần 08/06 - 12/06')).toBeInTheDocument()
+    expect(nextButton).toBeDisabled()
+  })
+
+  it('keeps next week accessible on Saturday', () => {
+    vi.setSystemTime(new Date('2026-05-16T10:00:00+07:00'))
+
+    render(<BookPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tuần sau →' }))
+    expect(screen.getByTestId('book-day-2026-05-18')).toBeInTheDocument()
+  })
 })

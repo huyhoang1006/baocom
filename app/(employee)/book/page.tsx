@@ -2,18 +2,23 @@
 
 import { useMemo, useState } from "react"
 import { useRegistrations } from "@/hooks/useRegistrations"
-import { getCurrentWeekWeekdays, startOfLocalDay } from "@/lib/registrationWindow"
+import { MAX_BOOKING_WEEK_OFFSET, getWeekdaysForOffset, startOfLocalDay } from "@/lib/registrationWindow"
 
 type Status = "eating" | "not-eating"
+
+function formatWeekRangeDate(date: Date): string {
+  return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}`
+}
 
 export default function BookPage() {
   const today = useMemo(() => new Date(), [])
   const { loading, error, setStatus, getStatusForDate } = useRegistrations()
+  const [weekOffset, setWeekOffset] = useState(0)
 
   const days = useMemo(() => {
     const todayStart = startOfLocalDay(today)
 
-    return getCurrentWeekWeekdays(today).map((day) => {
+    return getWeekdaysForOffset(today, weekOffset).map((day) => {
       const isPastOrToday = day.date <= todayStart
 
       return {
@@ -22,7 +27,7 @@ export default function BookPage() {
         status: (getStatusForDate(day.dateKey) || "eating") as Status,
       }
     })
-  }, [today, getStatusForDate])
+  }, [today, weekOffset, getStatusForDate])
 
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
@@ -42,6 +47,9 @@ export default function BookPage() {
 
   const eatingCount = days.filter((day) => day.status === "eating").length
   const openCount = days.filter((day) => !day.locked).length
+  const weekRangeLabel = days.length > 0
+    ? `Tuần ${formatWeekRangeDate(days[0].date)} - ${formatWeekRangeDate(days[4].date)}`
+    : "Tuần này"
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
@@ -49,13 +57,43 @@ export default function BookPage() {
         <div className="max-w-[900px] mx-auto">
           <h1 className="text-3xl font-semibold tracking-tight text-ink">Báo Cơm</h1>
           <p className="text-base text-ink-muted-80 mt-2">
-            Tuần này luôn hiển thị từ Thứ 2 đến Thứ 6. Bạn chỉ chỉnh được các ngày tương lai chưa khóa.
+            Xem tuần hiện tại và 4 tuần tới. Bạn chỉ chỉnh được các ngày tương lai chưa khóa.
           </p>
         </div>
       </header>
 
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto space-y-8">
+          <div className="rounded-[18px] bg-surface-container-low p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-lg font-semibold text-ink">{weekRangeLabel}</div>
+                {weekOffset === 0 && (
+                  <div className="text-xs font-semibold text-primary mt-1">Tuần hiện tại</div>
+                )}
+              </div>
+              <div className="text-sm text-ink-muted-80">{weekOffset + 1}/5</div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={weekOffset === 0}
+                onClick={() => setWeekOffset((value) => Math.max(0, value - 1))}
+                className="rounded-xl border border-hairline bg-canvas px-3 py-2 text-sm font-semibold text-ink disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+              >
+                ← Tuần trước
+              </button>
+              <button
+                type="button"
+                disabled={weekOffset === MAX_BOOKING_WEEK_OFFSET}
+                onClick={() => setWeekOffset((value) => Math.min(MAX_BOOKING_WEEK_OFFSET, value + 1))}
+                className="rounded-xl border border-hairline bg-canvas px-3 py-2 text-sm font-semibold text-ink disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+              >
+                Tuần sau →
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-[18px] bg-surface-container-low p-5">
               <div className="text-2xl font-semibold text-ink">{eatingCount}</div>
