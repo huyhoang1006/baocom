@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { RegistrationService } from '@/services/RegistrationService'
 
+type RegistrationRepositoryStub = {
+  upsert: ReturnType<typeof vi.fn>
+}
+
+function getRegistrationRepository(service: RegistrationService): RegistrationRepositoryStub {
+  return service['registrationRepository'] as unknown as RegistrationRepositoryStub
+}
+
 describe('RegistrationService', () => {
   let registrationService: RegistrationService
 
@@ -20,7 +28,7 @@ describe('RegistrationService', () => {
       registrationService.create('test-user-id', {
         userId: 'test-user-id',
         date: today,
-        status: 'invalid' as any
+        status: 'invalid' as never
       })
     ).rejects.toThrow('Invalid status')
   })
@@ -58,7 +66,7 @@ describe('RegistrationService', () => {
   })
 
   it('allows creating a registration for a later weekday that is still open', async () => {
-    const repository = (registrationService as any).registrationRepository
+    const repository = getRegistrationRepository(registrationService)
     repository.upsert = vi.fn().mockResolvedValue({
       id: 'reg-1',
       userId: 'test-user-id',
@@ -80,7 +88,7 @@ describe('RegistrationService', () => {
   })
 
   it('allows creating a registration in week offset 4', async () => {
-    const repository = (registrationService as any).registrationRepository
+    const repository = getRegistrationRepository(registrationService)
     repository.upsert = vi.fn().mockResolvedValue({
       id: 'reg-offset-4',
       userId: 'test-user-id',
