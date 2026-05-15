@@ -4,6 +4,7 @@ import Link from "next/link"
 import { authApi } from "@/lib/api"
 
 const navItems = [
+  { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
   { label: "Báo cơm", href: "/book", icon: "restaurant" },
   { label: "Lịch sử", href: "/my-history", icon: "history" },
 ]
