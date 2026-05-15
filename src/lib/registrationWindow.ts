@@ -18,6 +18,8 @@ export interface RegistrationDayState {
 
 const WEEKDAY_NAMES = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
+export const MAX_BOOKING_WEEK_OFFSET = 4
+
 export function toDateKey(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -55,12 +57,17 @@ export function isSameCurrentWeek(targetDate: Date, now: Date): boolean {
   return target >= monday && target < nextMonday
 }
 
-export function getCurrentWeekWeekdays(now = new Date()): RegistrationDayState[] {
+export function getWeekStart(now = new Date(), weekOffset = 0): Date {
   const today = startOfLocalDay(now)
   const monday = new Date(today)
   const dayOfWeek = monday.getDay()
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  monday.setDate(monday.getDate() + diffToMonday)
+  monday.setDate(monday.getDate() + diffToMonday + weekOffset * 7)
+  return monday
+}
+
+export function getWeekdaysForOffset(now = new Date(), weekOffset = 0): RegistrationDayState[] {
+  const monday = getWeekStart(now, weekOffset)
 
   return [0, 1, 2, 3, 4].map((offset) => {
     const date = new Date(monday)
@@ -69,13 +76,27 @@ export function getCurrentWeekWeekdays(now = new Date()): RegistrationDayState[]
   })
 }
 
+export function getCurrentWeekWeekdays(now = new Date()): RegistrationDayState[] {
+  return getWeekdaysForOffset(now, 0)
+}
+
+function isWithinBookingWindow(targetDate: Date, now: Date): boolean {
+  const target = startOfLocalDay(targetDate)
+  const currentWeekStart = getWeekStart(now, 0)
+  const maxWeekStart = getWeekStart(now, MAX_BOOKING_WEEK_OFFSET)
+  const maxWindowEnd = new Date(maxWeekStart)
+  maxWindowEnd.setDate(maxWeekStart.getDate() + 7)
+
+  return target >= currentWeekStart && target < maxWindowEnd
+}
+
 export function isAllowedRegistrationDate(targetDate: Date, now = new Date()): RegistrationDateValidation {
   const target = startOfLocalDay(targetDate)
   const today = startOfLocalDay(now)
 
   if (target <= today) return { ok: false, reason: 'DATE_NOT_FUTURE' }
   if (isWeekend(target)) return { ok: false, reason: 'WEEKEND' }
-  if (!isSameCurrentWeek(target, now)) return { ok: false, reason: 'OUTSIDE_CURRENT_WEEK' }
+  if (!isWithinBookingWindow(target, now)) return { ok: false, reason: 'OUTSIDE_CURRENT_WEEK' }
   if (now >= getCutoffAt(target)) return { ok: false, reason: 'LOCKED' }
 
   return { ok: true }

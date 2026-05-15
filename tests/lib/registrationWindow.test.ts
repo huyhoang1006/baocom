@@ -4,6 +4,7 @@ import {
   getCurrentWeekWeekdays,
   getCutoffAt,
   getRegistrationDayState,
+  getWeekdaysForOffset,
   isAllowedRegistrationDate,
 } from '@/lib/registrationWindow'
 
@@ -60,13 +61,13 @@ describe('registrationWindow', () => {
     ])
   })
 
-  it('rejects today, weekend, past date, and next week date', () => {
+  it('rejects today, weekend, past date, and dates after the booking window', () => {
     const now = new Date('2026-05-11T10:00:00+07:00')
 
     expect(isAllowedRegistrationDate(new Date('2026-05-11T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'DATE_NOT_FUTURE' })
     expect(isAllowedRegistrationDate(new Date('2026-05-10T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'DATE_NOT_FUTURE' })
     expect(isAllowedRegistrationDate(new Date('2026-05-16T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'WEEKEND' })
-    expect(isAllowedRegistrationDate(new Date('2026-05-18T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'OUTSIDE_CURRENT_WEEK' })
+    expect(isAllowedRegistrationDate(new Date('2026-06-15T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'OUTSIDE_CURRENT_WEEK' })
   })
 
   it('returns Monday through Friday for the current week when today is Monday', () => {
@@ -121,5 +122,52 @@ describe('registrationWindow', () => {
       '2026-05-14',
       '2026-05-15',
     ])
+  })
+
+  it('returns Monday through Friday for next week offset', () => {
+    const now = new Date('2026-05-15T10:00:00+07:00')
+
+    const days = getWeekdaysForOffset(now, 1)
+
+    expect(days.map((day) => day.dateKey)).toEqual([
+      '2026-05-18',
+      '2026-05-19',
+      '2026-05-20',
+      '2026-05-21',
+      '2026-05-22',
+    ])
+  })
+
+  it('returns Monday through Friday for fourth future week offset', () => {
+    const now = new Date('2026-05-15T10:00:00+07:00')
+
+    const days = getWeekdaysForOffset(now, 4)
+
+    expect(days.map((day) => day.dateKey)).toEqual([
+      '2026-06-08',
+      '2026-06-09',
+      '2026-06-10',
+      '2026-06-11',
+      '2026-06-12',
+    ])
+  })
+
+  it('allows future weekdays through week offset 4', () => {
+    const now = new Date('2026-05-15T10:00:00+07:00')
+
+    expect(isAllowedRegistrationDate(new Date('2026-06-12T00:00:00+07:00'), now)).toEqual({ ok: true })
+  })
+
+  it('rejects future weekdays after week offset 4', () => {
+    const now = new Date('2026-05-15T10:00:00+07:00')
+
+    expect(isAllowedRegistrationDate(new Date('2026-06-15T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'OUTSIDE_CURRENT_WEEK' })
+  })
+
+  it('locks next Monday at Sunday 23:00', () => {
+    const now = new Date('2026-05-17T23:00:00+07:00')
+
+    expect(isAllowedRegistrationDate(new Date('2026-05-18T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'LOCKED' })
+    expect(isAllowedRegistrationDate(new Date('2026-05-19T00:00:00+07:00'), now)).toEqual({ ok: true })
   })
 })
