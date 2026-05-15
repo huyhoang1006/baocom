@@ -78,4 +78,36 @@ describe('RegistrationService', () => {
     expect(registration.status).toBe('not_eating')
     expect(repository.upsert).toHaveBeenCalledWith('test-user-id', new Date('2026-05-13T00:00:00.000'), 'not_eating')
   })
+
+  it('allows creating a registration in week offset 4', async () => {
+    const repository = (registrationService as any).registrationRepository
+    repository.upsert = vi.fn().mockResolvedValue({
+      id: 'reg-offset-4',
+      userId: 'test-user-id',
+      date: new Date('2026-06-12T00:00:00.000'),
+      status: 'not_eating',
+      note: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
+    const registration = await registrationService.create(
+      'test-user-id',
+      { date: '2026-06-12', status: 'not_eating' },
+      new Date('2026-05-15T10:00:00+07:00')
+    )
+
+    expect(registration.status).toBe('not_eating')
+    expect(repository.upsert).toHaveBeenCalledWith('test-user-id', new Date('2026-06-12T00:00:00.000'), 'not_eating')
+  })
+
+  it('rejects creating a registration after week offset 4', async () => {
+    await expect(
+      registrationService.create(
+        'test-user-id',
+        { date: '2026-06-15', status: 'not_eating' },
+        new Date('2026-05-15T10:00:00+07:00')
+      )
+    ).rejects.toThrow('Ngay nay khong nam trong lich bao com')
+  })
 })
