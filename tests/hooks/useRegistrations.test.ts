@@ -6,6 +6,7 @@ import { useRegistrations } from '@/hooks/useRegistrations'
 vi.mock('@/lib/api', () => ({
   registrationsApi: {
     getAll: vi.fn(),
+    create: vi.fn(),
   },
 }))
 
@@ -92,5 +93,39 @@ describe('useRegistrations', () => {
     })
 
     expect(result.current.getStatusForDate('2026-05-13')).toBeNull()
+  })
+
+  it('saves explicit not-eating status for a date', async () => {
+    vi.mocked(registrationsApi.getAll).mockResolvedValue({ registrations: [] })
+    vi.mocked(registrationsApi.create).mockResolvedValue({ registration: { id: 'reg-1' } })
+
+    const { result } = renderHook(() => useRegistrations())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    const success = await result.current.setStatus('2026-05-13', 'not-eating')
+
+    expect(success).toBe(true)
+    expect(registrationsApi.create).toHaveBeenCalledWith('2026-05-13', 'not_eating')
+  })
+
+  it('returns API error message when save fails', async () => {
+    vi.mocked(registrationsApi.getAll).mockResolvedValue({ registrations: [] })
+    vi.mocked(registrationsApi.create).mockRejectedValue(new Error('Ngay nay da khoa bao com'))
+
+    const { result } = renderHook(() => useRegistrations())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    const success = await result.current.setStatus('2026-05-12', 'not-eating')
+
+    expect(success).toBe(false)
+    await waitFor(() => {
+      expect(result.current.error).toBe('Ngay nay da khoa bao com')
+    })
   })
 })

@@ -31,9 +31,13 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     fetchRegistrations()
   }, [fetchRegistrations])
 
-  const toggle = useCallback(async (date: string, currentStatus: UIStatus) => {
-    const newStatus = currentStatus === 'eating' ? 'not-eating' : 'eating'
-    const apiStatus = toAPIStatus(newStatus)
+  const setStatus = useCallback(async (date: string, status: UIStatus) => {
+    if (status !== 'eating' && status !== 'not-eating') {
+      setError('Invalid status')
+      return false
+    }
+
+    const apiStatus = toAPIStatus(status)
 
     try {
       await registrationsApi.create(date, apiStatus)
@@ -57,7 +61,7 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     registrations,
     loading,
     error,
-    toggle,
+    setStatus,
     getStatusForDate,
     refetch: fetchRegistrations,
   }
