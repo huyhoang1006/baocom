@@ -67,4 +67,24 @@ export class MealsController {
     await this.mealService.delete(id)
     return NextResponse.json({ success: true })
   }
+
+  async findOrCreate(req: NextRequest) {
+    let body: { name: string; type: MealType }
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    if (!body.name || !body.type) {
+      return NextResponse.json({ error: 'Missing name or type' }, { status: 400 })
+    }
+
+    if (!['main', 'vegetable', 'dessert'].includes(body.type)) {
+      return NextResponse.json({ error: 'Invalid meal type' }, { status: 400 })
+    }
+
+    const meal = await this.mealService.findOrCreateByName(body.name, body.type)
+    return NextResponse.json({ meal }, { status: 200 })
+  }
 }
