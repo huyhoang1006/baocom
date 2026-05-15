@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useRegistrations } from "@/hooks/useRegistrations"
-import { getCurrentWeekFutureWeekdays } from "@/lib/registrationWindow"
+import { getCurrentWeekWeekdays, startOfLocalDay } from "@/lib/registrationWindow"
 
 type Status = "eating" | "not-eating"
 
@@ -11,10 +11,17 @@ export default function BookPage() {
   const { loading, error, setStatus, getStatusForDate } = useRegistrations()
 
   const days = useMemo(() => {
-    return getCurrentWeekFutureWeekdays(today).map((day) => ({
-      ...day,
-      status: (getStatusForDate(day.dateKey) || "eating") as Status,
-    }))
+    const todayStart = startOfLocalDay(today)
+
+    return getCurrentWeekWeekdays(today).map((day) => {
+      const isPastOrToday = day.date <= todayStart
+
+      return {
+        ...day,
+        locked: day.locked || isPastOrToday,
+        status: (getStatusForDate(day.dateKey) || "eating") as Status,
+      }
+    })
   }, [today, getStatusForDate])
 
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
@@ -42,7 +49,7 @@ export default function BookPage() {
         <div className="max-w-[900px] mx-auto">
           <h1 className="text-3xl font-semibold tracking-tight text-ink">Báo Cơm</h1>
           <p className="text-base text-ink-muted-80 mt-2">
-            Mặc định bạn sẽ ăn trưa hàng ngày. Chọn trạng thái cho các ngày tương lai còn mở trong tuần này.
+            Tuần này luôn hiển thị từ Thứ 2 đến Thứ 6. Bạn chỉ chỉnh được các ngày tương lai chưa khóa.
           </p>
         </div>
       </header>
@@ -66,12 +73,6 @@ export default function BookPage() {
             </div>
           )}
 
-          {!loading && days.length === 0 && (
-            <div className="rounded-[18px] bg-surface-container-low p-5 text-ink-muted-80">
-              Không còn ngày làm việc tương lai trong tuần này.
-            </div>
-          )}
-
           {!loading && days.length > 0 && openCount === 0 && (
             <div className="rounded-[18px] bg-surface-container-low p-5 text-ink-muted-80">
               Không còn ngày nào mở để chỉnh sửa trong tuần này.
@@ -79,7 +80,7 @@ export default function BookPage() {
           )}
 
           {!loading && days.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
               {days.map((day) => {
                 const isEating = day.status === "eating"
                 const isNotEating = day.status === "not-eating"
@@ -87,6 +88,7 @@ export default function BookPage() {
                 return (
                   <div
                     key={day.dateKey}
+                    data-testid={`book-day-${day.dateKey}`}
                     className={`
                       relative p-4 rounded-[18px] border-2 transition-all duration-200
                       ${day.locked ? "opacity-60" : ""}
