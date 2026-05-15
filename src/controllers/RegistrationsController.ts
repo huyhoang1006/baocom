@@ -30,7 +30,7 @@ export class RegistrationsController {
     return NextResponse.json({ registration })
   }
 
-  async create(req: NextRequest, userId: string) {
+  async create(req: NextRequest, userId: string, now = new Date()) {
     let body: CreateRegistrationDTO
     try {
       body = await req.json()
@@ -43,11 +43,16 @@ export class RegistrationsController {
     }
 
     try {
-      const registration = await this.registrationService.create(userId, body)
+      const registration = await this.registrationService.create(userId, body, now)
       return NextResponse.json({ registration }, { status: 201 })
     } catch (error) {
-      if (error instanceof Error && error.message === 'Invalid status') {
-        return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+      if (error instanceof Error) {
+        if (error.message === 'Invalid status') {
+          return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+        }
+        if (error.message === 'Ngay nay da khoa bao com' || error.message === 'Ngay nay khong nam trong lich bao com') {
+          return NextResponse.json({ error: error.message }, { status: 400 })
+        }
       }
       throw error
     }
@@ -71,6 +76,9 @@ export class RegistrationsController {
         }
         if (error.message === 'Forbidden') {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
+        if (error.message === 'Ngay nay da khoa bao com' || error.message === 'Ngay nay khong nam trong lich bao com') {
+          return NextResponse.json({ error: error.message }, { status: 400 })
         }
       }
       throw error
