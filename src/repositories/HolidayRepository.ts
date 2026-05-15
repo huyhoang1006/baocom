@@ -11,8 +11,11 @@ export class HolidayRepository extends BaseRepository<
     super(prisma)
   }
 
-  async findAll(where?: Prisma.HolidayWhereInput): Promise<Holiday[]> {
-    return this.prisma.holiday.findMany({ where })
+  async findAll(): Promise<Holiday[]> {
+    return this.prisma.holiday.findMany({
+      where: { isActive: true },
+      orderBy: { date: 'asc' }
+    })
   }
 
   async findOne(id: string): Promise<Holiday | null> {
