@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RegistrationService } from '@/services/RegistrationService'
 import { CreateRegistrationDTO, UpdateRegistrationDTO } from '@/dto/RegistrationDTO'
+import { toDateKey } from '@/lib/registrationWindow'
 
 export class RegistrationsController {
   private registrationService: RegistrationService
@@ -9,13 +10,20 @@ export class RegistrationsController {
     this.registrationService = new RegistrationService()
   }
 
+  private withDateKey<T extends { date: Date }>(registration: T): T & { dateKey: string } {
+    return {
+      ...registration,
+      dateKey: toDateKey(registration.date),
+    }
+  }
+
   async getAll(req: NextRequest, userId: string) {
     const { searchParams } = req.nextUrl
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
 
     const registrations = await this.registrationService.findAll(userId, startDate || undefined, endDate || undefined)
-    return NextResponse.json({ registrations })
+    return NextResponse.json({ registrations: registrations.map((registration) => this.withDateKey(registration)) })
   }
 
   async getOne(id: string, userId?: string, role?: string) {
@@ -44,7 +52,7 @@ export class RegistrationsController {
 
     try {
       const registration = await this.registrationService.create(userId, body, now)
-      return NextResponse.json({ registration }, { status: 201 })
+      return NextResponse.json({ registration: this.withDateKey(registration) }, { status: 201 })
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Invalid status') {

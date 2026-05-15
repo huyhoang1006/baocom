@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { RegistrationsController } from '@/controllers/RegistrationsController'
 import { NextRequest } from 'next/server'
 
@@ -15,6 +15,30 @@ describe('RegistrationsController', () => {
       const response = await controller.getAll(req, 'test-user-id')
       expect(response.status).toBe(200)
     })
+
+    it('returns dateKey for fetched registrations', async () => {
+      const service = (controller as unknown as { registrationService: { findAll: ReturnType<typeof vi.fn> } }).registrationService
+      service.findAll = vi.fn().mockResolvedValue([
+        {
+          id: 'reg-1',
+          userId: 'test-user-id',
+          date: new Date('2026-05-18T00:00:00.000Z'),
+          status: 'eating',
+          note: null,
+          createdAt: new Date('2026-05-15T00:00:00.000Z'),
+          updatedAt: new Date('2026-05-15T00:00:00.000Z'),
+          user: { name: 'Nguyen Van A', username: 'nguyenvana' },
+        },
+      ])
+
+      const req = new NextRequest('http://localhost/api/registrations')
+      const response = await controller.getAll(req, 'test-user-id')
+      const body = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(body.registrations[0].dateKey).toBe('2026-05-18')
+      expect(body.registrations[0].status).toBe('eating')
+    })
   })
 
   describe('create', () => {
@@ -25,6 +49,30 @@ describe('RegistrationsController', () => {
       })
       const response = await controller.create(req, 'test-user-id')
       expect(response.status).toBe(400)
+    })
+
+    it('returns dateKey for created registrations', async () => {
+      const service = (controller as unknown as { registrationService: { create: ReturnType<typeof vi.fn> } }).registrationService
+      service.create = vi.fn().mockResolvedValue({
+        id: 'reg-2',
+        userId: 'test-user-id',
+        date: new Date('2026-05-18T00:00:00.000Z'),
+        status: 'eating',
+        note: null,
+        createdAt: new Date('2026-05-15T00:00:00.000Z'),
+        updatedAt: new Date('2026-05-15T00:00:00.000Z'),
+      })
+      const req = new NextRequest('http://localhost/api/registrations', {
+        method: 'POST',
+        body: JSON.stringify({ date: '2026-05-18', status: 'eating' }),
+      })
+
+      const response = await controller.create(req, 'test-user-id', new Date('2026-05-15T10:00:00+07:00'))
+      const body = await response.json()
+
+      expect(response.status).toBe(201)
+      expect(body.registration.dateKey).toBe('2026-05-18')
+      expect(body.registration.status).toBe('eating')
     })
 
     it('returns 400 for locked registration date', async () => {
