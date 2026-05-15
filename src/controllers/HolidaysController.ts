@@ -37,8 +37,11 @@ export class HolidaysController {
     try {
       const holiday = await this.holidayService.create(body)
       return NextResponse.json({ holiday }, { status: 201 })
-    } catch {
-      return NextResponse.json({ error: 'Failed to create holiday' }, { status: 400 })
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Date already exists') {
+        return NextResponse.json({ error: 'Date already exists' }, { status: 400 })
+      }
+      throw error
     }
   }
 

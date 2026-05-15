@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { HolidayRepository } from '@/repositories/HolidayRepository'
 import { CreateHolidayDTO, UpdateHolidayDTO } from '@/dto/HolidayDTO'
+import { Prisma } from '@prisma/client'
 
 export class HolidayService {
   private holidayRepository: HolidayRepository
@@ -10,7 +11,7 @@ export class HolidayService {
   }
 
   async findAll() {
-    return this.holidayRepository.findAll({ isActive: true })
+    return this.holidayRepository.findAll()
   }
 
   async findOne(id: string) {
@@ -18,18 +19,24 @@ export class HolidayService {
   }
 
   async create(data: CreateHolidayDTO) {
+    const existing = await prisma.holiday.findFirst({
+      where: { date: new Date(data.date) }
+    })
+    if (existing) {
+      throw new Error('Date already exists')
+    }
     return this.holidayRepository.create({
       date: new Date(data.date),
-      description: data.description
+      description: data.description || '',
+      isActive: true
     })
   }
 
   async update(id: string, data: UpdateHolidayDTO) {
-    const updateData: Record<string, unknown> = {}
+    const updateData: Prisma.HolidayUpdateInput = {}
     if (data.date) updateData.date = new Date(data.date)
     if (data.description !== undefined) updateData.description = data.description
-    if (typeof data.isActive === 'boolean') updateData.isActive = data.isActive
-
+    if (data.isActive !== undefined) updateData.isActive = data.isActive
     return this.holidayRepository.update(id, updateData)
   }
 
