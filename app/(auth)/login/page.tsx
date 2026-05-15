@@ -22,13 +22,18 @@ export default function LoginPage() {
     }
 
     try {
+      console.log('[LOGIN PAGE] Attempting login with:', username)
       const { user } = await authApi.login(username, password)
+      console.log('[LOGIN PAGE] Login successful, user:', user)
+      console.log('[LOGIN PAGE] Redirecting to:', user.role === 'admin' ? '/admin/dashboard' : '/dashboard')
       if (user.role === 'admin') {
         router.push("/admin/dashboard")
       } else {
         router.push("/dashboard")
       }
+      console.log('[LOGIN PAGE] Router.push called')
     } catch (err) {
+      console.error('[LOGIN PAGE] Login error:', err)
       setError("Sai tên đăng nhập hoặc mật khẩu")
     }
   }

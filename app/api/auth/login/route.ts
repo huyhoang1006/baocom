@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     // Success - reset attempts
     loginRateLimiter.recordSuccess(ip)
 
-    const token = signToken(user.id, user.role)
+    const token = await signToken(user.id, user.role)
 
     const response = NextResponse.json({
       user: {

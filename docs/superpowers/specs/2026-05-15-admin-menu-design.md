@@ -72,8 +72,8 @@ Dashboard | Thực đơn | Ngày lễ/ngày nghỉ | Nhân sự | Báo cáo
 Khi admin nhập text trong cell, parse theo quy tắc:
 - Mỗi món phân cách bằng dấu phẩy `,`
 - Trim whitespace
-- Nếu món chưa tồn tại trong DB → tạo mới với type mặc định là "main"
-- Nếu món đã tồn tại (theo tên, ignore case) → dùng lại ID
+- Nếu món chưa tồn tại trong DB → tạo mới với type = row hiện tại (main/vegetable/dessert)
+- Nếu món đã tồn tại (theo tên, ignore case) → dùng lại ID, giữ nguyên type gốc
 
 ---
 
