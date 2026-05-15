@@ -82,6 +82,16 @@ export const dailyMenusApi = {
   },
   getByDate: (date: string) =>
     apiFetch<{ menu: unknown }>(`/daily-menus/${date}`),
+  updateByDate: (date: string, mealIds: string[]) =>
+    apiFetch(`/daily-menus/${date}`, {
+      method: 'PUT',
+      body: JSON.stringify({ mealIds }),
+    }),
+  create: (date: string, mealIds: string[]) =>
+    apiFetch('/daily-menus', {
+      method: 'POST',
+      body: JSON.stringify({ date, mealIds }),
+    }),
 }
 
 // Users API (Admin)
@@ -130,20 +140,6 @@ export const holidaysApi = {
     }),
   delete: (id: string) =>
     apiFetch<{ success: boolean }>(`/holidays/${id}`, { method: 'DELETE' }),
-}
-
-// Daily Menus extended API
-export const dailyMenusExtendedApi = {
-  updateByDate: (date: string, mealIds: string[]) =>
-    apiFetch(`/daily-menus/${date}`, {
-      method: 'PUT',
-      body: JSON.stringify({ mealIds }),
-    }),
-  create: (date: string, mealIds: string[]) =>
-    apiFetch('/daily-menus', {
-      method: 'POST',
-      body: JSON.stringify({ date, mealIds }),
-    }),
 }
 
 // Meals extended API
