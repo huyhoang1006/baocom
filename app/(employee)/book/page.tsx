@@ -20,11 +20,14 @@ export default function BookPage() {
 
     return getWeekdaysForOffset(today, weekOffset).map((day) => {
       const isPastOrToday = day.date <= todayStart
+      const rawStatus = getStatusForDate(day.dateKey)
 
       return {
         ...day,
         locked: day.locked || isPastOrToday,
-        status: (getStatusForDate(day.dateKey) || "eating") as Status,
+        // null = default eating (no registration record), else explicit status
+        status: (rawStatus || "eating") as Status,
+        isDefault: rawStatus === null,
       }
     })
   }, [today, weekOffset, getStatusForDate])
@@ -148,6 +151,27 @@ export default function BookPage() {
                       {day.locked && (
                         <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-semibold text-ink-muted-80">
                           Đã khóa
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Status badge */}
+                    <div className="mb-3">
+                      {day.locked ? (
+                        <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-medium text-ink-muted-80">
+                          Đã chốt
+                        </span>
+                      ) : isNotEating ? (
+                        <span className="px-2.5 py-1 rounded-full bg-error-bg text-xs font-medium text-error">
+                          Đã báo nghỉ
+                        </span>
+                      ) : isEating && !day.isDefault ? (
+                        <span className="px-2.5 py-1 rounded-full bg-success-bg text-xs font-medium text-success">
+                          Đã đăng ký
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full bg-primary/10 text-xs font-medium text-primary">
+                          Mặc định có cơm
                         </span>
                       )}
                     </div>
