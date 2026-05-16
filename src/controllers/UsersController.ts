@@ -17,6 +17,7 @@ export class UsersController {
         username: u.username,
         name: u.name,
         role: u.role,
+        isActive: u.isActive,
         createdAt: u.createdAt
       }))
     })

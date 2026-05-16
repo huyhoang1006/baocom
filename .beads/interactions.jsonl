@@ -8,3 +8,4 @@
 {"id":"int-660804cd","kind":"field_change","created_at":"2026-05-16T14:29:19.2203629Z","actor":"h004888","issue_id":"baocom-1b7","extra":{"field":"status","new_value":"closed","old_value":"open","reason":"Clearing all bd issues"}}
 {"id":"int-eedb5386","kind":"field_change","created_at":"2026-05-16T14:29:19.3491536Z","actor":"h004888","issue_id":"baocom-o2k","extra":{"field":"status","new_value":"closed","old_value":"open","reason":"Clearing all bd issues"}}
 {"id":"int-8a9e201e","kind":"field_change","created_at":"2026-05-16T14:29:19.4889989Z","actor":"h004888","issue_id":"baocom-hm0","extra":{"field":"status","new_value":"closed","old_value":"open","reason":"Clearing all bd issues"}}
+{"id":"int-85bdc256","kind":"field_change","created_at":"2026-05-16T14:41:09.7625176Z","actor":"h004888","issue_id":"baocom-4dm","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}

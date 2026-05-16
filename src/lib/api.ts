@@ -96,7 +96,7 @@ export const dailyMenusApi = {
 
 // Users API (Admin)
 export const usersApi = {
-  getAll: () => apiFetch<{ users: Array<{ id: string; username: string; name: string; role: string; createdAt: string }> }>('/users'),
+  getAll: () => apiFetch<{ users: Array<{ id: string; username: string; name: string; role: string; isActive: boolean; createdAt: string }> }>('/users'),
   create: (data: { username: string; password?: string; name: string; role?: string }) =>
     apiFetch<{ user: { id: string; username: string; name: string; role: string } }>('/users', {
       method: 'POST',

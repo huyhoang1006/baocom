@@ -17,5 +17,6 @@ export interface UserResponseDTO {
   username: string
   name: string
   role: string
+  isActive: boolean
   createdAt: Date
 }

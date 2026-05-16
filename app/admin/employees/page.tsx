@@ -64,7 +64,7 @@ export default function EmployeesPage() {
           phone: "", // Backend doesn't have phone field
           email: undefined,
           department: undefined,
-          status: "active" as const,
+          status: u.isActive ? "active" as const : "inactive" as const,
         })))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load employees')
