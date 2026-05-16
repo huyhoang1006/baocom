@@ -12,3 +12,4 @@
 {"id":"int-2beef568","kind":"field_change","created_at":"2026-05-16T14:44:13.1131905Z","actor":"h004888","issue_id":"baocom-kdy","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
 {"id":"int-028dd194","kind":"field_change","created_at":"2026-05-16T14:46:50.8188968Z","actor":"h004888","issue_id":"baocom-0y7","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
 {"id":"int-8ad0efef","kind":"field_change","created_at":"2026-05-16T14:49:55.4468819Z","actor":"h004888","issue_id":"baocom-9mb","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}
+{"id":"int-e1e65dfb","kind":"field_change","created_at":"2026-05-16T15:06:34.4486944Z","actor":"h004888","issue_id":"baocom-iqx","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Closed"}}

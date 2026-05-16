@@ -1,5 +1,14 @@
 const API_BASE = '/api'
 
+export type Stats = {
+  totalEmployees: number
+  eating: number
+  notEating: number
+  registered: number
+  notRegistered: number
+  registrationRate: number
+}
+
 export class APIError extends Error {
   constructor(
     message: string,
@@ -113,7 +122,8 @@ export const usersApi = {
 
 // Admin Stats API
 export const adminStatsApi = {
-  getToday: () => apiFetch<{ stats: { totalEmployees: number; eating: number; notEating: number; eatingToday: number; notEatingToday: number; registered: number; notRegistered: number; registrationRate: number } }>('/admin/stats'),
+  getToday: () => apiFetch<{ stats: Stats; dateKey: string; absences: Array<{ name: string; username: string }> }>('/admin/stats'),
+  getByDate: (date: string) => apiFetch<{ stats: Stats; dateKey: string; absences: Array<{ name: string; username: string }> }>(`/admin/stats/date/${date}`),
 }
 
 // Admin Reports API

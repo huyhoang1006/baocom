@@ -1,88 +1,46 @@
 "use client"
 
-import Link from "next/link"
 import { useState, useEffect, useCallback } from "react"
-import { adminStatsApi } from "@/lib/api"
+import { adminStatsApi, type Stats } from "@/lib/api"
+import { toDateKey } from "@/lib/registrationWindow"
 
-interface Stat {
-  label: string
-  value: number | string
-  icon: string
+interface Absence {
+  name: string
+  username: string
+}
+
+interface StatsData {
+  stats: Stats
+  dateKey: string
+  absences: Absence[]
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stat[]>([])
+  const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()))
+  const [data, setData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchStats = useCallback(async () => {
+  const fetchStats = useCallback(async (date: string) => {
     try {
       setLoading(true)
       setError(null)
-      const data = await adminStatsApi.getToday()
-      const totalEmployees = data.stats.totalEmployees || 0
-      const registrationRate = totalEmployees > 0
-        ? Math.round((data.stats.eatingToday / totalEmployees) * 100)
-        : 0
-      setStats([
-        { label: "Tổng nhân viên", value: totalEmployees, icon: "group" },
-        { label: "Đang ăn hôm nay", value: data.stats.eatingToday, icon: "restaurant" },
-        { label: "Không ăn", value: data.stats.notEatingToday, icon: "no_meals" },
-        { label: "Tỷ lệ đăng ký", value: `${registrationRate}%`, icon: "pie_chart" },
-      ])
+      const result = await adminStatsApi.getByDate(date)
+      setData(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load stats')
+      setError(err instanceof Error ? err.message : "Failed to load stats")
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    let mounted = true
-    const controller = new AbortController()
+    fetchStats(selectedDate)
+  }, [selectedDate, fetchStats])
 
-    async function load() {
-      if (!mounted) return
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await adminStatsApi.getToday()
-        if (!mounted) return
-        const totalEmployees = data.stats.totalEmployees || 0
-        const registrationRate = totalEmployees > 0
-          ? Math.round((data.stats.eatingToday / totalEmployees) * 100)
-          : 0
-        setStats([
-          { label: "Tổng nhân viên", value: totalEmployees, icon: "group" },
-          { label: "Đang ăn hôm nay", value: data.stats.eatingToday, icon: "restaurant" },
-          { label: "Không ăn", value: data.stats.notEatingToday, icon: "no_meals" },
-          { label: "Tỷ lệ đăng ký", value: `${registrationRate}%`, icon: "pie_chart" },
-        ])
-      } catch (err) {
-        if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load stats')
-        }
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    load()
-
-    // Refresh stats when tab becomes visible (handles stale data past midnight)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        load()
-      }
-    }
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      mounted = false
-      controller.abort()
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
+  const stats = data?.stats
+  const absences = data?.absences || []
+  const todayStr = toDateKey(new Date())
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
@@ -104,12 +62,31 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
+          {/* Date Selector */}
+          <div className="mb-6 flex items-center gap-4">
+            <label className="text-sm font-medium text-ink">Ngày:</label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="form-input w-auto rounded-full"
+            />
+            {selectedDate !== todayStr && (
+              <button
+                onClick={() => setSelectedDate(todayStr)}
+                className="text-sm text-primary hover:text-primary-hover font-medium"
+              >
+                Hôm nay
+              </button>
+            )}
+          </div>
+
           {/* Error State */}
           {error && (
             <div className="mb-6 p-4 rounded-[18px] bg-error-bg border border-error text-error">
               <p className="font-medium">Lỗi: {error}</p>
               <button
-                onClick={fetchStats}
+                onClick={() => fetchStats(selectedDate)}
                 className="text-sm underline mt-1"
               >
                 Thử lại
@@ -120,7 +97,7 @@ export default function AdminDashboard() {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4 mb-8">
             {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
+              Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
                   className="bg-canvas border border-hairline rounded-[18px] p-5 animate-pulse"
@@ -130,28 +107,46 @@ export default function AdminDashboard() {
                   <div className="h-10 bg-surface-container rounded w-1/2" />
                 </div>
               ))
-            ) : (
-              stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-canvas border border-hairline rounded-[18px] p-5"
-                >
-                  <div className="w-10 h-10 rounded-[11px] bg-primary-bg flex items-center justify-center mb-3">
-                    <span
-                      className="material-symbols-outlined text-xl text-primary"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      {stat.icon}
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-ink-muted-48 mb-1">{stat.label}</p>
-                  <p className="text-[40px] font-semibold text-ink leading-none">
-                    {stat.value}
-                  </p>
-                </div>
-              ))
-            )}
+            ) : stats ? (
+              <>
+                <StatCard icon="group" label="Tổng nhân viên" value={stats.totalEmployees} />
+                <StatCard icon="restaurant" label="Có ăn" value={stats.eating} highlight />
+                <StatCard icon="no_meals" label="Không ăn" value={stats.notEating} error />
+                <StatCard icon="pending" label="Chưa đăng ký" value={stats.notRegistered} />
+                <StatCard icon="how_to_reg" label="Đã đăng ký" value={stats.registered} />
+                <StatCard icon="pie_chart" label="Tỷ lệ đăng ký" value={`${stats.registrationRate}%`} />
+              </>
+            ) : null}
           </div>
+
+          {/* Absences List */}
+          {!loading && absences.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-sm font-semibold text-ink-muted-80 mb-3 uppercase tracking-wider">
+                Nhân viên báo nghỉ ({absences.length})
+              </h2>
+              <div className="rounded-[18px] bg-surface-container-low border border-hairline overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-surface-container border-b border-hairline">
+                      <th className="text-left py-3 px-4 text-[12px] font-semibold uppercase tracking-wider text-ink-muted-80">STT</th>
+                      <th className="text-left py-3 px-4 text-[12px] font-semibold uppercase tracking-wider text-ink-muted-80">Họ tên</th>
+                      <th className="text-left py-3 px-4 text-[12px] font-semibold uppercase tracking-wider text-ink-muted-80">Username</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-hairline">
+                    {absences.map((a, idx) => (
+                      <tr key={idx} className="hover:bg-surface-container-low">
+                        <td className="py-3 px-4 text-sm text-ink-muted-80">{idx + 1}</td>
+                        <td className="py-3 px-4 text-sm font-medium text-ink">{a.name}</td>
+                        <td className="py-3 px-4 text-sm text-ink-muted-80">@{a.username}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* Quick Actions */}
           <div>
@@ -159,24 +154,56 @@ export default function AdminDashboard() {
               Thao tác nhanh
             </h2>
             <div className="flex flex-wrap gap-3">
-              <Link
+              <button
+                onClick={() => setSelectedDate(todayStr)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-all press-effect"
+              >
+                <span className="material-symbols-outlined text-lg">today</span>
+                Hôm nay
+              </button>
+              <a
                 href="/admin/reports"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-all press-effect"
               >
                 <span className="material-symbols-outlined text-lg">assessment</span>
                 Xuất báo cáo
-              </Link>
-              <Link
+              </a>
+              <a
                 href="/admin/employees"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-low transition-all border border-hairline"
               >
                 <span className="material-symbols-outlined text-lg">group</span>
                 Quản lý nhân sự
-              </Link>
+              </a>
             </div>
           </div>
         </div>
       </main>
+    </div>
+  )
+}
+
+function StatCard({ icon, label, value, highlight, error: isError }: {
+  icon: string
+  label: string
+  value: string | number
+  highlight?: boolean
+  error?: boolean
+}) {
+  return (
+    <div className={`bg-canvas border rounded-[18px] p-5 ${isError ? "border-error" : highlight ? "border-success" : "border-hairline"}`}>
+      <div className={`w-10 h-10 rounded-[11px] flex items-center justify-center mb-3 ${highlight ? "bg-success-bg" : "bg-primary-bg"}`}>
+        <span
+          className={`material-symbols-outlined text-xl ${highlight ? "text-success" : "text-primary"}`}
+          style={{ fontVariationSettings: "'FILL' 1" }}
+        >
+          {icon}
+        </span>
+      </div>
+      <p className="text-[14px] text-ink-muted-48 mb-1">{label}</p>
+      <p className={`text-[40px] font-semibold leading-none ${isError ? "text-error" : highlight ? "text-success" : "text-ink"}`}>
+        {value}
+      </p>
     </div>
   )
 }

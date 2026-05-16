@@ -131,4 +131,13 @@ export class RegistrationService {
 
     return { eating, notEating, total }
   }
+
+  async getAbsencesByDate(date: Date) {
+    const nextDay = new Date(date)
+    nextDay.setDate(nextDay.getDate() + 1)
+    return this.registrationRepository.findAll({
+      date: { gte: date, lt: nextDay },
+      status: 'not_eating',
+    }) as Promise<RegistrationWithUser[]>
+  }
 }
