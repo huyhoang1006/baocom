@@ -1,6 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { RegistrationsController } from '@/controllers/RegistrationsController'
+// Helper: get tomorrow's date at 23:00+07:00 (cutoff moment for next day registration)
+import { describe, it, expect, vi } from 'vitest'
 import { NextRequest } from 'next/server'
+import { RegistrationsController } from '@/controllers/RegistrationsController'
+function tomorrowAtCutoff(): Date {
+  const now = new Date()
+  const tomorrow = new Date(now)
+  tomorrow.setDate(now.getDate() + 1)
+  tomorrow.setHours(23, 0, 0, 0)
+  return tomorrow
+}
 
 describe('RegistrationsController', () => {
   let controller: RegistrationsController
@@ -75,13 +83,46 @@ describe('RegistrationsController', () => {
       expect(body.registration.status).toBe('eating')
     })
 
-    it('returns 400 for locked registration date', async () => {
+    it('returns 400 for invalid date format', async () => {
       const req = new NextRequest('http://localhost/api/registrations', {
         method: 'POST',
-        body: JSON.stringify({ date: '2026-05-12', status: 'not_eating' })
+        body: JSON.stringify({ date: '2026/05/18', status: 'eating' })
+      })
+      const response = await controller.create(req, 'test-user-id', new Date('2026-05-15T10:00:00+07:00'))
+      expect(response.status).toBe(400)
+    })
+
+    it('returns 400 for invalid status value', async () => {
+      const req = new NextRequest('http://localhost/api/registrations', {
+        method: 'POST',
+        body: JSON.stringify({ date: '2026-05-18', status: 'unknown' })
+      })
+      const response = await controller.create(req, 'test-user-id', new Date('2026-05-15T10:00:00+07:00'))
+      expect(response.status).toBe(400)
+    })
+
+    it('returns 400 for missing date (status only)', async () => {
+      const req = new NextRequest('http://localhost/api/registrations', {
+        method: 'POST',
+        body: JSON.stringify({ status: 'eating' })
+      })
+      const response = await controller.create(req, 'test-user-id', new Date('2026-05-15T10:00:00+07:00'))
+      expect(response.status).toBe(400)
+    })
+
+    it('returns 400 for locked registration date', async () => {
+      const cutoff = tomorrowAtCutoff()
+      // registration date is the day after the cutoff
+      const regDate = new Date(cutoff)
+      regDate.setDate(cutoff.getDate() + 1)
+      const regDateStr = regDate.toISOString().split('T')[0]
+
+      const req = new NextRequest('http://localhost/api/registrations', {
+        method: 'POST',
+        body: JSON.stringify({ date: regDateStr, status: 'not_eating' })
       })
 
-      const response = await controller.create(req, 'test-user-id', new Date('2026-05-11T23:00:00+07:00'))
+      const response = await controller.create(req, 'test-user-id', cutoff)
       const body = await response.json()
 
       expect(response.status).toBe(400)
