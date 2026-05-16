@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import * as XLSX from "xlsx"
 import { adminReportsApi } from "@/lib/api"
+import { toDateKey } from "@/lib/registrationWindow"
 
 interface ReportRow {
   stt: number
@@ -63,7 +64,7 @@ export default function ReportsPage() {
   const weekOptions = useMemo(() => getWeekOptions(), [])
   const monthOptions = useMemo(() => getMonthOptions(), [])
 
-  const todayStr = new Date().toISOString().split("T")[0]
+  const todayStr = toDateKey(new Date())
 
   const handlePreview = async () => {
     setLoading(true)
@@ -78,8 +79,8 @@ export default function ReportsPage() {
       } else if (reportType === "week") {
         const opt = weekOptions[selectedWeekIndex]
         if (opt) {
-          startDate = opt.start.toISOString().split('T')[0]
-          endDate = opt.end.toISOString().split('T')[0]
+          startDate = toDateKey(opt.start)
+          endDate = toDateKey(opt.end)
         } else {
           throw new Error("Vui lòng chọn tuần")
         }

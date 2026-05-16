@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { useRegistrations } from "@/hooks/useRegistrations"
 import { toUIStatus } from "@/lib/statusUtils"
+import { toDateKey } from "@/lib/registrationWindow"
 
 interface HistoryEntry {
   dateKey: string
@@ -57,7 +58,7 @@ export default function HistoryPage() {
   const historyMap = useMemo(() => {
     const map: Record<string, 'eating' | 'not-eating'> = {}
     registrations.forEach((reg) => {
-      const dateKey = new Date(reg.date).toISOString().split('T')[0]
+      const dateKey = toDateKey(new Date(reg.date))
       map[dateKey] = toUIStatus(reg.status as 'eating' | 'not_eating')
     })
     return map

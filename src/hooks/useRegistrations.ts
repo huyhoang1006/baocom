@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { registrationsApi } from '@/lib/api'
 import { toAPIStatus, toUIStatus, type UIStatus } from '@/lib/statusUtils'
+import { parseLocalDate, toDateKey } from '@/lib/registrationWindow'
 
 interface Registration {
   id: string
@@ -12,7 +13,7 @@ interface Registration {
 
 function getRegistrationDateKey(registration: Registration): string {
   if (registration.dateKey) return registration.dateKey
-  return new Date(registration.date).toISOString().split('T')[0]
+  return toDateKey(parseLocalDate(registration.date.split('T')[0]))
 }
 
 export function useRegistrations(startDate?: string, endDate?: string) {

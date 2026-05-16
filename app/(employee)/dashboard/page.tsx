@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useDailyMenus } from "@/hooks/useDailyMenus"
 import { useRegistrations } from "@/hooks/useRegistrations"
 import { toUIStatus } from "@/lib/statusUtils"
+import { toDateKey } from "@/lib/registrationWindow"
 
 interface DailyMenu {
   day: string
@@ -20,7 +21,7 @@ interface DailyMenu {
 const WEEKDAY_LABELS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
 
 function formatDateKey(date: Date): string {
-  return date.toISOString().split('T')[0]
+  return toDateKey(date)
 }
 
 function getWeekDates(): Date[] {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin } from '@/lib/authMiddleware'
 import { RegistrationService } from '@/services/RegistrationService'
+import { toDateKey } from '@/lib/registrationWindow'
 
 export class AdminReportsController {
   private registrationService: RegistrationService
@@ -22,7 +23,7 @@ export class AdminReportsController {
     const start = new Date(startDate)
     const end = new Date(endDate)
 
-    const registrations = await this.registrationService.findAll(startDate!, endDate!)
+    const registrations = await this.registrationService.findByDateRange(startDate!, endDate!)
 
     // Filter out Sundays from results (no lunch service on Sundays)
     const filtered = registrations.filter(r => {
@@ -33,7 +34,7 @@ export class AdminReportsController {
     // Group by date for stats
     const dateGroups: Record<string, number> = {}
     filtered.forEach(r => {
-      const dateKey = new Date(r.date).toISOString().split('T')[0]
+      const dateKey = toDateKey(new Date(r.date))
       dateGroups[dateKey] = (dateGroups[dateKey] || 0) + 1
     })
 

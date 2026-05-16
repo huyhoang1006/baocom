@@ -18,17 +18,39 @@ export interface RegistrationDayState {
 
 const WEEKDAY_NAMES = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
+// Asia/Ho_Chi_Minh is UTC+7 with no DST — fixed offset
+const VIETNAM_OFFSET_MS = 7 * 60 * 60 * 1000
+
 export const MAX_BOOKING_WEEK_OFFSET = 4
 
+/**
+ * Parse a YYYY-MM-DD string as a local date in Asia/Ho_Chi_Minh timezone,
+ * returning a Date at local midnight (TZ-adjusted).
+ */
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  // Treat components as local date parts, then add the Vietnam offset
+  // so that when UTC+0 midnight is interpreted, we get UTC+7 local midnight.
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) + VIETNAM_OFFSET_MS)
+}
+
+/**
+ * Format a Date as YYYY-MM-DD in Asia/Ho_Chi_Minh timezone.
+ * Use this instead of toISOString().split('T')[0] which shifts by UTC offset.
+ */
 export function toDateKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
+  const utc = date.getTime() + date.getTimezoneOffset() * 60 * 1000
+  const vietnamDate = new Date(utc + VIETNAM_OFFSET_MS)
+  const year = vietnamDate.getUTCFullYear()
+  const month = String(vietnamDate.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(vietnamDate.getUTCDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
 export function startOfLocalDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const local = date.getTime() + date.getTimezoneOffset() * 60 * 1000
+  const vietnam = local + VIETNAM_OFFSET_MS
+  return new Date(Math.floor((vietnam - VIETNAM_OFFSET_MS) / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000) - VIETNAM_OFFSET_MS)
 }
 
 export function getCutoffAt(targetDate: Date): Date {

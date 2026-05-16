@@ -32,6 +32,13 @@ export class RegistrationService {
     throw new Error('Ngay nay khong nam trong lich bao com')
   }
 
+  async findByDateRange(startDate: string, endDate: string): Promise<RegistrationWithUser[]> {
+    const where: Record<string, unknown> = {
+      date: { gte: new Date(startDate), lte: new Date(endDate) }
+    }
+    return this.registrationRepository.findAll(where) as Promise<RegistrationWithUser[]>
+  }
+
   async findAll(userId?: string, startDate?: string, endDate?: string): Promise<RegistrationWithUser[]> {
     const where: Record<string, unknown> = {}
     if (userId) where.userId = userId

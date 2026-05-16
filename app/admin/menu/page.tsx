@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { dailyMenusApi, mealsExtendedApi } from "@/lib/api"
+import { toDateKey } from "@/lib/registrationWindow"
 
 const WEEKDAY_LABELS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
 
@@ -24,7 +25,7 @@ interface WeekDay {
 }
 
 function formatDateKey(date: Date): string {
-  return date.toISOString().split('T')[0]
+  return toDateKey(date)
 }
 
 function getWeekDates(weekOffset: number = 0): WeekDay[] {

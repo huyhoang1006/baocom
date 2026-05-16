@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { dailyMenusApi } from '@/lib/api'
+import { toDateKey } from '@/lib/registrationWindow'
 
 interface Meal {
   id: string
@@ -37,7 +38,7 @@ export function useDailyMenus(take?: number) {
 
   const getMenuByDate = useCallback((dateStr: string): DailyMenu | null => {
     return menus.find(m => {
-      const menuDate = new Date(m.date).toISOString().split('T')[0]
+      const menuDate = toDateKey(new Date(m.date))
       return menuDate === dateStr
     }) || null
   }, [menus])

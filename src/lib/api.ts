@@ -81,7 +81,7 @@ export const dailyMenusApi = {
     return apiFetch<{ menus: unknown[] }>(`/daily-menus${params}`)
   },
   getByDate: (date: string) =>
-    apiFetch<{ menu: unknown }>(`/daily-menus/${date}`),
+    apiFetch<{ dailyMenu: unknown }>(`/daily-menus/${date}`),
   updateByDate: (date: string, mealIds: string[]) =>
     apiFetch(`/daily-menus/${date}`, {
       method: 'PUT',
