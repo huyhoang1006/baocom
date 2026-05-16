@@ -99,4 +99,45 @@
 
 ## Traceability
 
-(To be filled by ROADMAP.md.)
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AUTH-01 | Phase 2 | Pending |
+| AUTH-02 | Phase 2 | Pending |
+| AUTH-03 | Phase 2 | Pending |
+| USER-01 | Phase 2 | Pending |
+| USER-02 | Phase 2 | Pending |
+| DATE-01 | Phase 1 | Pending |
+| DATE-02 | Phase 1 | Pending |
+| DATE-03 | Phase 3 | Pending |
+| DATE-04 | Phase 3 | Pending |
+| REG-01 | Phase 3 | Pending |
+| REG-02 | Phase 3 | Pending |
+| REG-03 | Phase 3 | Pending |
+| REG-04 | Phase 3 | Pending |
+| REG-05 | Phase 3 | Pending |
+| CUT-01 | Phase 4 | Pending |
+| CUT-02 | Phase 4 | Pending |
+| CUT-03 | Phase 4 | Pending |
+| CUT-04 | Phase 4 | Pending |
+| CUT-05 | Phase 4 | Pending |
+| MENU-01 | Phase 5 | Pending |
+| MENU-02 | Phase 5 | Pending |
+| MENU-03 | Phase 5 | Pending |
+| MENU-04 | Phase 5 | Pending |
+| OPS-01 | Phase 6 | Pending |
+| OPS-02 | Phase 6 | Pending |
+| OPS-03 | Phase 6 | Pending |
+| OPS-04 | Phase 6 | Pending |
+| OPS-05 | Phase 6 | Pending |
+| RPT-01 | Phase 7 | Pending |
+| RPT-02 | Phase 7 | Pending |
+| RPT-03 | Phase 7 | Pending |
+| RPT-04 | Phase 7 | Pending |
+| RPT-05 | Phase 7 | Pending |
+| RPT-06 | Phase 7 | Pending |
+| RPT-07 | Phase 7 | Pending |
+| QUAL-01 | Phase 1 | Pending |
+| QUAL-02 | Phase 1 | Pending |
+| QUAL-03 | Phase 8 | Pending |
+| QUAL-04 | Phase 8 | Pending |
+| QUAL-05 | Phase 8 | Pending |
