@@ -125,6 +125,16 @@ export const adminReportsApi = {
   },
 }
 
+// Admin Settings API
+export const adminSettingsApi = {
+  getCutoff: () => apiFetch<{ cutoffHour: number; cutoffMinute: number }>('/admin/settings/cutoff'),
+  updateCutoff: (hour: number, minute: number) =>
+    apiFetch<{ success: boolean; cutoffHour: number; cutoffMinute: number }>('/admin/settings/cutoff', {
+      method: 'PUT',
+      body: JSON.stringify({ cutoffHour: hour, cutoffMinute: minute }),
+    }),
+}
+
 // Holidays API
 export const holidaysApi = {
   getAll: () => apiFetch<{ holidays: Array<{ id: string; date: string; description?: string; isActive: boolean }> }>('/holidays'),

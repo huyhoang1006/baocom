@@ -67,15 +67,17 @@ export class RegistrationsController {
   }
 
   async update(id: string, req: NextRequest, userId: string, role: string) {
-    let body: UpdateRegistrationDTO
+    let body: UpdateRegistrationDTO & { overrideNote?: string }
     try {
       body = await req.json()
     } catch {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
+    const { overrideNote, ...updateData } = body
+
     try {
-      const registration = await this.registrationService.update(id, userId, role, body)
+      const registration = await this.registrationService.update(id, userId, role, updateData, overrideNote)
       return NextResponse.json({ registration })
     } catch (error) {
       if (error instanceof Error) {

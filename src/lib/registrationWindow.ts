@@ -53,10 +53,15 @@ export function startOfLocalDay(date: Date): Date {
   return new Date(Math.floor((vietnam - VIETNAM_OFFSET_MS) / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000) - VIETNAM_OFFSET_MS)
 }
 
-export function getCutoffAt(targetDate: Date): Date {
+export interface CutoffTimeConfig {
+  hour: number
+  minute: number
+}
+
+export function getCutoffAt(targetDate: Date, config?: CutoffTimeConfig): Date {
   const cutoffAt = startOfLocalDay(targetDate)
   cutoffAt.setDate(cutoffAt.getDate() - 1)
-  cutoffAt.setHours(23, 0, 0, 0)
+  cutoffAt.setHours(config?.hour ?? 23, config?.minute ?? 0, 0, 0)
   return cutoffAt
 }
 

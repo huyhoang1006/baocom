@@ -52,4 +52,22 @@ export class RegistrationRepository extends BaseRepository<
   async count(where?: Prisma.RegistrationWhereInput): Promise<number> {
     return this.prisma.registration.count({ where })
   }
+
+  async createOverride(data: {
+    registrationId: string
+    performedBy: string
+    newStatus: string
+    note?: string
+    originalStatus?: string
+  }) {
+    return this.prisma.registrationOverride.create({
+      data: {
+        registrationId: data.registrationId,
+        performedBy: data.performedBy,
+        newStatus: data.newStatus,
+        note: data.note,
+        originalStatus: data.originalStatus,
+      }
+    })
+  }
 }

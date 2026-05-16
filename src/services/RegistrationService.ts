@@ -63,7 +63,7 @@ export class RegistrationService {
     return this.registrationRepository.upsert(userId, date, data.status)
   }
 
-  async update(id: string, userId: string, role: string, data: UpdateRegistrationDTO) {
+  async update(id: string, userId: string, role: string, data: UpdateRegistrationDTO, overrideNote?: string) {
     const registration = await this.registrationRepository.findOne(id)
     if (!registration) {
       throw new Error('Registration not found')
@@ -71,6 +71,15 @@ export class RegistrationService {
     if (role !== 'admin' && registration.userId !== userId) {
       throw new Error('Forbidden')
     }
+
+    const wasLocked = (() => {
+      try {
+        this.validateEditableDate(registration.date)
+        return false
+      } catch {
+        return true
+      }
+    })()
 
     if (role !== 'admin') {
       this.validateEditableDate(registration.date)
@@ -84,7 +93,20 @@ export class RegistrationService {
       updateData.note = data.note
     }
 
-    return this.registrationRepository.update(id, updateData)
+    const result = await this.registrationRepository.update(id, updateData)
+
+    // Record admin override when changing a locked date
+    if (role === 'admin' && wasLocked && overrideNote && data.status) {
+      await this.registrationRepository.createOverride({
+        registrationId: id,
+        performedBy: userId,
+        newStatus: data.status,
+        note: overrideNote,
+        originalStatus: registration.status,
+      })
+    }
+
+    return result
   }
 
   async delete(id: string) {

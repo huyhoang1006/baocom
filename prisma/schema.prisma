@@ -62,7 +62,8 @@ model Registration {
   status   String
   note     String?
 
-  user     User @relation(fields: [userId], references: [id])
+  user      User                   @relation(fields: [userId], references: [id])
+  overrides RegistrationOverride[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -79,4 +80,26 @@ model Holiday {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CutoffConfig {
+  id           String @id @default("global")
+  cutoffHour   Int    @default(23)
+  cutoffMinute Int    @default(0)
+  updatedAt    DateTime @updatedAt
+  updatedBy    String?
+}
+
+model RegistrationOverride {
+  id             String   @id @default(cuid())
+  registrationId String
+  performedBy    String
+  performedAt    DateTime @default(now())
+  newStatus      String
+  note           String?
+  originalStatus String?
+
+  registration Registration @relation(fields: [registrationId], references: [id])
+
+  @@index([registrationId])
 }
