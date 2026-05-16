@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin } from '@/lib/authMiddleware'
 import { RegistrationService } from '@/services/RegistrationService'
+import { UserService } from '@/services/UserService'
 import { toDateKey } from '@/lib/registrationWindow'
 
 export class AdminReportsController {
   private registrationService: RegistrationService
+  private userService: UserService
 
   constructor() {
     this.registrationService = new RegistrationService()
+    this.userService = new UserService()
   }
 
   async getReport(req: NextRequest) {
@@ -20,10 +23,7 @@ export class AdminReportsController {
       return NextResponse.json({ error: 'Missing date range' }, { status: 400 })
     }
 
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-
-    const registrations = await this.registrationService.findByDateRange(startDate!, endDate!)
+    const registrations = await this.registrationService.findByDateRange(startDate, endDate)
 
     // Filter out Sundays from results (no lunch service on Sundays)
     const filtered = registrations.filter(r => {
@@ -50,6 +50,52 @@ export class AdminReportsController {
       stats: {
         total: reportData.length,
         byDate: dateGroups
+      }
+    })
+  }
+
+  async exportCsv(req: NextRequest) {
+    const { searchParams } = req.nextUrl
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
+    const includeSundays = searchParams.get('includeSundays') === 'true'
+
+    if (!startDate || !endDate) {
+      return NextResponse.json({ error: 'Missing date range' }, { status: 400 })
+    }
+
+    const registrations = await this.registrationService.findByDateRange(startDate, endDate)
+    const filtered = registrations.filter(r => {
+      const day = new Date(r.date).getDay()
+      return day !== 0 || includeSundays
+    })
+
+    const totalEmployees = await this.userService.count()
+    const eatingCount = filtered.filter(r => r.status === 'eating').length
+    const notEatingCount = filtered.filter(r => r.status === 'not_eating').length
+    const absentUsers = filtered.filter(r => r.status === 'not_eating').map(r => r.user?.name)
+
+    const now = new Date()
+    const generatedAt = now.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+
+    const csvRows = [
+      `BAOCOM Lunch Report`,
+      `Date Range,${startDate} - ${endDate}`,
+      `Generated,${generatedAt}`,
+      `Timezone,Asia/Ho_Chi_Minh`,
+      `Total Employees,${totalEmployees}`,
+      `Eating,${eatingCount}`,
+      `Not Eating,${notEatingCount}`,
+      ``,
+      `Absent Employees,${absentUsers.length}`,
+      ...absentUsers.map((name, i) => `${i + 1},${name}`),
+    ]
+
+    const csv = csvRows.join('\n')
+    return new NextResponse(csv, {
+      headers: {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': `attachment; filename="BAOCOM_Report_${startDate}_${endDate}.csv"`,
       }
     })
   }

@@ -147,6 +147,39 @@ export default function ReportsPage() {
     XLSX.writeFile(wb, filename)
   }
 
+  const handleExportCsv = () => {
+    if (previewData.length === 0) return
+
+    let startDate: string
+    let endDate: string
+
+    if (reportType === "day" && selectedDate) {
+      startDate = endDate = selectedDate
+    } else if (reportType === "week") {
+      const opt = weekOptions[selectedWeekIndex]
+      if (opt) {
+        startDate = toDateKey(opt.start)
+        endDate = toDateKey(opt.end)
+      } else {
+        return
+      }
+    } else if (reportType === "month") {
+      const opt = monthOptions[selectedMonthIndex]
+      if (opt) {
+        const lastDay = new Date(opt.year, opt.month, 0).getDate()
+        startDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-01`
+        endDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-${lastDay}`
+      } else {
+        return
+      }
+    } else {
+      return
+    }
+
+    const url = adminReportsApi.exportCsvUrl(startDate, endDate)
+    window.open(url, '_blank')
+  }
+
   const displayedData = showAll ? previewData : previewData.slice(0, 5)
 
   return (
@@ -278,6 +311,13 @@ export default function ReportsPage() {
                 >
                   <span className="material-symbols-outlined text-lg">download</span>
                   Tải Excel
+                </button>
+                <button
+                  onClick={handleExportCsv}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-low transition-all border border-hairline"
+                >
+                  <span className="material-symbols-outlined text-lg">table</span>
+                  Tải CSV
                 </button>
               </div>
 
