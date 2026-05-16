@@ -138,6 +138,7 @@ export default function MenuPage() {
 
   const handleSave = async () => {
     setSaving(true)
+    const errors: string[] = []
     try {
       for (const day of weekDates) {
         const typeMap = cellValues.get(day.dateKey)
@@ -170,12 +171,16 @@ export default function MenuPage() {
             try {
               await dailyMenusApi.create(day.dateKey, allMeals)
             } catch {
-              // Skip if both fail
+              errors.push(day.dateKey)
             }
           }
         }
       }
-      showNotification("success", "Đã lưu thực đơn tuần này")
+      if (errors.length > 0) {
+        showNotification("error", `Lỗi lưu: ${errors.join(', ')}`)
+      } else {
+        showNotification("success", "Đã lưu thực đơn tuần này")
+      }
       fetchMenus()
     } catch (err) {
       showNotification("error", err instanceof Error ? err.message : "Lưu thất bại")
