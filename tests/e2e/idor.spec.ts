@@ -31,11 +31,22 @@ test('TC-SEC-IDOR-001: User A Cannot Access User B\'s Registrations', async ({ b
   expect(loginB.status()).toBe(200)
   const cookiesB = getCookieHeader(loginB.headers())
 
-  // User B creates a registration
-  const regB = await contextB.request.post('/api/registrations', {
-    data: { date: '2026-05-20', status: 'eating' },
+  // User B creates a registration (use future date - next Tuesday May 25)
+  let regB = await contextB.request.post('/api/registrations', {
+    data: { date: '2026-05-25', status: 'eating' },
     headers: { Cookie: cookiesB },
   })
+  if (regB.status() !== 201) {
+    // Try alternate future date if May 25 is unavailable
+    const futureDate = new Date()
+    futureDate.setDate(futureDate.getDate() + 7)
+    const dateStr = futureDate.toISOString().split('T')[0]
+    await regB.dispose()
+    regB = await contextB.request.post('/api/registrations', {
+      data: { date: dateStr, status: 'eating' },
+      headers: { Cookie: cookiesB },
+    })
+  }
   expect(regB.status()).toBe(201)
   const regBId = (await regB.json()).registration?.id
 
@@ -68,9 +79,12 @@ test('TC-SEC-IDOR-002: User A Cannot Modify User B\'s Registration', async ({ br
   })
   const cookiesB = getCookieHeader(loginB.headers())
 
-  // User B creates registration
+  // User B creates registration (use future date)
+  const futureDate = new Date()
+  futureDate.setDate(futureDate.getDate() + 7)
+  const dateStr = futureDate.toISOString().split('T')[0]
   const regB = await contextB.request.post('/api/registrations', {
-    data: { date: '2026-05-21', status: 'eating' },
+    data: { date: dateStr, status: 'eating' },
     headers: { Cookie: cookiesB },
   })
   expect(regB.status()).toBe(201)
@@ -104,9 +118,12 @@ test('TC-SEC-IDOR-003: User A Cannot Delete User B\'s Registration', async ({ br
   })
   const cookiesB = getCookieHeader(loginB.headers())
 
-  // User B creates registration
+  // User B creates registration (use future date)
+  const futureDate = new Date()
+  futureDate.setDate(futureDate.getDate() + 7)
+  const dateStr = futureDate.toISOString().split('T')[0]
   const regB = await contextB.request.post('/api/registrations', {
-    data: { date: '2026-05-22', status: 'eating' },
+    data: { date: dateStr, status: 'eating' },
     headers: { Cookie: cookiesB },
   })
   expect(regB.status()).toBe(201)
@@ -135,8 +152,12 @@ test('TC-SEC-IDOR-004: Admin Can Access All Registrations', async ({ browser }) 
   })
   const cookiesUser = getCookieHeader(loginUser.headers())
 
+  const futureDate = new Date()
+  futureDate.setDate(futureDate.getDate() + 7)
+  const dateStr = futureDate.toISOString().split('T')[0]
+
   const regUser = await contextUser.request.post('/api/registrations', {
-    data: { date: '2026-05-23', status: 'eating' },
+    data: { date: dateStr, status: 'eating' },
     headers: { Cookie: cookiesUser },
   })
   expect(regUser.status()).toBe(201)

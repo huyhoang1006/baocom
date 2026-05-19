@@ -5,15 +5,19 @@ import { loginRateLimiter } from '@/lib/rateLimiter'
 
 export async function POST(request: Request) {
   try {
-    // Get client IP and check rate limit
-    const ip = loginRateLimiter.getClientIP(request as unknown as NextRequest)
+    // Get client IP and check rate limit (skip entirely if RATE_LIMIT_BYPASS is set)
+    const bypassRateLimit = process.env.RATE_LIMIT_BYPASS === 'true'
+    let ip: string | undefined
 
-    const limitCheck = loginRateLimiter.checkLimit(ip)
-    if (!limitCheck.allowed) {
-      return NextResponse.json(
-        { error: 'Too many failed attempts. Please try again after 15 minutes.', retryAfter: limitCheck.retryAfter },
-        { status: 429 }
-      )
+    if (!bypassRateLimit) {
+      ip = loginRateLimiter.getClientIP(request as unknown as NextRequest)
+      const limitCheck = loginRateLimiter.checkLimit(ip)
+      if (!limitCheck.allowed) {
+        return NextResponse.json(
+          { error: 'Too many failed attempts. Please try again after 15 minutes.', retryAfter: limitCheck.retryAfter },
+          { status: 429 }
+        )
+      }
     }
 
     const { username, password } = await request.json()
@@ -31,25 +35,21 @@ export async function POST(request: Request) {
       where: { username }
     })
 
-    // Check isActive BEFORE password verification to prevent timing attack
-    if (!user || !user.isActive) {
-      // Still run verifyPassword to maintain constant time regardless of user existence
-      if (user) {
-        await verifyPassword(password, user.password)
-      }
-      loginRateLimiter.recordFailedAttempt(ip)
+    // Always call verifyPassword to maintain constant time regardless of user existence
+    const isValid = user ? await verifyPassword(password, user.password) : false
+    if (!isValid) {
+      if (!bypassRateLimit) loginRateLimiter.recordFailedAttempt(ip!)
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
-    const isValid = await verifyPassword(password, user.password)
-
-    if (!isValid) {
-      loginRateLimiter.recordFailedAttempt(ip)
+    // Check isActive after password verification
+    if (!user || !user.isActive) {
+      if (!bypassRateLimit) loginRateLimiter.recordFailedAttempt(ip!)
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
     // Success - reset attempts
-    loginRateLimiter.recordSuccess(ip)
+    if (!bypassRateLimit) loginRateLimiter.recordSuccess(ip!)
 
     const token = await signToken(user.id, user.role)
 

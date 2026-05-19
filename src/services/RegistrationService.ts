@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { RegistrationRepository } from '@/repositories/RegistrationRepository'
 import { CreateRegistrationDTO, UpdateRegistrationDTO, RegistrationStatus } from '@/dto/RegistrationDTO'
-import { isAllowedRegistrationDate, startOfLocalDay } from '@/lib/registrationWindow'
+import { isAllowedRegistrationDate, startOfLocalDay, parseLocalDate } from '@/lib/registrationWindow'
 
 export type RegistrationWithUser = {
   userId: string
@@ -57,7 +57,7 @@ export class RegistrationService {
       throw new Error('Invalid status')
     }
 
-    const date = startOfLocalDay(new Date(data.date))
+    const date = parseLocalDate(data.date)
     this.validateEditableDate(date, now)
 
     return this.registrationRepository.upsert(userId, date, data.status)

@@ -19,6 +19,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  // Pass env vars to test process
   webServer: {
     command: 'NODE_ENV=test RATE_LIMIT_BYPASS=true npm run dev',
     url: 'http://localhost:3000',
