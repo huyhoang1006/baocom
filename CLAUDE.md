@@ -89,9 +89,7 @@ Mục tiêu của project hiện tại là hoàn thiện v1 từ codebase brownf
 - **Scale**: Dưới 50 nhân viên — ưu tiên đơn giản, không over-engineer pagination hoặc distributed infra.
 - **Auth**: Admin tạo tài khoản — không cần self-service signup trong v1.
 - **Workflow**: Mặc định ăn, báo nghỉ là hành động chính — UI và logic phải tối ưu cho ít thao tác.
-<!-- GSD:project-end -->
 
-<!-- GSD:stack-start source:codebase/STACK.md -->
 ## Technology Stack
 
 ## Languages
@@ -148,9 +146,7 @@ Mục tiêu của project hiện tại là hoàn thiện v1 từ codebase brownf
 - Next.js production server via `npm run build` then `npm start` from `package.json`.
 - Database provider is SQLite in `prisma/schema.prisma`; runtime connection uses libSQL adapter in `src/lib/prisma.ts`, so production should provide a valid `DATABASE_URL`.
 - HTTPS proxy header `x-forwarded-proto: https` affects secure auth cookie setting in `app/api/auth/login/route.ts`.
-<!-- GSD:stack-end -->
 
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
 ## Naming Patterns
@@ -203,10 +199,7 @@ Mục tiêu của project hiện tại là hoàn thiện v1 từ codebase brownf
 - Export hooks as named functions: `export function useRegistrations`.
 - Next.js API route files export HTTP handlers: `export const GET`, `export const POST` in `app/api/registrations/route.ts`.
 - Barrel files exist for domain layers: `src/controllers/index.ts`, `src/dto/index.ts`, `src/repositories/index.ts`, `src/services/index.ts`, and `app/components/sidebar/index.ts`.
-- Prefer direct imports in route files when matching current pattern, e.g. `app/api/registrations/route.ts` imports `@/controllers/RegistrationsController` directly.
-<!-- GSD:conventions-end -->
 
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
 ## System Overview
@@ -317,7 +310,7 @@ Mục tiêu của project hiện tại là hoàn thiện v1 từ codebase brownf
 - Responsibilities: Seed application data.
 ## Architectural Constraints
 - **Threading:** Next.js runs request handlers in JavaScript runtime; repository/service code is async and I/O-bound through Prisma.
-- **Global state:** Shared Prisma singleton in `src/lib/prisma.ts`; login rate limiter singleton imported by `app/api/auth/login/route.ts` from `src/lib/rateLimiter.ts`.
+- **Global state:** Shared Prisma singleton in `src/lib/prisma.ts`.
 - **Path alias:** `@/*` maps to `./src/*` in `tsconfig.json`; use it for imports from `src/` only.
 - **Client/server boundary:** Files using `useState`, `useEffect`, `useRouter`, or browser `window` require `"use client"`; API routes and services stay server-side.
 - **Auth model:** Protected API routes must use `withAuth` or `withAdmin` from `src/lib/authMiddleware.ts`; login/logout/me routes handle auth directly.
@@ -333,31 +326,3 @@ Mục tiêu của project hiện tại là hoàn thiện v1 từ codebase brownf
 - Map domain errors to status codes in controllers, e.g. registration not found → `404`, forbidden → `403`, locked date → `400`.
 - API routes catch internal failures only in direct handlers such as `app/api/auth/login/route.ts`.
 - Browser code catches `APIError` at page/hook level and sets UI error state.
-## Cross-Cutting Concerns
-<!-- GSD:architecture-end -->
-
-<!-- GSD:skills-start source:skills/ -->
-## Project Skills
-
-No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, or `.codex/skills/` with a `SKILL.md` index file.
-<!-- GSD:skills-end -->
-
-<!-- GSD:workflow-start source:GSD defaults -->
-## GSD Workflow Enforcement
-
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
-
-Use these entry points:
-- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd-debug` for investigation and bug fixing
-- `/gsd-execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
-
-<!-- GSD:profile-start -->
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
