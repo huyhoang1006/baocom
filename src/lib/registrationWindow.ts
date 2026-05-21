@@ -14,6 +14,7 @@ export interface RegistrationDayState {
   dayName: string
   cutoffAt: Date
   locked: boolean
+  isWorkday: boolean  // true cho T2-T6, false cho T7, CN
 }
 
 const WEEKDAY_NAMES = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
