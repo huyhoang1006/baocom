@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { adminStatsApi, type Stats } from "@/lib/api"
-import { toDateKey } from "@/lib/registrationWindow"
+import { toDateKey, getNextLockedDay } from "@/lib/registrationWindow"
 
 interface Absence {
   name: string
@@ -16,7 +16,10 @@ interface StatsData {
 }
 
 export default function AdminDashboard() {
-  const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()))
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const nextLocked = getNextLockedDay(new Date())
+    return nextLocked ? nextLocked.dateKey : toDateKey(new Date())
+  })
   const [data, setData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
