@@ -133,6 +133,7 @@ export default function BookPage() {
                     className={`
                       relative p-4 rounded-[18px] border-2 transition-all duration-200
                       ${day.locked ? "opacity-60" : ""}
+                      ${!day.isWorkday && !day.locked ? "opacity-50" : ""}
                       ${isEating ? "border-success bg-success-bg" : ""}
                       ${isNotEating ? "border-error bg-error-bg" : ""}
                     `}
@@ -179,21 +180,21 @@ export default function BookPage() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        disabled={day.locked || isEating}
+                        disabled={day.locked || !day.isWorkday || isEating}
                         onClick={() => handleStatusChange(day.dateKey, "eating")}
                         className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
                           isEating ? "border-success bg-success text-on-primary" : "border-hairline bg-canvas text-ink"
-                        } ${day.locked ? "cursor-not-allowed" : "active:scale-95"}`}
+                        } ${day.locked || !day.isWorkday ? "cursor-not-allowed opacity-50" : "active:scale-95"}`}
                       >
                         Có ăn
                       </button>
                       <button
                         type="button"
-                        disabled={day.locked || isNotEating}
+                        disabled={day.locked || !day.isWorkday || isNotEating}
                         onClick={() => handleStatusChange(day.dateKey, "not-eating")}
                         className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
                           isNotEating ? "border-error bg-error text-on-primary" : "border-hairline bg-canvas text-ink"
-                        } ${day.locked ? "cursor-not-allowed" : "active:scale-95"}`}
+                        } ${day.locked || !day.isWorkday ? "cursor-not-allowed opacity-50" : "active:scale-95"}`}
                       >
                         Không ăn
                       </button>
