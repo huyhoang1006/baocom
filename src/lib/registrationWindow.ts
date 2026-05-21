@@ -169,3 +169,30 @@ export function getNextLockedDay(now: Date): RegistrationDayState | null {
   const weekdays = getCurrentWeekFutureWeekdays(now)
   return weekdays.find(day => day.locked) ?? null
 }
+
+/**
+ * Returns the next workday (T2-T6) starting from tomorrow, skipping weekends and holidays.
+ */
+export function getNextWorkday(fromDate: Date, holidays: Date[] = []): Date {
+  const current = startOfLocalDay(fromDate)
+  current.setDate(current.getDate() + 1) // start from tomorrow
+
+  // Keep advancing until we find T2-T6 that's not a holiday
+  for (let i = 0; i < 20; i++) {
+    const dayOfWeek = current.getDay()
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      // Weekend — skip
+      current.setDate(current.getDate() + 1)
+      continue
+    }
+    // Check if it's a holiday
+    const currentKey = toDateKey(current)
+    const isHoliday = holidays.some(h => toDateKey(h) === currentKey)
+    if (!isHoliday) {
+      return current
+    }
+    current.setDate(current.getDate() + 1)
+  }
+
+  return current // fallback
+}
