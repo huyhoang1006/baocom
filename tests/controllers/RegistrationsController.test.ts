@@ -111,15 +111,12 @@ describe('RegistrationsController', () => {
     })
 
     it('returns 400 for locked registration date', async () => {
-      const cutoff = tomorrowAtCutoff()
-      // registration date is the day after the cutoff
-      const regDate = new Date(cutoff)
-      regDate.setDate(cutoff.getDate() + 1)
-      const regDateStr = regDate.toISOString().split('T')[0]
-
+      // Test locked date: May 25, 2026 (Monday) - cutoff is day before at 23:00
+      // Using explicit Vietnam timezone date to avoid timezone ambiguity
+      const cutoff = new Date('2026-05-24T23:00:00+07:00')
       const req = new NextRequest('http://localhost/api/registrations', {
         method: 'POST',
-        body: JSON.stringify({ date: regDateStr, status: 'not_eating' })
+        body: JSON.stringify({ date: '2026-05-25', status: 'not_eating' })
       })
 
       const response = await controller.create(req, 'test-user-id', cutoff)

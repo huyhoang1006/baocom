@@ -34,7 +34,7 @@ export class RegistrationService {
 
   async findByDateRange(startDate: string, endDate: string): Promise<RegistrationWithUser[]> {
     const where: Record<string, unknown> = {
-      date: { gte: new Date(startDate), lte: new Date(endDate) }
+      date: { gte: parseLocalDate(startDate), lte: parseLocalDate(endDate) }
     }
     return this.registrationRepository.findAll(where) as Promise<RegistrationWithUser[]>
   }

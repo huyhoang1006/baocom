@@ -31,7 +31,7 @@ export const MAX_BOOKING_WEEK_OFFSET = 4
 export function parseLocalDate(dateStr: string): Date {
   const dateOnly = dateStr.split('T')[0]
   const [year, month, day] = dateOnly.split('-').map(Number)
-  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) + VIETNAM_OFFSET_MS)
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) - VIETNAM_OFFSET_MS)
 }
 
 /**
@@ -39,8 +39,7 @@ export function parseLocalDate(dateStr: string): Date {
  * Use this instead of toISOString().split('T')[0] which shifts by UTC offset.
  */
 export function toDateKey(date: Date): string {
-  const utc = date.getTime() + date.getTimezoneOffset() * 60 * 1000
-  const vietnamDate = new Date(utc + VIETNAM_OFFSET_MS)
+  const vietnamDate = new Date(date.getTime() + VIETNAM_OFFSET_MS)
   const year = vietnamDate.getUTCFullYear()
   const month = String(vietnamDate.getUTCMonth() + 1).padStart(2, '0')
   const day = String(vietnamDate.getUTCDate()).padStart(2, '0')
@@ -48,9 +47,8 @@ export function toDateKey(date: Date): string {
 }
 
 export function startOfLocalDay(date: Date): Date {
-  const local = date.getTime() + date.getTimezoneOffset() * 60 * 1000
-  const vietnam = local + VIETNAM_OFFSET_MS
-  return new Date(Math.floor((vietnam - VIETNAM_OFFSET_MS) / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000) - VIETNAM_OFFSET_MS)
+  const local = date.getTime() + VIETNAM_OFFSET_MS
+  return new Date(Math.floor(local / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000) - VIETNAM_OFFSET_MS)
 }
 
 export interface CutoffTimeConfig {
