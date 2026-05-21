@@ -46,3 +46,6 @@ next-env.d.ts
 .beads-credential-key
 
 /src/generated/prisma
+
+# bv (beads viewer) local config and caches
+.bv/
