@@ -124,10 +124,10 @@ export class RegistrationService {
     const nextDay = new Date(dayStart)
     nextDay.setDate(nextDay.getDate() + 1)
 
-    // Only count registrations for active employees
+    // Only count registrations for active employees (not admins)
     const where = {
       date: { gte: dayStart, lt: nextDay },
-      user: { isActive: true }
+      user: { isActive: true, role: 'employee' }
     }
 
     const [eating, notEating, total] = await Promise.all([
