@@ -17,5 +17,6 @@ export const GET = withAdmin(async (req: NextRequest) => {
     return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD' }, { status: 400 })
   }
 
-  return controller.getTodayStats()
+  const dateObj = new Date(date + 'T00:00:00+07:00')
+  return controller.getStatsForDate(dateObj)
 })

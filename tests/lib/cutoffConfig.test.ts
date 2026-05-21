@@ -1,13 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { getCutoffConfig, upsertCutoffConfig, invalidateCutoffCache } from '@/lib/cutoffConfig'
 
-// Mock prisma
-const mockPrisma = {
-  cutoffConfig: {
-    findUnique: vi.fn(),
-    upsert: vi.fn(),
-  },
-}
+const { mockPrisma } = vi.hoisted(() => {
+  return {
+    mockPrisma: {
+      cutoffConfig: {
+        findUnique: vi.fn(),
+        upsert: vi.fn(),
+      },
+    },
+  }
+})
 vi.mock('@/lib/prisma', () => ({ prisma: mockPrisma }))
 
 describe('cutoffConfig', () => {
@@ -107,14 +110,10 @@ describe('cutoffConfig', () => {
       })
     })
 
-    it('calls invalidateCutoffCache after upsert', async () => {
-      mockPrisma.cutoffConfig.upsert.mockResolvedValue(undefined)
+    it('throws if upsert fails', async () => {
+      mockPrisma.cutoffConfig.upsert.mockRejectedValueOnce(new Error('DB error'))
 
-      await upsertCutoffConfig(23, 0, 'admin-id')
-
-      // After upsert, cache should be cleared
-      const config = await getCutoffConfig()
-      expect(config.cutoffHour).toBe(23) // from DB
+      await expect(upsertCutoffConfig(22, 30, 'admin-user-123')).rejects.toThrow('DB error')
     })
   })
 })

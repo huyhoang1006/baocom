@@ -68,7 +68,11 @@ export class MealsController {
     return NextResponse.json({ success: true })
   }
 
-  async findOrCreate(req: NextRequest) {
+  async findOrCreate(req: NextRequest, userId?: string, role?: string) {
+    if (role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     let body: { name: string; type: MealType }
     try {
       body = await req.json()

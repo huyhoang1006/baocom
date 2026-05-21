@@ -41,7 +41,7 @@ export class AdminReportsController {
     const reportData = filtered.map((r, idx) => ({
       stt: idx + 1,
       name: r.user?.name,
-      phone: r.user?.username,
+      phone: r.user?.phone ?? r.user?.username, // phone field added in migration; falls back to username for legacy data
       date: new Date(r.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
     }))
 

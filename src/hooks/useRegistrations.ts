@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { registrationsApi } from '@/lib/api'
 import { toAPIStatus, toUIStatus, type UIStatus } from '@/lib/statusUtils'
 import { parseLocalDate, toDateKey } from '@/lib/registrationWindow'
@@ -16,10 +16,15 @@ function getRegistrationDateKey(registration: Registration): string {
   return toDateKey(parseLocalDate(registration.date.split('T')[0]))
 }
 
+function findRegistrationByDate(registrations: Registration[], dateStr: string): Registration | undefined {
+  return registrations.find(r => getRegistrationDateKey(r) === dateStr)
+}
+
 export function useRegistrations(startDate?: string, endDate?: string) {
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const saving = useRef(false)
 
   const fetchRegistrations = useCallback(async () => {
     try {
@@ -38,14 +43,29 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     fetchRegistrations()
   }, [fetchRegistrations])
 
+  const getStatusForDate = useCallback((dateStr: string): UIStatus | null => {
+    const reg = findRegistrationByDate(registrations, dateStr)
+    return reg ? toUIStatus(reg.status as 'eating' | 'not_eating') : null
+  }, [registrations])
+
   const setStatus = useCallback(async (date: string, status: UIStatus) => {
+    if (saving.current) return false
     if (status !== 'eating' && status !== 'not-eating') {
       setError('Invalid status')
       return false
     }
 
     const apiStatus = toAPIStatus(status)
+    const prev = getStatusForDate(date)
 
+    // Optimistic update
+    setRegistrations((current) => {
+      const next = current.filter((item) => getRegistrationDateKey(item) !== date)
+      const newReg: Registration = { id: `temp-${date}`, date, status: apiStatus }
+      return [...next, newReg]
+    })
+
+    saving.current = true
     try {
       const response = await registrationsApi.create(date, apiStatus)
       const registration = response.registration as Registration | undefined
@@ -60,20 +80,26 @@ export function useRegistrations(startDate?: string, endDate?: string) {
       await fetchRegistrations()
       return true
     } catch (err) {
+      // Rollback optimistic update
+      setRegistrations((current) => {
+        const next = current.filter((item) => getRegistrationDateKey(item) !== date)
+        if (prev) {
+          const prevReg: Registration = { id: `prev-${date}`, date, status: toAPIStatus(prev) }
+          return [...next, prevReg]
+        }
+        return next
+      })
       setError(err instanceof Error ? err.message : 'Failed to update registration')
       return false
+    } finally {
+      saving.current = false
     }
-  }, [fetchRegistrations])
+  }, [fetchRegistrations, getStatusForDate])
 
   const toggle = useCallback(async (date: string, currentStatus: UIStatus) => {
     const newStatus = currentStatus === 'eating' ? 'not-eating' : 'eating'
     return setStatus(date, newStatus)
   }, [setStatus])
-
-  const getStatusForDate = useCallback((dateStr: string): UIStatus | null => {
-    const reg = registrations.find(r => getRegistrationDateKey(r) === dateStr)
-    return reg ? toUIStatus(reg.status as 'eating' | 'not_eating') : null
-  }, [registrations])
 
   return {
     registrations,

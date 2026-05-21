@@ -13,6 +13,7 @@ interface Employee {
   status: "active" | "inactive"
 }
 
+// TODO v2: Persist department in DB and make configurable
 const departments = ["Kỹ thuật", "Kinh doanh", "Nhân sự", "Tài chính", "Marketing"]
 
 function generateUsername(name: string): string {

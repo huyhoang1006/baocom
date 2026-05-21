@@ -118,6 +118,32 @@ describe('RegistrationService', () => {
       )
     ).rejects.toThrow('Ngay nay khong nam trong lich bao com')
   })
+
+  it('records override when admin changes locked date with overrideNote', async () => {
+    const repository = getRegistrationRepository(registrationService)
+    repository.findOne = vi.fn().mockResolvedValue({
+      id: 'reg-locked',
+      userId: 'other-user',
+      date: new Date('2026-05-12'),
+      status: 'eating',
+      note: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    repository.update = vi.fn().mockResolvedValue({ id: 'reg-locked' })
+    repository.createOverride = vi.fn().mockResolvedValue(undefined)
+
+    await registrationService.update('reg-locked', 'admin-id', 'admin',
+      { status: 'not_eating' }, 'Customer complaint')
+
+    expect(repository.createOverride).toHaveBeenCalledWith({
+      registrationId: 'reg-locked',
+      performedBy: 'admin-id',
+      newStatus: 'not_eating',
+      note: 'Customer complaint',
+      originalStatus: 'eating',
+    })
+  })
 })
 
 describe('countByStatus with holiday/weekend exclusion', () => {

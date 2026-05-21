@@ -50,14 +50,14 @@ export class MealService {
 
   async findOrCreateByName(name: string, type: MealType): Promise<{ id: string; name: string; type: string }> {
     const normalizedName = name.trim()
-    const existing = await this.mealRepository.findAll({ isActive: true })
+    const existing = await this.mealRepository.findAll({ isActive: true, type })
     const found = existing.find(m => m.name.toLowerCase() === normalizedName.toLowerCase())
 
     if (found) {
       return { id: found.id, name: found.name, type: found.type }
     }
 
-    const created = await this.mealRepository.create({ name: normalizedName, type })
+    const created = await this.mealRepository.create({ name: normalizedName, type, isActive: true })
     return { id: created.id, name: created.name, type: created.type }
   }
 }

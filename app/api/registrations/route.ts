@@ -26,6 +26,9 @@ function validateDateRangeParams(req: NextRequest): NextResponse | null {
   if (endDate && !DATE_REGEX.test(endDate)) {
     return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD' }, { status: 400 })
   }
+  if (startDate && endDate && startDate > endDate) {
+    return NextResponse.json({ error: 'startDate must be before or equal to endDate' }, { status: 400 })
+  }
 
   return null
 }

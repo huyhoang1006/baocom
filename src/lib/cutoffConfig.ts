@@ -37,19 +37,22 @@ export async function upsertCutoffConfig(
   minute: number,
   userId: string
 ): Promise<void> {
-  await prisma.cutoffConfig.upsert({
-    where: { id: 'global' },
-    create: {
-      id: 'global',
-      cutoffHour: hour,
-      cutoffMinute: minute,
-      updatedBy: userId,
-    },
-    update: {
-      cutoffHour: hour,
-      cutoffMinute: minute,
-      updatedBy: userId,
-    },
-  })
-  invalidateCutoffCache()
+  try {
+    await prisma.cutoffConfig.upsert({
+      where: { id: 'global' },
+      create: {
+        id: 'global',
+        cutoffHour: hour,
+        cutoffMinute: minute,
+        updatedBy: userId,
+      },
+      update: {
+        cutoffHour: hour,
+        cutoffMinute: minute,
+        updatedBy: userId,
+      },
+    })
+  } finally {
+    invalidateCutoffCache()
+  }
 }

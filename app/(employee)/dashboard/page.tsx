@@ -77,14 +77,7 @@ export default function EmployeeDashboard() {
   const currentDay = weeklyMenu[selectedDayIndex]
   const isRegistered = currentDay?.registered || false
 
-  const toggleRegistration = async () => {
-    const day = weeklyMenu[selectedDayIndex]
-    if (!day) return
-
-    const { toggle } = useRegistrations()
-    // Toggle would be handled here
-  }
-
+  
   return (
     <div className="min-h-dvh bg-canvas pb-12">
       {/* Page Header */}

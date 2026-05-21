@@ -28,9 +28,8 @@ export const MAX_BOOKING_WEEK_OFFSET = 4
  * returning a Date at local midnight (TZ-adjusted).
  */
 export function parseLocalDate(dateStr: string): Date {
-  const [year, month, day] = dateStr.split('-').map(Number)
-  // Treat components as local date parts, then add the Vietnam offset
-  // so that when UTC+0 midnight is interpreted, we get UTC+7 local midnight.
+  const dateOnly = dateStr.split('T')[0]
+  const [year, month, day] = dateOnly.split('-').map(Number)
   return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) + VIETNAM_OFFSET_MS)
 }
 

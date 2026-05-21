@@ -4,6 +4,6 @@ import { MealsController } from '@/controllers/MealsController'
 
 const controller = new MealsController()
 
-export const POST = withAdmin(async (req: NextRequest) => {
-  return controller.findOrCreate(req)
+export const POST = withAdmin(async (req: NextRequest, userId: string, role: string) => {
+  return controller.findOrCreate(req, userId, role)
 })

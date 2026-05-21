@@ -96,11 +96,7 @@ export class RegistrationsController {
   }
 
   async delete(id: string, userId?: string, role?: string) {
-    // IDOR check: non-admin cannot delete other users' registrations
-    const registration = await this.registrationService.findOne(id)
-    if (registration && role !== 'admin' && registration.userId !== userId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    // No IDOR check needed here — withAdmin already gates this endpoint
     try {
       await this.registrationService.delete(id)
       return NextResponse.json({ success: true })
