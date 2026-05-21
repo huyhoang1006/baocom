@@ -49,7 +49,7 @@ export default function BookPage() {
   }
 
   const eatingCount = days.filter((day) => day.status === "eating").length
-  const openCount = days.filter((day) => !day.locked).length
+  const openCount = days.filter((day) => !day.locked && day.isWorkday).length
   const weekRangeLabel = days.length > 0
     ? `Tuần ${formatWeekRangeDate(days[0].date)} - ${formatWeekRangeDate(days[4].date)}`
     : "Tuần này"
