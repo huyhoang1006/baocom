@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review: Fix báo cơm không hiển thị đầy đủ các ngày trong tuần</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #1a1a1a; margin-bottom: 10px; font-size: 1.5rem; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+    .summary-bar { background: #e8f4fd; border: 1px solid #b8daff; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.85rem; }
+    .summary-bar span { display: flex; align-items: center; gap: 5px; }
+    .summary-bar .approved { color: #28a745; }
+    .summary-bar .needs-revision { color: #ffc107; }
+    .summary-bar .open-question { color: #dc3545; }
+    .toc { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; }
+    .toc h2 { font-size: 1rem; margin-bottom: 10px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 5px; }
+    .toc a { color: #0066cc; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .section-card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+    .section-title { font-size: 1.1rem; font-weight: 600; color: #1a1a1a; }
+    .section-id { background: #e9ecef; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; color: #666; }
+    .section-content { margin-bottom: 15px; }
+    .section-content pre { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 10px; overflow-x: auto; font-size: 0.85rem; }
+    .review-controls { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-start; padding-top: 15px; border-top: 1px solid #eee; }
+    .control-group { display: flex; flex-direction: column; gap: 5px; }
+    .control-label { font-size: 0.75rem; color: #666; text-transform: uppercase; font-weight: 600; }
+    .status-options { display: flex; gap: 10px; }
+    .status-btn { padding: 5px 12px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.85rem; background: #fff; transition: all 0.2s; }
+    .status-btn:hover { background: #f0f0f0; }
+    .status-btn.selected { background: #0066cc; color: #fff; border-color: #0066cc; }
+    .status-btn.approved.selected { background: #28a745; border-color: #28a745; }
+    .status-btn.needs-revision.selected { background: #ffc107; border-color: #ffc107; color: #333; }
+    .status-btn.rejected.selected { background: #dc3545; border-color: #dc3545; }
+    .status-btn.open-question.selected { background: #6c757d; border-color: #6c757d; }
+    .priority-select { padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; }
+    .ratings { display: flex; gap: 15px; flex-wrap: wrap; }
+    .rating-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
+    .rating-item label { color: #666; }
+    .rating-item select { padding: 3px 6px; border: 1px solid #ddd; border-radius: 4px; }
+    .comments-section { width: 100%; margin-top: 10px; }
+    .comments-section textarea { width: 100%; min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; resize: vertical; }
+    .add-comment-btn { margin-top: 5px; padding: 5px 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .add-comment-btn:hover { background: #e9ecef; }
+    .comment-list { margin-top: 10px; }
+    .comment { background: #f8f9fa; padding: 8px 10px; border-radius: 4px; margin-bottom: 5px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: flex-start; }
+    .comment-text { flex: 1; }
+    .comment-delete { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.75rem; margin-left: 10px; }
+    .xml-section { background: #1a1a1a; color: #f8f8f2; border-radius: 8px; padding: 20px; margin-top: 20px; }
+    .xml-section h2 { color: #fff; margin-bottom: 15px; font-size: 1rem; }
+    .xml-preview { background: #2d2d2d; border-radius: 4px; padding: 15px; max-height: 300px; overflow-y: auto; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.75rem; white-space: pre-wrap; word-break: break-all; }
+    .xml-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    .copy-btn { background: #28a745; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+    .copy-btn:hover { background: #218838; }
+    .copy-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .reset-btn { background: #6c757d; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+    .reset-btn:hover { background: #5a6268; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #28a745; color: #fff; padding: 10px 20px; border-radius: 4px; opacity: 0; transition: opacity 0.3s; }
+    .toast.show { opacity: 1; }
+    @media (max-width: 600px) { .review-controls { flex-direction: column; } .ratings { flex-direction: column; gap: 8px; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Review: Fix báo cơm không hiển thị đầy đủ các ngày trong tuần</h1>
+  <p class="subtitle">Issue: baocom-pdw | Date: 2026-05-21 | Bug fix</p>
+
+  <div class="summary-bar">
+    <span class="approved">&#10003; <strong id="approved-count">0</strong> Approved</span>
+    <span class="needs-revision">&#8630; <strong id="needs-revision-count">0</strong> Needs Revision</span>
+    <span class="open-question">&#10067; <strong id="open-question-count">0</strong> Open Questions</span>
+    <span>Selected Options: <strong id="selected-options-count">0</strong></span>
+  </div>
+
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#sec-001">Mục tiêu</a></li>
+      <li><a href="#sec-002">Tình trạng hiện tại</a></li>
+      <li><a href="#sec-003">Thiết kế: getWeekdaysForOffset</a></li>
+      <li><a href="#sec-004">Thiết kế: getRegistrationDayState</a></li>
+      <li><a href="#sec-005">Thiết kế: UI Frontend</a></li>
+      <li><a href="#sec-006">Kiểm thử</a></li>
+      <li><a href="#sec-007">Files cần sửa</a></li>
+    </ol>
+  </div>
+
+  <div id="sections">
+    <div class="section-card" id="sec-001">
+      <div class="section-header">
+        <span class="section-title">1. Mục tiêu</span>
+        <span class="section-id">sec-001</span>
+      </div>
+      <div class="section-content">
+        <p>Fix bug khiến trang /book không hiển thị đầy đủ 7 ngày trong tuần (T2-CN). Hiện tại chỉ hiển thị 5 ngày T2-T6.</p>
+      </div>
+      <div class="review-controls">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <div class="status-options">
+            <button class="status-btn approved" data-section="sec-001" data-status="approved">Approved</button>
+            <button class="status-btn needs-revision" data-section="sec-001" data-status="needs-revision">Needs Revision</button>
+            <button class="status-btn rejected" data-section="sec-001" data-status="rejected">Rejected</button>
+            <button class="status-btn open-question" data-section="sec-001" data-status="open-question">Open Question</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Priority</span>
+          <select class="priority-select" data-section="sec-001">
+            <option value="">--</option>
+            <option value="must">Must</option>
+            <option value="should">Should</option>
+            <option value="could">Could</option>
+            <option value="wont">Wont</option>
+          </select>
+        </div>
+        <div class="ratings">
+          <div class="rating-item"><label>Clarity:</label><select data-section="sec-001" data-rating="clarity"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Completeness:</label><select data-section="sec-001" data-rating="completeness"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Feasibility:</label><select data-section="sec-001" data-rating="feasibility"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        </div>
+        <button class="add-comment-btn" data-section="sec-001">+ Add Comment</button>
+        <div class="comments-section" id="comments-sec-001"></div>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-002">
+      <div class="section-header">
+        <span class="section-title">2. Tình trạng hiện tại</span>
+        <span class="section-id">sec-002</span>
+      </div>
+      <div class="section-content">
+        <ul>
+          <li><strong>Hành vi hiện tại:</strong> Khi hôm nay là T5 (thứ 5), trang /book chỉ hiển thị T2, T3, T4, T5 - thiếu T6 (thứ 6)</li>
+          <li><strong>Hành vi mong muốn:</strong> Hiển thị đầy đủ T2, T3, T4, T5, T6, T7, CN với T7 và CN ở trạng thái disabled</li>
+        </ul>
+      </div>
+      <div class="review-controls">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <div class="status-options">
+            <button class="status-btn approved" data-section="sec-002" data-status="approved">Approved</button>
+            <button class="status-btn needs-revision" data-section="sec-002" data-status="needs-revision">Needs Revision</button>
+            <button class="status-btn rejected" data-section="sec-002" data-status="rejected">Rejected</button>
+            <button class="status-btn open-question" data-section="sec-002" data-status="open-question">Open Question</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Priority</span>
+          <select class="priority-select" data-section="sec-002">
+            <option value="">--</option>
+            <option value="must">Must</option>
+            <option value="should">Should</option>
+            <option value="could">Could</option>
+            <option value="wont">Wont</option>
+          </select>
+        </div>
+        <div class="ratings">
+          <div class="rating-item"><label>Clarity:</label><select data-section="sec-002" data-rating="clarity"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Completeness:</label><select data-section="sec-002" data-rating="completeness"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Feasibility:</label><select data-section="sec-002" data-rating="feasibility"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        </div>
+        <button class="add-comment-btn" data-section="sec-002">+ Add Comment</button>
+        <div class="comments-section" id="comments-sec-002"></div>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-003">
+      <div class="section-header">
+        <span class="section-title">3. Thiết kế: getWeekdaysForOffset</span>
+        <span class="section-id">sec-003</span>
+      </div>
+      <div class="section-content">
+        <p><strong>File:</strong> src/lib/registrationWindow.ts</p>
+        <p><strong>Thay đổi:</strong></p>
+        <ul>
+          <li>Mở rộng mảng từ [0,1,2,3,4] (5 ngày) thành [0,1,2,3,4,5,6] (7 ngày)</li>
+          <li>Thứ 7 (offset=5) và CN (offset=6) sẽ có disabled: true</li>
+        </ul>
+        <p><strong>Code hiện tại (dòng 95-103):</strong></p>
+        <pre>export function getWeekdaysForOffset(now = new Date(), weekOffset = 0): RegistrationDayState[] {
+  const monday = getWeekStart(now, weekOffset)
+  return [0, 1, 2, 3, 4].map((offset) => {
+    const date = new Date(monday)
+    date.setDate(monday.getDate() + offset)
+    return getRegistrationDayState(date, now)
+  })
+}</pre>
+        <p><strong>Code sau khi sửa:</strong></p>
+        <pre>export function getWeekdaysForOffset(now = new Date(), weekOffset = 0): RegistrationDayState[] {
+  const monday = getWeekStart(now, weekOffset)
+  return [0, 1, 2, 3, 4, 5, 6].map((offset) => {
+    const date = new Date(monday)
+    date.setDate(monday.getDate() + offset)
+    return getRegistrationDayState(date, now)
+  })
+}</pre>
+      </div>
+      <div class="review-controls">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <div class="status-options">
+            <button class="status-btn approved" data-section="sec-003" data-status="approved">Approved</button>
+            <button class="status-btn needs-revision" data-section="sec-003" data-status="needs-revision">Needs Revision</button>
+            <button class="status-btn rejected" data-section="sec-003" data-status="rejected">Rejected</button>
+            <button class="status-btn open-question" data-section="sec-003" data-status="open-question">Open Question</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Priority</span>
+          <select class="priority-select" data-section="sec-003">
+            <option value="">--</option>
+            <option value="must">Must</option>
+            <option value="should">Should</option>
+            <option value="could">Could</option>
+            <option value="wont">Wont</option>
+          </select>
+        </div>
+        <div class="ratings">
+          <div class="rating-item"><label>Clarity:</label><select data-section="sec-003" data-rating="clarity"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Completeness:</label><select data-section="sec-003" data-rating="completeness"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Feasibility:</label><select data-section="sec-003" data-rating="feasibility"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        </div>
+        <button class="add-comment-btn" data-section="sec-003">+ Add Comment</button>
+        <div class="comments-section" id="comments-sec-003"></div>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-004">
+      <div class="section-header">
+        <span class="section-title">4. Thiết kế: getRegistrationDayState</span>
+        <span class="section-id">sec-004</span>
+      </div>
+      <div class="section-content">
+        <p><strong>Thay đổi:</strong></p>
+        <ul>
+          <li>Thêm field isWorkday: boolean để phân biệt ngày làm việc và ngày nghỉ</li>
+          <li>T2-T6: isWorkday: true</li>
+          <li>T7 (Thứ 7) và CN (Chủ nhật): isWorkday: false</li>
+        </ul>
+        <p><strong>Interface mới:</strong></p>
+        <pre>export interface RegistrationDayState {
+  date: Date
+  dateKey: string
+  dayName: string
+  cutoffAt: Date
+  locked: boolean
+  isWorkday: boolean  // true cho T2-T6, false cho T7, CN
+}</pre>
+        <p><strong>Logic xác định isWorkday:</strong></p>
+        <pre>const isWorkday = day !== 0 && day !== 6  // không phải CN(0) hay T7(6)</pre>
+      </div>
+      <div class="review-controls">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <div class="status-options">
+            <button class="status-btn approved" data-section="sec-004" data-status="approved">Approved</button>
+            <button class="status-btn needs-revision" data-section="sec-004" data-status="needs-revision">Needs Revision</button>
+            <button class="status-btn rejected" data-section="sec-004" data-status="rejected">Rejected</button>
+            <button class="status-btn open-question" data-section="sec-004" data-status="open-question">Open Question</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Priority</span>
+          <select class="priority-select" data-section="sec-004">
+            <option value="">--</option>
+            <option value="must">Must</option>
+            <option value="should">Should</option>
+            <option value="could">Could</option>
+            <option value="wont">Wont</option>
+          </select>
+        </div>
+        <div class="ratings">
+          <div class="rating-item"><label>Clarity:</label><select data-section="sec-004" data-rating="clarity"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Completeness:</label><select data-section="sec-004" data-rating="completeness"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Feasibility:</label><select data-section="sec-004" data-rating="feasibility"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        </div>
+        <button class="add-comment-btn" data-section="sec-004">+ Add Comment</button>
+        <div class="comments-section" id="comments-sec-004"></div>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-005">
+      <div class="section-header">
+        <span class="section-title">5. Thiết kế: UI Frontend</span>
+        <span class="section-id">sec-005</span>
+      </div>
+      <div class="section-content">
+        <p><strong>Component hiển thị ngày:</strong></p>
+        <ul>
+          <li>T2-T6: Hiển thị bình thường, cho phép tương tác</li>
+          <li>T7, CN: Hiển thị với style disabled (opacity thấp hơn, cursor not-allowed)</li>
+        </ul>
+      </div>
+      <div class="review-controls">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <div class="status-options">
+            <button class="status-btn approved" data-section="sec-005" data-status="approved">Approved</button>
+            <button class="status-btn needs-revision" data-section="sec-005" data-status="needs-revision">Needs Revision</button>
+            <button class="status-btn rejected" data-section="sec-005" data-status="rejected">Rejected</button>
+            <button class="status-btn open-question" data-section="sec-005" data-status="open-question">Open Question</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Priority</span>
+          <select class="priority-select" data-section="sec-005">
+            <option value="">--</option>
+            <option value="must">Must</option>
+            <option value="should">Should</option>
+            <option value="could">Could</option>
+            <option value="wont">Wont</option>
+          </select>
+        </div>
+        <div class="ratings">
+          <div class="rating-item"><label>Clarity:</label><select data-section="sec-005" data-rating="clarity"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Completeness:</label><select data-section="sec-005" data-rating="completeness"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Feasibility:</label><select data-section="sec-005" data-rating="feasibility"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        </div>
+        <button class="add-comment-btn" data-section="sec-005">+ Add Comment</button>
+        <div class="comments-section" id="comments-sec-005"></div>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-006">
+      <div class="section-header">
+        <span class="section-title">6. Kiểm thử</span>
+        <span class="section-id">sec-006</span>
+      </div>
+      <div class="section-content">
+        <ol>
+          <li>Khi là T5 (thứ 5), trang /book phải hiển thị đủ T2,T3,T4,T5,T6,T7,CN</li>
+          <li>T7 và CN phải hiển thị ở trạng thái disabled</li>
+          <li>Ngày T6 (thứ 6) phải cho phép đăng ký (không bị disabled)</li>
+          <li>Timezone Việt Nam (UTC+7) phải được xử lý đúng</li>
+        </ol>
+      </div>
+      <div class="review-controls">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <div class="status-options">
+            <button class="status-btn approved" data-section="sec-006" data-status="approved">Approved</button>
+            <button class="status-btn needs-revision" data-section="sec-006" data-status="needs-revision">Needs Revision</button>
+            <button class="status-btn rejected" data-section="sec-006" data-status="rejected">Rejected</button>
+            <button class="status-btn open-question" data-section="sec-006" data-status="open-question">Open Question</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Priority</span>
+          <select class="priority-select" data-section="sec-006">
+            <option value="">--</option>
+            <option value="must">Must</option>
+            <option value="should">Should</option>
+            <option value="could">Could</option>
+            <option value="wont">Wont</option>
+          </select>
+        </div>
+        <div class="ratings">
+          <div class="rating-item"><label>Clarity:</label><select data-section="sec-006" data-rating="clarity"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Completeness:</label><select data-section="sec-006" data-rating="completeness"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Feasibility:</label><select data-section="sec-006" data-rating="feasibility"><option value="">-</option><option>1</option><option>2</option><option>2</option><option>4</option><option>5</option></select></div>
+        </div>
+        <button class="add-comment-btn" data-section="sec-006">+ Add Comment</button>
+        <div class="comments-section" id="comments-sec-006"></div>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-007">
+      <div class="section-header">
+        <span class="section-title">7. Files cần sửa</span>
+        <span class="section-id">sec-007</span>
+      </div>
+      <div class="section-content">
+        <ul>
+          <li>src/lib/registrationWindow.ts - Logic ngày</li>
+          <li>Frontend component hiển thị ngày (cần xác định file cụ thể)</li>
+        </ul>
+      </div>
+      <div class="review-controls">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <div class="status-options">
+            <button class="status-btn approved" data-section="sec-007" data-status="approved">Approved</button>
+            <button class="status-btn needs-revision" data-section="sec-007" data-status="needs-revision">Needs Revision</button>
+            <button class="status-btn rejected" data-section="sec-007" data-status="rejected">Rejected</button>
+            <button class="status-btn open-question" data-section="sec-007" data-status="open-question">Open Question</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Priority</span>
+          <select class="priority-select" data-section="sec-007">
+            <option value="">--</option>
+            <option value="must">Must</option>
+            <option value="should">Should</option>
+            <option value="could">Could</option>
+            <option value="wont">Wont</option>
+          </select>
+        </div>
+        <div class="ratings">
+          <div class="rating-item"><label>Clarity:</label><select data-section="sec-007" data-rating="clarity"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Completeness:</label><select data-section="sec-007" data-rating="completeness"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="rating-item"><label>Feasibility:</label><select data-section="sec-007" data-rating="feasibility"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        </div>
+        <button class="add-comment-btn" data-section="sec-007">+ Add Comment</button>
+        <div class="comments-section" id="comments-sec-007"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xml-section">
+    <h2>XML Prompt Output</h2>
+    <div class="xml-preview" id="xml-output"></div>
+    <div class="xml-actions">
+      <button class="copy-btn" id="copy-btn">Copy XML Prompt</button>
+      <button class="reset-btn" id="reset-btn">Reset All</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+const STORAGE_KEY = 'spec_review_baocom_pdw';
+const sections = ['sec-001', 'sec-002', 'sec-003', 'sec-004', 'sec-005', 'sec-006', 'sec-007'];
+let reviewData = {};
+let comments = {};
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      reviewData = parsed.reviewData || {};
+      comments = parsed.comments || {};
+    }
+  } catch (e) {}
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ reviewData, comments }));
+  } catch (e) {}
+}
+
+function escapeXml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function updateUI() {
+  let approved = 0, needsRevision = 0, openQuestion = 0;
+  let selectedOptions = 0;
+
+  sections.forEach(secId => {
+    const data = reviewData[secId] || {};
+    const status = data.status || '';
+    const statusBtns = document.querySelectorAll(`.status-btn[data-section="${secId}"]`);
+    statusBtns.forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.status === status);
+    });
+
+    if (status === 'approved') approved++;
+    else if (status === 'needs-revision') needsRevision++;
+    else if (status === 'open-question') openQuestion++;
+
+    const prioritySel = document.querySelector(`.priority-select[data-section="${secId}"]`);
+    if (prioritySel) prioritySel.value = data.priority || '';
+
+    ['clarity', 'completeness', 'feasibility'].forEach(rating => {
+      const sel = document.querySelector(`select[data-section="${secId}"][data-rating="${rating}"]`);
+      if (sel && data.ratings) sel.value = data.ratings[rating] || '';
+    });
+
+    const commentSec = document.getElementById(`comments-${secId}`);
+    if (commentSec) {
+      commentSec.innerHTML = '';
+      const secComments = comments[secId] || [];
+      secComments.forEach((c, i) => {
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.innerHTML = `<span class="comment-text">${escapeXml(c)}</span><button class="comment-delete" data-sec="${secId}" data-index="${i}">X</button>`;
+        commentSec.appendChild(div);
+      });
+    }
+  });
+
+  document.getElementById('approved-count').textContent = approved;
+  document.getElementById('needs-revision-count').textContent = needsRevision;
+  document.getElementById('open-question-count').textContent = openQuestion;
+  document.getElementById('selected-options-count').textContent = selectedOptions;
+
+  updateXmlOutput();
+}
+
+function updateXmlOutput() {
+  const specContent = document.getElementById('sections').innerHTML;
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<spec_review_prompt version="1.0">
+  <metadata>
+    <title>Fix báo cơm không hiển thị đầy đủ các ngày trong tuần</title>
+    <source>provided_spec</source>
+    <created_at>2026-05-21T00:00:00Z</created_at>
+    <review_goal>Review spec for baocom-pdw bug fix</review_goal>
+  </metadata>
+  <spec>`;
+
+  sections.forEach(secId => {
+    const sec = document.getElementById(secId);
+    const title = sec.querySelector('.section-title')?.textContent || '';
+    const content = sec.querySelector('.section-content')?.innerHTML || '';
+    const data = reviewData[secId] || {};
+    const secComments = comments[secId] || [];
+
+    xml += `
+    <section id="${secId}">
+      <title>${escapeXml(title)}</title>
+      <content>${escapeXml(content.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim()}</content>
+      <review>
+        <status>${data.status || 'pending'}</status>
+        <priority>${data.priority || 'pending'}</priority>
+        <ratings>
+          <rating name="clarity">${data.ratings?.clarity || '-'}</rating>
+          <rating name="completeness">${data.ratings?.completeness || '-'}</rating>
+          <rating name="feasibility">${data.ratings?.feasibility || '-'}</rating>
+        </ratings>
+        <comments>${secComments.map(c => ` <comment>${escapeXml(c)}</comment>`).join('')}</comments>
+      </review>
+    </section>`;
+  });
+
+  xml += `
+  </spec>
+  <summary>
+    <approved_sections>${document.getElementById('approved-count').textContent}</approved_sections>
+    <needs_revision_sections>${document.getElementById('needs-revision-count').textContent}</needs_revision_sections>
+    <open_questions>${document.getElementById('open-question-count').textContent}</open_questions>
+    <selected_options>0</selected_options>
+  </summary>
+  <instruction>
+    Use the reviewed spec, comments, selected options, and follow-ups above as the source of truth for the next implementation or planning step.
+  </instruction>
+</spec_review_prompt>`;
+
+  document.getElementById('xml-output').textContent = xml;
+}
+
+document.querySelectorAll('.status-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const secId = btn.dataset.section;
+    const status = btn.dataset.status;
+    if (!reviewData[secId]) reviewData[secId] = {};
+    reviewData[secId].status = status;
+    saveData();
+    updateUI();
+  });
+});
+
+document.querySelectorAll('.priority-select').forEach(sel => {
+  sel.addEventListener('change', () => {
+    const secId = sel.dataset.section;
+    if (!reviewData[secId]) reviewData[secId] = {};
+    reviewData[secId].priority = sel.value;
+    saveData();
+    updateUI();
+  });
+});
+
+document.querySelectorAll('select[data-rating]').forEach(sel => {
+  sel.addEventListener('change', () => {
+    const secId = sel.dataset.section;
+    const rating = sel.dataset.rating;
+    if (!reviewData[secId]) reviewData[secId] = {};
+    if (!reviewData[secId].ratings) reviewData[secId].ratings = {};
+    reviewData[secId].ratings[rating] = sel.value;
+    saveData();
+    updateXmlOutput();
+  });
+});
+
+document.querySelectorAll('.add-comment-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const secId = btn.dataset.section;
+    const comment = prompt('Enter comment:');
+    if (comment && comment.trim()) {
+      if (!comments[secId]) comments[secId] = [];
+      comments[secId].push(comment.trim());
+      saveData();
+      updateUI();
+    }
+  });
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('comment-delete')) {
+    const secId = e.target.dataset.sec;
+    const index = parseInt(e.target.dataset.index);
+    if (comments[secId]) {
+      comments[secId].splice(index, 1);
+      saveData();
+      updateUI();
+    }
+  }
+});
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const xml = document.getElementById('xml-output').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(xml).then(() => {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = xml;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (confirm('Reset all review data?')) {
+    reviewData = {};
+    comments = {};
+    saveData();
+    updateUI();
+  }
+});
+
+loadData();
+updateUI();
+</script>
+</body>
+</html>
