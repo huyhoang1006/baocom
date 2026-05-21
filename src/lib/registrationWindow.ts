@@ -159,3 +159,12 @@ export function getCurrentWeekFutureWeekdays(now = new Date()): RegistrationDayS
 
   return result
 }
+
+/**
+ * Returns the next date (from today) that is locked due to cutoff having passed.
+ * Returns null if no such date found within booking window.
+ */
+export function getNextLockedDay(now: Date): RegistrationDayState | null {
+  const weekdays = getCurrentWeekFutureWeekdays(now)
+  return weekdays.find(day => day.locked) ?? null
+}
