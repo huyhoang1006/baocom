@@ -120,24 +120,33 @@ export class RegistrationService {
   }
 
   async countByStatus(date: Date) {
-    const nextDay = new Date(date)
+    const dayStart = startOfLocalDay(date)
+    const nextDay = new Date(dayStart)
     nextDay.setDate(nextDay.getDate() + 1)
 
+    // Only count registrations for active employees
+    const where = {
+      date: { gte: dayStart, lt: nextDay },
+      user: { isActive: true }
+    }
+
     const [eating, notEating, total] = await Promise.all([
-      this.registrationRepository.count({ date: { gte: date, lt: nextDay }, status: 'eating' }),
-      this.registrationRepository.count({ date: { gte: date, lt: nextDay }, status: 'not_eating' }),
-      this.registrationRepository.count({ date: { gte: date, lt: nextDay } })
+      this.registrationRepository.count({ ...where, status: 'eating' }),
+      this.registrationRepository.count({ ...where, status: 'not_eating' }),
+      this.registrationRepository.count(where)
     ])
 
     return { eating, notEating, total }
   }
 
   async getAbsencesByDate(date: Date) {
-    const nextDay = new Date(date)
+    const dayStart = startOfLocalDay(date)
+    const nextDay = new Date(dayStart)
     nextDay.setDate(nextDay.getDate() + 1)
     return this.registrationRepository.findAll({
-      date: { gte: date, lt: nextDay },
+      date: { gte: dayStart, lt: nextDay },
       status: 'not_eating',
+      user: { isActive: true },
     }) as Promise<RegistrationWithUser[]>
   }
 
