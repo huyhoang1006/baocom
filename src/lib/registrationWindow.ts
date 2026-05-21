@@ -96,7 +96,7 @@ export function getWeekStart(now = new Date(), weekOffset = 0): Date {
 export function getWeekdaysForOffset(now = new Date(), weekOffset = 0): RegistrationDayState[] {
   const monday = getWeekStart(now, weekOffset)
 
-  return [0, 1, 2, 3, 4].map((offset) => {
+  return [0, 1, 2, 3, 4, 5, 6].map((offset) => {
     const date = new Date(monday)
     date.setDate(monday.getDate() + offset)
     return getRegistrationDayState(date, now)
