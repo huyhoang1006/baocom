@@ -124,7 +124,7 @@ describe('registrationWindow', () => {
     ])
   })
 
-  it('returns Monday through Friday for next week offset', () => {
+  it('returns Monday through Sunday for next week offset', () => {
     const now = new Date('2026-05-15T10:00:00+07:00')
 
     const days = getWeekdaysForOffset(now, 1)
@@ -135,10 +135,12 @@ describe('registrationWindow', () => {
       '2026-05-20',
       '2026-05-21',
       '2026-05-22',
+      '2026-05-23',
+      '2026-05-24',
     ])
   })
 
-  it('returns Monday through Friday for fourth future week offset', () => {
+  it('returns Monday through Sunday for fourth future week offset', () => {
     const now = new Date('2026-05-15T10:00:00+07:00')
 
     const days = getWeekdaysForOffset(now, 4)
@@ -149,6 +151,8 @@ describe('registrationWindow', () => {
       '2026-06-10',
       '2026-06-11',
       '2026-06-12',
+      '2026-06-13',
+      '2026-06-14',
     ])
   })
 
