@@ -140,4 +140,28 @@ export class RegistrationService {
       status: 'not_eating',
     }) as Promise<RegistrationWithUser[]>
   }
+
+  async ensureDefaultRegistrations(date: Date): Promise<void> {
+    const dayStart = startOfLocalDay(date)
+    const dayEnd = new Date(dayStart)
+    dayEnd.setDate(dayEnd.getDate() + 1)
+
+    // Get all registrations for that date
+    const existingRegs = await this.registrationRepository.findAll({
+      date: { gte: dayStart, lt: dayEnd }
+    }) as RegistrationWithUser[]
+
+    // Get all active employees
+    const { UserService } = await import('@/services/UserService')
+    const userService = new UserService()
+    const allEmployees = await userService.findAll()
+    const registeredUserIds = new Set(existingRegs.map(r => r.userId))
+
+    // Create default "eating" registration for any missing employee
+    for (const emp of allEmployees) {
+      if (!registeredUserIds.has(emp.id)) {
+        await this.registrationRepository.upsert(emp.id, dayStart, 'eating')
+      }
+    }
+  }
 }
