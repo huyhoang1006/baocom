@@ -39,15 +39,6 @@ export default function AdminDashboard() {
     fetchStats(selectedDate)
   }, [selectedDate, fetchStats])
 
-  useEffect(() => {
-    const ensureDefaults = async () => {
-      const { RegistrationService } = await import("@/services/RegistrationService")
-      const svc = new RegistrationService()
-      await svc.ensureDefaultRegistrations(tomorrowDate)
-    }
-    ensureDefaults()
-  }, [tomorrowDate])
-
   const stats = data?.stats
   const absences = data?.absences || []
   const todayStr = toDateKey(new Date())

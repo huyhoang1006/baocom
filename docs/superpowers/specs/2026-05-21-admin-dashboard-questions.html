@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Clarifying Questions</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+.container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+header { text-align: center; margin-bottom: 32px; }
+h1 { font-size: 1.5rem; color: #f8fafc; margin-bottom: 8px; }
+.subtitle { font-size: 0.875rem; color: #94a3b8; }
+.toc { background: #1e293b; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+.toc h3 { font-size: 0.875rem; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.toc ol { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.toc li { background: #334155; border-radius: 6px; }
+.toc a { display: block; padding: 6px 12px; font-size: 0.8rem; color: #e2e8f0; text-decoration: none; }
+.toc a:hover { background: #475569; }
+.section { background: #1e293b; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+.section-header { padding: 16px 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.section-title { font-size: 1rem; font-weight: 600; color: #f8fafc; }
+.section-body { padding: 20px; }
+.question-text { font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 16px; }
+.option-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; cursor: pointer; }
+.option-item input[type="radio"], .option-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #22c55e; cursor: pointer; flex-shrink: 0; }
+.option-item label { font-size: 0.875rem; color: #e2e8f0; cursor: pointer; flex: 1; }
+.option-item input[type="text"] { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; flex: 1; min-width: 120px; font-family: inherit; }
+.option-item input[type="text"]:focus { outline: none; border-color: #22c55e; }
+.options-list { display: grid; gap: 8px; }
+.sub-question { background: #0f172a; border-radius: 8px; padding: 12px; margin-top: 12px; }
+.sub-question-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px; }
+.comment-box { width: 100%; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; resize: vertical; min-height: 60px; font-family: inherit; margin-top: 12px; }
+.comment-box:focus { outline: none; border-color: #22c55e; }
+.export-section { background: #1e293b; border-radius: 12px; padding: 20px; margin-top: 24px; }
+.export-section h3 { font-size: 1rem; margin-bottom: 12px; color: #f8fafc; }
+.export-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.btn { padding: 10px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; }
+.btn-primary { background: #22c55e; color: #000; }
+.btn-primary:hover { background: #16a34a; }
+.btn-secondary { background: #334155; color: #e2e8f0; }
+.btn-secondary:hover { background: #475569; }
+#xml-preview { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #94a3b8; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; }
+.copy-feedback { color: #22c55e; font-size: 0.8rem; margin-top: 8px; display: none; }
+footer { text-align: center; padding: 24px; color: #64748b; font-size: 0.75rem; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Admin Dashboard — Clarifying Questions</h1>
+<p class="subtitle">Brainstorming: /admin/dashboard date logic redesign</p>
+</header>
+
+<nav class="toc">
+<h3>Mục lục</h3>
+<ol id="tocList"></ol>
+</nav>
+
+<div id="sections"></div>
+
+<div class="export-section">
+<h3>Export Answers as XML Prompt</h3>
+<div class="export-actions">
+<button class="btn btn-primary" onclick="exportXML()">Copy XML</button>
+<button class="btn btn-secondary" onclick="togglePreview()">Toggle Preview</button>
+<button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+</div>
+<pre id="xml-preview"></pre>
+<p class="copy-feedback" id="copyFeedback">Copied!</p>
+</div>
+
+<footer>Spec Review Tool v1.0</footer>
+</div>
+
+<script>
+const SPEC = {
+"sec-001": {
+title: "Q1 — Thứ 6: 'Ngày mai' = ?",
+question: "Khi hôm nay là thứ 6, 'ngày mai' tính thế nào?",
+options: [
+{ id: "a", label: "Thứ 2 tuần sau (nhảy qua T7/CN)", type: "single" },
+{ id: "b", label: "Thứ 7 (dù là cuối tuần)", type: "single" },
+{ id: "c", label: "Hiển thị thông báo 'Hết tuần làm việc'", type: "single" }
+]
+},
+"sec-002": {
+title: "Q2 — Thứ 7 / Chủ nhật: Dashboard hiển thị gì?",
+question: "Nếu admin vào dashboard vào Thứ 7 hoặc Chủ nhật thì sao?",
+options: [
+{ id: "a", label: "Hiển thị dữ liệu Thứ 2 tuần sau", type: "single" },
+{ id: "b", label: "Hiển thị dữ liệu T7 / CN (nếu có)", type: "single" },
+{ id: "c", label: "Thông báo 'Ngày nghỉ, không có dữ liệu'", type: "single" }
+]
+},
+"sec-003": {
+title: "Q3 — Ngày lễ: xử lý thế nào?",
+question: "Nếu 'ngày mai' là ngày lễ (nghỉ lễ), có bỏ qua ngày lễ không?",
+options: [
+{ id: "a", label: "Bỏ qua ngày lễ, tự động nhảy sang ngày làm việc tiếp theo", type: "single" },
+{ id: "b", label: "Vẫn hiển thị ngày lễ (để admin biết)", type: "single" },
+{ id: "c", label: "Thông báo 'Ngày mai là ngày nghỉ lễ'", type: "single" }
+]
+},
+"sec-004": {
+title: "Q4 — Chưa có dữ liệu cho 'ngày mai': xử lý sao?",
+question: "Nếu ngày mai chưa có ai đăng ký (dailyMenu trống), hiển thị gì?",
+options: [
+{ id: "a", label: "Hiển thị trống với thông báo 'Chưa có dữ liệu đăng ký'", type: "single" },
+{ id: "b", label: "Tự động tạo record mặc định cho ngày mai", type: "single" },
+{ id: "c", label: "Nhảy sang ngày tiếp theo có dữ liệu", type: "single" }
+]
+},
+"sec-005": {
+title: "Q5 — Xóa filter: Admin có còn xem được ngày khác không?",
+question: "Sau khi bỏ date filter, admin có thể chọn xem ngày tùy ý không?",
+options: [
+{ id: "a", label: "Không — bắt buộc chỉ xem 'ngày mai'", type: "single" },
+{ id: "b", label: "Có — giữ lại date picker nhưng mặc định = 'ngày mai'", type: "single" },
+{ id: "c", label: "Có — hoàn toàn tự do chọn ngày", type: "single" }
+]
+},
+"sec-006": {
+title: "Q6 — Nút 'Hôm nay': giữ lại hay bỏ?",
+question: "Nút 'Hôm nay' để nhảy về ngày thực tế — có còn giữ lại không?",
+options: [
+{ id: "a", label: "Bỏ hoàn toàn (không cần nút này)", type: "single" },
+{ id: "b", label: "Giữ lại nhưng đổi thành 'Xem ngày mai'", type: "single" },
+{ id: "c", label: "Giữ nguyên 'Hôm nay' — vẫn dùng được", type: "single" }
+]
+},
+"sec-007": {
+title: "Q7 — Tiêu đề Dashboard: hiển thị sao?",
+question: "Header của dashboard nên ghi gì khi mặc định là 'ngày mai'?",
+options: [
+{ id: "a", label: "'Phân tích — [Tên ngày], DD/MM' (ví dụ: Phân tích — Thứ 6, 23/05)", type: "single" },
+{ id: "b", label: "'Dashboard — Ngày mai: [Tên ngày], DD/MM'", type: "single" },
+{ id: "c", label: "'Báo cáo ngày [DD/MM]'", type: "single" }
+]
+},
+"sec-008": {
+title: "Q8 — Cache/data loading: có thay đổi gì không?",
+question: "Khi 'ngày mai' nhảy sang ngày mới (sau 0h), dashboard có tự refresh không?",
+options: [
+{ id: "a", label: "Tự động refresh khi ngày thay đổi", type: "single" },
+{ id: "b", label: "Admin phải F5 hoặc có nút refresh", type: "single" },
+{ id: "c", label: "Dùng polling (ví dụ: 5 phút/lần)", type: "single" }
+]
+}
+};
+
+function render() {
+  const toc = document.getElementById("tocList");
+  const container = document.getElementById("sections");
+  toc.innerHTML = "";
+  container.innerHTML = "";
+
+  Object.keys(SPEC).forEach((id, i) => {
+    const s = SPEC[id];
+    toc.innerHTML += `<li><a href="#${id}">${i+1}. ${s.title}</a></li>`;
+
+    let optionsHtml = s.options.map(opt => {
+      if (opt.type === 'single') {
+        return `<div class="option-item"><input type="radio" name="${id}" id="${id}-${opt.id}" value="${opt.id}" onchange="selectOption('${id}','${opt.id}')"><label for="${id}-${opt.id}">${opt.label}</label></div>`;
+      } else {
+        return `<div class="option-item"><input type="checkbox" name="${id}" id="${id}-${opt.id}" value="${opt.id}" onchange="selectOption('${id}','${opt.id}')"><label for="${id}-${opt.id}">${opt.label}</label></div>`;
+      }
+    }).join('');
+
+    const section = document.createElement("div");
+    section.className = "section";
+    section.id = id;
+    section.innerHTML = `
+      <div class="section-header">
+        <span class="section-title">${i+1}. ${s.title}</span>
+      </div>
+      <div class="section-body">
+        <div class="question-text">${s.question}</div>
+        <div class="options-list">${optionsHtml}</div>
+        <textarea class="comment-box" id="comment-${id}" placeholder="Ghi chú thêm (tùy chọn)..." onkeyup="updateComment('${id}',this.value)"></textarea>
+      </div>`;
+    container.appendChild(section);
+  });
+  generateXML();
+}
+
+const selections = {};
+const comments = {};
+
+function selectOption(id, optId) {
+  selections[id] = optId;
+  generateXML();
+}
+
+function updateComment(id, value) {
+  comments[id] = value;
+  generateXML();
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function generateXML() {
+  const now = new Date().toISOString();
+  let xml = `<spec_review_prompt version="1.0">\n  <metadata>\n    <title>Admin Dashboard — Clarifying Questions</title>\n    <source>agent_generated_spec</source>\n    <created_at>${now}</created_at>\n    <review_goal>Get answers to 8 clarifying questions for admin dashboard redesign</review_goal>\n  </metadata>\n  <spec>\n`;
+
+  Object.keys(SPEC).forEach((id, i) => {
+    const s = SPEC[id];
+    const chosen = s.options.find(o => o.id === selections[id]);
+    xml += `    <section id="${id}">\n      <title>${escapeHtml(s.title)}</title>\n      <content><![CDATA[${s.question}\n\nOptions:\n${s.options.map(o => `- ${o.id}. ${o.label}`).join('\n')}]]></content>\n      <review>\n        <status>${chosen ? 'approved' : 'open-question'}</status>\n        <comments>\n`;
+    if (comments[id]) {
+      xml += `          <comment>${escapeHtml(comments[id])}</comment>\n`;
+    }
+    if (chosen) {
+      xml += `          <comment>SELECTED: ${escapeHtml(chosen.label)}</comment>\n`;
+    }
+    xml += `        </comments>\n        <decisions>\n`;
+    if (chosen) {
+      xml += `          <choice group="answer" type="single">${escapeHtml(chosen.label)}</choice>\n`;
+    }
+    xml += `        </decisions>\n      </review>\n    </section>\n`;
+  });
+
+  const answered = Object.keys(selections).length;
+  xml += `  </spec>\n  <summary>\n    <answered>${answered}</answered>\n    <total>${Object.keys(SPEC).length}</total>\n  </summary>\n  <instruction>\n    Use these answers to design the admin dashboard date logic. The dashboard should default to showing 'tomorrow's data' and removing manual date filtering.\n  </instruction>\n</spec_review_prompt>`;
+
+  document.getElementById("xml-preview").textContent = xml;
+  return xml;
+}
+
+function exportXML() {
+  const xml = generateXML();
+  navigator.clipboard.writeText(xml).then(() => {
+    document.getElementById("copyFeedback").style.display = "block";
+    setTimeout(() => document.getElementById("copyFeedback").style.display = "none", 2000);
+  }).catch(() => {
+    const ta = document.createElement("textarea");
+    ta.value = xml;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    document.getElementById("copyFeedback").style.display = "block";
+    setTimeout(() => document.getElementById("copyFeedback").style.display = "none", 2000);
+  });
+}
+
+function togglePreview() {
+  const pre = document.getElementById("xml-preview");
+  pre.style.display = pre.style.display === "none" ? "block" : "none";
+}
+
+function clearAll() {
+  if (confirm("Clear all?")) {
+    Object.keys(selections).forEach(k => delete selections[k]);
+    Object.keys(comments).forEach(k => delete comments[k]);
+    document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(el => el.checked = false);
+    document.querySelectorAll('textarea').forEach(el => el.value = '');
+    generateXML();
+  }
+}
+
+render();
+</script>
+</body>
+</html>

@@ -10,5 +10,7 @@ export const GET = withAdmin(async (req: NextRequest, userId: string, role: stri
   if (isNaN(parsedDate.getTime())) {
     return NextResponse.json({ error: 'Invalid date' }, { status: 400 })
   }
+  // Ensure default registrations exist before returning stats
+  await controller.ensureDefaultRegistrations(parsedDate)
   return controller.getStatsForDate(parsedDate)
 })

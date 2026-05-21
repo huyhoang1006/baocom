@@ -19,6 +19,10 @@ export class AdminStatsController {
     return this.getStatsForDate(today)
   }
 
+  async ensureDefaultRegistrations(date: Date): Promise<void> {
+    return this.registrationService.ensureDefaultRegistrations(date)
+  }
+
   async getStatsForDate(date: Date) {
     const dateKey = toDateKey(date)
     const totalEmployees = await this.userService.count()
