@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { adminStatsApi, type Stats } from "@/lib/api"
-import { toDateKey, getNextLockedDay } from "@/lib/registrationWindow"
+import { toDateKey, getNextWorkday } from "@/lib/registrationWindow"
 
 interface Absence {
   name: string
@@ -16,10 +16,8 @@ interface StatsData {
 }
 
 export default function AdminDashboard() {
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const nextLocked = getNextLockedDay(new Date())
-    return nextLocked ? nextLocked.dateKey : toDateKey(new Date())
-  })
+  const tomorrowDate = getNextWorkday(new Date())
+  const [selectedDate] = useState(() => toDateKey(tomorrowDate))
   const [data, setData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +39,15 @@ export default function AdminDashboard() {
     fetchStats(selectedDate)
   }, [selectedDate, fetchStats])
 
+  useEffect(() => {
+    const ensureDefaults = async () => {
+      const { RegistrationService } = await import("@/services/RegistrationService")
+      const svc = new RegistrationService()
+      await svc.ensureDefaultRegistrations(tomorrowDate)
+    }
+    ensureDefaults()
+  }, [tomorrowDate])
+
   const stats = data?.stats
   const absences = data?.absences || []
   const todayStr = toDateKey(new Date())
@@ -51,13 +58,13 @@ export default function AdminDashboard() {
       <header className="pt-10 pb-6 px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-ink">Dashboard</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-ink">Dashboard — Ngày mai</h1>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary text-white">
               Admin
             </span>
           </div>
           <p className="text-sm text-ink-muted-80">
-            Thống kê đăng ký suất ăn trưa ngày hôm nay
+            {tomorrowDate.toLocaleDateString("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit" })}
           </p>
         </div>
       </header>
@@ -65,25 +72,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
-          {/* Date Selector */}
-          <div className="mb-6 flex items-center gap-4">
-            <label className="text-sm font-medium text-ink">Ngày:</label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="form-input w-auto rounded-full"
-            />
-            {selectedDate !== todayStr && (
-              <button
-                onClick={() => setSelectedDate(todayStr)}
-                className="text-sm text-primary hover:text-primary-hover font-medium"
-              >
-                Hôm nay
-              </button>
-            )}
-          </div>
-
+          
           {/* Error State */}
           {error && (
             <div className="mb-6 p-4 rounded-[18px] bg-error-bg border border-error text-error">
@@ -158,7 +147,7 @@ export default function AdminDashboard() {
             </h2>
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={() => setSelectedDate(todayStr)}
+                onClick={() => fetchStats(todayStr)}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-all press-effect"
               >
                 <span className="material-symbols-outlined text-lg">today</span>
