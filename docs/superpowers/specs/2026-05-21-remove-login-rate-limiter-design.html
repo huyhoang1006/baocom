@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spec Review: Remove Login Rate Limiter</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin-bottom: 8px; color: #1a1a1a; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+    .toc { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .toc h2 { font-size: 1rem; margin-bottom: 12px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: #0066cc; text-decoration: none; font-size: 0.9rem; }
+    .toc a:hover { text-decoration: underline; }
+    .section-card { background: #fff; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+    .section-header { padding: 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .section-title { font-weight: 600; font-size: 1rem; }
+    .section-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: 500; }
+    .badge-approved { background: #e6f4ea; color: #1e7e34; }
+    .badge-revision { background: #fff3e0; color: #e65100; }
+    .badge-rejected { background: #ffebee; color: #c62828; }
+    .badge-open { background: #e3f2fd; color: #1565c0; }
+    .section-body { padding: 16px; }
+    .spec-content { font-size: 0.95rem; color: #444; }
+    .spec-content h3 { font-size: 1rem; margin: 16px 0 8px; color: #1a1a1a; }
+    .spec-content p { margin-bottom: 12px; }
+    .spec-content ul { padding-left: 20px; margin-bottom: 12px; }
+    .spec-content li { margin-bottom: 6px; }
+    .spec-content pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 0.85rem; margin: 12px 0; }
+    .spec-content code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-size: 0.85rem; }
+    .review-controls { margin-top: 16px; padding-top: 16px; border-top: 1px solid #eee; }
+    .control-row { margin-bottom: 16px; }
+    .control-label { font-size: 0.85rem; color: #666; margin-bottom: 8px; display: block; }
+    .radio-group, .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; }
+    .radio-item, .checkbox-item { display: flex; align-items: center; gap: 6px; }
+    .radio-item input, .checkbox-item input { cursor: pointer; }
+    .radio-item label, .checkbox-item label { font-size: 0.9rem; cursor: pointer; }
+    textarea { width: 100%; min-height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: inherit; resize: vertical; }
+    textarea:focus, input:focus { outline: none; border-color: #0066cc; }
+    .rating-row { display: flex; gap: 8px; align-items: center; }
+    .rating-row span { font-size: 0.85rem; color: #666; width: 80px; }
+    .rating-input { display: flex; gap: 4px; }
+    .rating-btn { width: 32px; height: 32px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+    .rating-btn:hover { background: #f0f0f0; }
+    .rating-btn.selected { background: #0066cc; color: #fff; border-color: #0066cc; }
+    .export-section { background: #fff; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .export-section h2 { font-size: 1rem; margin-bottom: 12px; }
+    .xml-preview { background: #1a1a1a; color: #a0d8a0; padding: 16px; border-radius: 6px; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.75rem; white-space: pre-wrap; overflow-x: auto; max-height: 300px; }
+    .copy-btn { background: #0066cc; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-top: 12px; }
+    .copy-btn:hover { background: #0055aa; }
+    .copy-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .summary-bar { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 20px; display: flex; gap: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .summary-item { text-align: center; }
+    .summary-count { font-size: 1.5rem; font-weight: 600; }
+    .summary-label { font-size: 0.75rem; color: #666; }
+    .approved .summary-count { color: #1e7e34; }
+    .revision .summary-count { color: #e65100; }
+    .open .summary-count { color: #1565c0; }
+    hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+    .file-delete { background: #fff3e0; padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; font-size: 0.9rem; }
+    .file-modify { background: #e3f2fd; padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; font-size: 0.9rem; }
+    .file-label { font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Spec Review: Remove Login Rate Limiter</h1>
+  <p class="subtitle">2026-05-21 | Author: Claude | Status: Pending Review</p>
+
+  <div class="summary-bar">
+    <div class="summary-item approved"><span class="summary-count" id="count-approved">0</span><span class="summary-label">Approved</span></div>
+    <div class="summary-item revision"><span class="summary-count" id="count-revision">0</span><span class="summary-label">Needs Revision</span></div>
+    <div class="summary-item open"><span class="summary-count" id="count-open">0</span><span class="summary-label">Open Questions</span></div>
+  </div>
+
+  <nav class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#sec-001">Summary</a></li>
+      <li><a href="#sec-002">Root Cause</a></li>
+      <li><a href="#sec-003">Scope</a></li>
+      <li><a href="#sec-004">Changes Detail</a></li>
+      <li><a href="#sec-005">Test Plan</a></li>
+      <li><a href="#sec-006">Non-Breaking</a></li>
+      <li><a href="#sec-007">Overall Decision</a></li>
+    </ol>
+  </nav>
+
+  <!-- Section 1: Summary -->
+  <div class="section-card" id="sec-001">
+    <div class="section-header">
+      <span class="section-title">1. Summary</span>
+      <span class="section-badge badge-open" id="badge-sec-001">Open</span>
+    </div>
+    <div class="section-body">
+      <div class="spec-content">
+        <p>Xóa bỏ hoàn toàn tính năng khóa IP (rate limit lockout) khi đăng nhập thất bại nhiều lần. Tính năng này gây khó khăn khi test và không cần thiết cho hệ thống nội bộ nhỏ (&lt; 50 nhân viên).</p>
+      </div>
+      <div class="review-controls">
+        <div class="control-row">
+          <span class="control-label">Status</span>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="status-sec-001" value="approved" id="r1-approve" onchange="updateCount()"><label for="r1-approve">Approved</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-001" value="needs-revision" id="r1-rev" onchange="updateCount()"><label for="r1-rev">Needs Revision</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-001" value="rejected" id="r1-reject" onchange="updateCount()"><label for="r1-reject">Rejected</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-001" value="open-question" id="r1-open" checked onchange="updateCount()"><label for="r1-open">Open Question</label></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Comments</span>
+          <textarea id="comment-sec-001" placeholder="Add your comments here..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Root Cause -->
+  <div class="section-card" id="sec-002">
+    <div class="section-header">
+      <span class="section-title">2. Root Cause</span>
+      <span class="section-badge badge-open" id="badge-sec-002">Open</span>
+    </div>
+    <div class="section-body">
+      <div class="spec-content">
+        <p>Hệ thống hiện tại khóa IP sau 5 lần đăng nhập thất bại trong 15 phút. Điều này gây vấn đề:</p>
+        <ul>
+          <li>Developer bị khóa khi test nhiều lần</li>
+          <li>Không cần thiết cho môi trường nội bộ với &lt; 50 nhân viên</li>
+          <li>Không có threat model rõ ràng cho việc brute-force attack trong mạng nội bộ</li>
+        </ul>
+      </div>
+      <div class="review-controls">
+        <div class="control-row">
+          <span class="control-label">Status</span>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="status-sec-002" value="approved" id="r2-approve" onchange="updateCount()"><label for="r2-approve">Approved</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-002" value="needs-revision" id="r2-rev" onchange="updateCount()"><label for="r2-rev">Needs Revision</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-002" value="rejected" id="r2-reject" onchange="updateCount()"><label for="r2-reject">Rejected</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-002" value="open-question" id="r2-open" checked onchange="updateCount()"><label for="r2-open">Open Question</label></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Comments</span>
+          <textarea id="comment-sec-002" placeholder="Add your comments here..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Scope -->
+  <div class="section-card" id="sec-003">
+    <div class="section-header">
+      <span class="section-title">3. Scope</span>
+      <span class="section-badge badge-open" id="badge-sec-003">Open</span>
+    </div>
+    <div class="section-body">
+      <div class="spec-content">
+        <h3>Files to DELETE</h3>
+        <div class="file-delete"><span class="file-label">DELETE</span>src/lib/rateLimiter.ts - Class InMemoryRateLimiter và singleton loginRateLimiter</div>
+        <div class="file-delete"><span class="file-label">DELETE</span>tests/lib/rateLimiter.test.ts - Unit tests cho rate limiter</div>
+        <h3>Files to MODIFY</h3>
+        <div class="file-modify"><span class="file-label">MODIFY</span>app/api/auth/login/route.ts - Remove all rate limiter imports and calls</div>
+        <div class="file-modify"><span class="file-label">MODIFY</span>BUSINESS_RULES.md - Remove LOGIN_RATE_LIMIT_WINDOW and LOGIN_RATE_LIMIT_MAX constants</div>
+        <div class="file-modify"><span class="file-label">MODIFY</span>CLAUDE.md - Remove "login rate limiter singleton" from global state description</div>
+      </div>
+      <div class="review-controls">
+        <div class="control-row">
+          <span class="control-label">Status</span>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="status-sec-003" value="approved" id="r3-approve" onchange="updateCount()"><label for="r3-approve">Approved</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-003" value="needs-revision" id="r3-rev" onchange="updateCount()"><label for="r3-rev">Needs Revision</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-003" value="rejected" id="r3-reject" onchange="updateCount()"><label for="r3-reject">Rejected</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-003" value="open-question" id="r3-open" checked onchange="updateCount()"><label for="r3-open">Open Question</label></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Comments</span>
+          <textarea id="comment-sec-003" placeholder="Add your comments here..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Changes Detail -->
+  <div class="section-card" id="sec-004">
+    <div class="section-header">
+      <span class="section-title">4. Changes Detail</span>
+      <span class="section-badge badge-open" id="badge-sec-004">Open</span>
+    </div>
+    <div class="section-body">
+      <div class="spec-content">
+        <h3>1. Delete src/lib/rateLimiter.ts</h3>
+        <h3>2. Delete tests/lib/rateLimiter.test.ts</h3>
+        <h3>3. Modify app/api/auth/login/route.ts</h3>
+        <p>Before:</p>
+        <pre>import { loginRateLimiter } from '@/lib/rateLimiter'
+// ...
+const bypassRateLimit = process.env.RATE_LIMIT_BYPASS === 'true'
+let ip: string | undefined
+
+if (!bypassRateLimit) {
+  ip = loginRateLimiter.getClientIP(request as unknown as NextRequest)
+  const limitCheck = loginRateLimiter.checkLimit(ip)
+  if (!limitCheck.allowed) {
+    return NextResponse.json(
+      { error: 'Too many failed attempts. Please try again after 15 minutes.', retryAfter: limitCheck.retryAfter },
+      { status: 429 }
+    )
+  }
+}
+
+const { username, password } = await request.json()
+// ...
+if (!isValid) {
+  if (!bypassRateLimit) loginRateLimiter.recordFailedAttempt(ip!)
+  return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+}
+// ...
+if (!user || !user.isActive) {
+  if (!bypassRateLimit) loginRateLimiter.recordFailedAttempt(ip!)
+  return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+}
+// ...
+if (!bypassRateLimit) loginRateLimiter.recordSuccess(ip!)</pre>
+        <p>After:</p>
+        <pre>// Remove all rate limiter logic
+const { username, password } = await request.json()</pre>
+        <p>Also remove RATE_LIMIT_BYPASS handling since rate limiter is gone.</p>
+        <h3>4. Modify BUSINESS_RULES.md</h3>
+        <p>Remove these constants:</p>
+        <ul>
+          <li>LOGIN_RATE_LIMIT_WINDOW (15 minutes)</li>
+          <li>LOGIN_RATE_LIMIT_MAX (5 attempts)</li>
+        </ul>
+        <h3>5. Modify CLAUDE.md</h3>
+        <p>Before:</p>
+        <pre>**Global state:** Shared Prisma singleton in `src/lib/prisma.ts`; login rate limiter singleton imported by `app/api/auth/login/route.ts` from `src/lib/rateLimiter.ts`.</pre>
+        <p>After:</p>
+        <pre>**Global state:** Shared Prisma singleton in `src/lib/prisma.ts`.</pre>
+      </div>
+      <div class="review-controls">
+        <div class="control-row">
+          <span class="control-label">Status</span>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="status-sec-004" value="approved" id="r4-approve" onchange="updateCount()"><label for="r4-approve">Approved</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-004" value="needs-revision" id="r4-rev" onchange="updateCount()"><label for="r4-rev">Needs Revision</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-004" value="rejected" id="r4-reject" onchange="updateCount()"><label for="r4-reject">Rejected</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-004" value="open-question" id="r4-open" checked onchange="updateCount()"><label for="r4-open">Open Question</label></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Comments</span>
+          <textarea id="comment-sec-004" placeholder="Add your comments here..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Test Plan -->
+  <div class="section-card" id="sec-005">
+    <div class="section-header">
+      <span class="section-title">5. Test Plan</span>
+      <span class="section-badge badge-open" id="badge-sec-005">Open</span>
+    </div>
+    <div class="section-body">
+      <div class="spec-content">
+        <ol>
+          <li>Verify /api/auth/login still works with valid credentials</li>
+          <li>Verify /api/auth/login returns 401 with invalid credentials (no lockout)</li>
+          <li>Run npm test - confirm rate limiter tests are removed</li>
+          <li>Run npm run lint - confirm no import errors</li>
+        </ol>
+      </div>
+      <div class="review-controls">
+        <div class="control-row">
+          <span class="control-label">Status</span>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="status-sec-005" value="approved" id="r5-approve" onchange="updateCount()"><label for="r5-approve">Approved</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-005" value="needs-revision" id="r5-rev" onchange="updateCount()"><label for="r5-rev">Needs Revision</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-005" value="rejected" id="r5-reject" onchange="updateCount()"><label for="r5-reject">Rejected</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-005" value="open-question" id="r5-open" checked onchange="updateCount()"><label for="r5-open">Open Question</label></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Comments</span>
+          <textarea id="comment-sec-005" placeholder="Add your comments here..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 6: Non-Breaking -->
+  <div class="section-card" id="sec-006">
+    <div class="section-header">
+      <span class="section-title">6. Non-Breaking</span>
+      <span class="section-badge badge-open" id="badge-sec-006">Open</span>
+    </div>
+    <div class="section-body">
+      <div class="spec-content">
+        <ul>
+          <li>Không ảnh hưởng đến chức năng đăng nhập cơ bản</li>
+          <li>Không ảnh hưởng đến các API khác</li>
+          <li>Không ảnh hưởng đến JWT authentication</li>
+        </ul>
+      </div>
+      <div class="review-controls">
+        <div class="control-row">
+          <span class="control-label">Status</span>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="status-sec-006" value="approved" id="r6-approve" onchange="updateCount()"><label for="r6-approve">Approved</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-006" value="needs-revision" id="r6-rev" onchange="updateCount()"><label for="r6-rev">Needs Revision</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-006" value="rejected" id="r6-reject" onchange="updateCount()"><label for="r6-reject">Rejected</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-006" value="open-question" id="r6-open" checked onchange="updateCount()"><label for="r6-open">Open Question</label></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Comments</span>
+          <textarea id="comment-sec-006" placeholder="Add your comments here..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 7: Overall Decision -->
+  <div class="section-card" id="sec-007">
+    <div class="section-header">
+      <span class="section-title">7. Overall Decision</span>
+      <span class="section-badge badge-open" id="badge-sec-007">Open</span>
+    </div>
+    <div class="section-body">
+      <div class="spec-content">
+        <p>Bạn có muốn tiến hành implementation theo spec này không?</p>
+      </div>
+      <div class="review-controls">
+        <div class="control-row">
+          <span class="control-label">Decision</span>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="status-sec-007" value="approved" id="r7-approve" onchange="updateCount()"><label for="r7-approve">Proceed with Implementation</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-007" value="needs-revision" id="r7-rev" onchange="updateCount()"><label for="r7-rev">Request Changes</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-007" value="rejected" id="r7-reject" onchange="updateCount()"><label for="r7-reject">Do Not Implement</label></div>
+            <div class="radio-item"><input type="radio" name="status-sec-007" value="open-question" id="r7-open" checked onchange="updateCount()"><label for="r7-open">Need More Discussion</label></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Comments</span>
+          <textarea id="comment-sec-007" placeholder="Add your comments here..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Section -->
+  <div class="export-section">
+    <h2>Export XML Prompt</h2>
+    <div class="xml-preview" id="xml-preview">Complete the review to generate the XML prompt...</div>
+    <button class="copy-btn" id="copy-btn" onclick="copyXML()">Copy XML Prompt</button>
+  </div>
+</div>
+
+<script>
+const sections = ['sec-001', 'sec-002', 'sec-003', 'sec-004', 'sec-005', 'sec-006', 'sec-007'];
+
+function updateCount() {
+  let approved = 0, revision = 0, open = 0;
+  sections.forEach(id => {
+    const radios = document.getElementsByName('status-' + id);
+    for (let r of radios) {
+      if (r.checked) {
+        if (r.value === 'approved') approved++;
+        else if (r.value === 'needs-revision') revision++;
+        else if (r.value === 'open-question') open++;
+        break;
+      }
+    }
+  });
+  document.getElementById('count-approved').textContent = approved;
+  document.getElementById('count-revision').textContent = revision;
+  document.getElementById('count-open').textContent = open;
+  generateXML();
+}
+
+function getStatus(id) {
+  const radios = document.getElementsByName('status-' + id);
+  for (let r of radios) {
+    if (r.checked) return r.value;
+  }
+  return 'open-question';
+}
+
+function getComment(id) {
+  return document.getElementById('comment-' + id).value;
+}
+
+function escapeXML(str) {
+  return str.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
+}
+
+const specContent = {
+  'sec-001': { title: 'Summary', content: 'Xóa bỏ hoàn toàn tính năng khóa IP (rate limit lockout) khi đăng nhập thất bại nhiều lần. Tính năng này gây khó khăn khi test và không cần thiết cho hệ thống nội bộ nhỏ (< 50 nhân viên).' },
+  'sec-002': { title: 'Root Cause', content: 'Hệ thống hiện tại khóa IP sau 5 lần đăng nhập thất bại trong 15 phút. Điều này gây vấn đề: Developer bị khóa khi test nhiều lần; Không cần thiết cho môi trường nội bộ với < 50 nhân viên; Không có threat model rõ ràng cho việc brute-force attack trong mạng nội bộ' },
+  'sec-003': { title: 'Scope', content: 'Files to DELETE: src/lib/rateLimiter.ts, tests/lib/rateLimiter.test.ts. Files to MODIFY: app/api/auth/login/route.ts, BUSINESS_RULES.md, CLAUDE.md' },
+  'sec-004': { title: 'Changes Detail', content: 'Xóa src/lib/rateLimiter.ts và tests/lib/rateLimiter.test.ts. Sửa app/api/auth/login/route.ts bỏ import và calls tới loginRateLimiter. Sửa BUSINESS_RULES.md bỏ constants LOGIN_RATE_LIMIT. Sửa CLAUDE.md bỏ ghi chú về rate limiter singleton.' },
+  'sec-005': { title: 'Test Plan', content: '1. Verify /api/auth/login still works with valid credentials. 2. Verify /api/auth/login returns 401 with invalid credentials (no lockout). 3. Run npm test - confirm rate limiter tests are removed. 4. Run npm run lint - confirm no import errors.' },
+  'sec-006': { title: 'Non-Breaking', content: 'Không ảnh hưởng đến chức năng đăng nhập cơ bản. Không ảnh hưởng đến các API khác. Không ảnh hưởng đến JWT authentication.' },
+  'sec-007': { title: 'Overall Decision', content: 'Overall decision on proceeding with this spec implementation.' }
+};
+
+function generateXML() {
+  const approved = Array.from(document.querySelectorAll('[name^="status-sec-"]'))
+    .filter(r => r.checked && r.value === 'approved').length;
+  const revision = Array.from(document.querySelectorAll('[name^="status-sec-"]'))
+    .filter(r => r.checked && r.value === 'needs-revision').length;
+  const open = Array.from(document.querySelectorAll('[name^="status-sec-"]'))
+    .filter(r => r.checked && r.value === 'open-question').length;
+
+  let xml = `<spec_review_prompt version="1.0">
+  <metadata>
+    <title>Remove Login Rate Limiter</title>
+    <source>provided_spec</source>
+    <created_at>2026-05-21T00:00:00Z</created_at>
+    <review_goal>Evaluate spec for removing login rate limiter lockout feature</review_goal>
+  </metadata>
+  <spec>
+`;
+
+  sections.forEach(id => {
+    const status = getStatus(id);
+    const comment = escapeXML(getComment(id));
+    xml += `    <section id="${id}">
+      <title>${specContent[id].title}</title>
+      <content>${escapeXML(specContent[id].content)}</content>
+      <review>
+        <status>${status}</status>
+        <comments>
+          <comment>${comment || 'No comment'}</comment>
+        </comments>
+      </review>
+    </section>
+`;
+  });
+
+  xml += `  </spec>
+  <summary>
+    <approved_sections>${approved}</approved_sections>
+    <needs_revision_sections>${revision}</needs_revision_sections>
+    <open_questions>${open}</open_questions>
+  </summary>
+  <instruction>
+    Use the reviewed spec, comments, and decisions above as the source of truth for the next implementation or planning step.
+  </instruction>
+</spec_review_prompt>`;
+
+  document.getElementById('xml-preview').textContent = xml;
+  return xml;
+}
+
+function copyXML() {
+  const xml = generateXML();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(xml).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = 'Copy XML Prompt';
+        btn.disabled = false;
+      }, 2000);
+    });
+  } else {
+    const textarea = document.createElement('textarea');
+    textarea.value = xml;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Copy XML Prompt';
+      btn.disabled = false;
+    }, 2000);
+  }
+}
+
+// Initialize
+updateCount();
+</script>
+</body>
+</html>
