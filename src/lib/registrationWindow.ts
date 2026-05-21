@@ -94,7 +94,8 @@ export function getWeekStart(now = new Date(), weekOffset = 0): Date {
 export function getWeekdaysForOffset(now = new Date(), weekOffset = 0): RegistrationDayState[] {
   const monday = getWeekStart(now, weekOffset)
 
-  return [0, 1, 2, 3, 4, 5, 6].map((offset) => {
+  // Chỉ trả về 5 ngày T2-T6 (offset 0-4), không có T7 và CN
+  return [0, 1, 2, 3, 4].map((offset) => {
     const date = new Date(monday)
     date.setDate(monday.getDate() + offset)
     return getRegistrationDayState(date, now)

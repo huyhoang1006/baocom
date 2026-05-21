@@ -25,12 +25,20 @@ export default function BookPage() {
       return {
         ...day,
         locked: day.locked || isPastOrToday,
-        // null = default eating (no registration record), else explicit status
         status: (rawStatus || "eating") as Status,
         isDefault: rawStatus === null,
       }
     })
   }, [today, weekOffset, getStatusForDate])
+
+  const row1 = useMemo(() => days.slice(0, 2), [days])
+  const row2 = useMemo(() => days.slice(2, 5), [days])
+
+  const eatingCount = days.filter((day) => day.status === "eating").length
+  const openCount = days.filter((day) => !day.locked && day.isWorkday).length
+  const weekRangeLabel = days.length > 0
+    ? `Tuần ${formatWeekRangeDate(days[0].date)} - ${formatWeekRangeDate(days[4].date)}`
+    : "Tuần này"
 
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
@@ -47,12 +55,6 @@ export default function BookPage() {
       showNotification(error || "Cập nhật thất bại", "error")
     }
   }
-
-  const eatingCount = days.filter((day) => day.status === "eating").length
-  const openCount = days.filter((day) => !day.locked && day.isWorkday).length
-  const weekRangeLabel = days.length > 0
-    ? `Tuần ${formatWeekRangeDate(days[0].date)} - ${formatWeekRangeDate(days[4].date)}`
-    : "Tuần này"
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
@@ -121,87 +123,11 @@ export default function BookPage() {
           )}
 
           {!loading && days.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
-              {days.map((day) => {
-                const isEating = day.status === "eating"
-                const isNotEating = day.status === "not-eating"
-
-                return (
-                  <div
-                    key={day.dateKey}
-                    data-testid={`book-day-${day.dateKey}`}
-                    className={`
-                      relative p-4 rounded-[18px] border-2 transition-all duration-200
-                      ${day.locked ? "opacity-60" : ""}
-                      ${!day.isWorkday && !day.locked ? "opacity-50" : ""}
-                      ${isEating ? "border-success bg-success-bg" : ""}
-                      ${isNotEating ? "border-error bg-error-bg" : ""}
-                    `}
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-lg font-semibold text-ink">{day.dayName}</span>
-                          <span className="text-2xl font-bold text-ink">{day.date.getDate()}</span>
-                        </div>
-                        <div className="text-xs text-ink-muted-80 mt-1">
-                          Khóa lúc {day.cutoffAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} ngày {day.cutoffAt.toLocaleDateString("vi-VN")}
-                        </div>
-                      </div>
-
-                      {day.locked && (
-                        <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-semibold text-ink-muted-80">
-                          Đã khóa
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Status badge */}
-                    <div className="mb-3">
-                      {day.locked ? (
-                        <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-medium text-ink-muted-80">
-                          Đã chốt
-                        </span>
-                      ) : isNotEating ? (
-                        <span className="px-2.5 py-1 rounded-full bg-error-bg text-xs font-medium text-error">
-                          Đã báo nghỉ
-                        </span>
-                      ) : isEating && !day.isDefault ? (
-                        <span className="px-2.5 py-1 rounded-full bg-success-bg text-xs font-medium text-success">
-                          Đã đăng ký
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-1 rounded-full bg-primary/10 text-xs font-medium text-primary">
-                          Mặc định có cơm
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        disabled={day.locked || !day.isWorkday || isEating}
-                        onClick={() => handleStatusChange(day.dateKey, "eating")}
-                        className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                          isEating ? "border-success bg-success text-on-primary" : "border-hairline bg-canvas text-ink"
-                        } ${day.locked || !day.isWorkday ? "cursor-not-allowed opacity-50" : "active:scale-95"}`}
-                      >
-                        Có ăn
-                      </button>
-                      <button
-                        type="button"
-                        disabled={day.locked || !day.isWorkday || isNotEating}
-                        onClick={() => handleStatusChange(day.dateKey, "not-eating")}
-                        className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                          isNotEating ? "border-error bg-error text-on-primary" : "border-hairline bg-canvas text-ink"
-                        } ${day.locked || !day.isWorkday ? "cursor-not-allowed opacity-50" : "active:scale-95"}`}
-                      >
-                        Không ăn
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+              {/* Desktop: 5 columns — render all days */}
+              {days.map((day) => (
+                <DayCard key={day.dateKey} day={day} onStatusChange={handleStatusChange} />
+              ))}
             </div>
           )}
         </div>
@@ -222,6 +148,88 @@ export default function BookPage() {
           <span className="font-medium">{notification.message}</span>
         </div>
       )}
+    </div>
+  )
+}
+
+type Day = ReturnType<typeof useRegistrations> extends ReturnType<typeof useRegistrations>
+  ? { dateKey: string; dayName: string; date: Date; cutoffAt: Date; locked: boolean; isWorkday: boolean; status: Status; isDefault: boolean }
+  : never
+
+function DayCard({ day, onStatusChange }: { day: Day; onStatusChange: (dateKey: string, status: Status) => void }) {
+  const isEating = day.status === "eating"
+  const isNotEating = day.status === "not-eating"
+
+  return (
+    <div
+      data-testid={`book-day-${day.dateKey}`}
+      className={`
+        relative p-4 rounded-[18px] border-2 transition-all duration-200
+        ${day.locked ? "opacity-60" : ""}
+        ${isEating ? "border-success bg-success-bg" : ""}
+        ${isNotEating ? "border-error bg-error-bg" : ""}
+      `}
+    >
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-semibold text-ink">{day.dayName}</span>
+            <span className="text-2xl font-bold text-ink">{day.date.getDate()}</span>
+          </div>
+          <div className="text-xs text-ink-muted-80 mt-1">
+            Khóa lúc {day.cutoffAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} ngày {day.cutoffAt.toLocaleDateString("vi-VN")}
+          </div>
+        </div>
+
+        {day.locked && (
+          <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-semibold text-ink-muted-80">
+            Đã khóa
+          </span>
+        )}
+      </div>
+
+      <div className="mb-3">
+        {day.locked ? (
+          <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-medium text-ink-muted-80">
+            Đã chốt
+          </span>
+        ) : isNotEating ? (
+          <span className="px-2.5 py-1 rounded-full bg-error-bg text-xs font-medium text-error">
+            Đã báo nghỉ
+          </span>
+        ) : isEating && !day.isDefault ? (
+          <span className="px-2.5 py-1 rounded-full bg-success-bg text-xs font-medium text-success">
+            Đã đăng ký
+          </span>
+        ) : (
+          <span className="px-2.5 py-1 rounded-full bg-primary/10 text-xs font-medium text-primary">
+            Mặc định có cơm
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          disabled={day.locked || isEating}
+          onClick={() => onStatusChange(day.dateKey, "eating")}
+          className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+            isEating ? "border-success bg-success text-on-primary" : "border-hairline bg-canvas text-ink"
+          } ${day.locked ? "cursor-not-allowed opacity-50" : "active:scale-95"}`}
+        >
+          Có ăn
+        </button>
+        <button
+          type="button"
+          disabled={day.locked || isNotEating}
+          onClick={() => onStatusChange(day.dateKey, "not-eating")}
+          className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+            isNotEating ? "border-error bg-error text-on-primary" : "border-hairline bg-canvas text-ink"
+          } ${day.locked ? "cursor-not-allowed opacity-50" : "active:scale-95"}`}
+        >
+          Không ăn
+        </button>
+      </div>
     </div>
   )
 }

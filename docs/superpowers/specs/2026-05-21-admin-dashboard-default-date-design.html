@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec Review: Admin Dashboard Default Date</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#1a1a1a;line-height:1.6}
+.container{max-width:900px;margin:0 auto;padding:20px}
+header{background:#fff;border-bottom:1px solid #ddd;padding:20px 0;margin-bottom:24px}
+header h1{font-size:1.5rem;font-weight:600;color:#333}
+header .meta{font-size:0.85rem;color:#666;margin-top:4px}
+.review-summary{background:#e8f5e9;border:1px solid #4caf50;border-radius:8px;padding:16px;margin-bottom:24px}
+.review-summary h2{font-size:1rem;margin-bottom:8px}
+.stats{display:flex;gap:16px;font-size:0.9rem}
+.stat{display:flex;align-items:center;gap:6px}
+.stat-label{color:#666}
+.stat-value{font-weight:600}
+.stat-value.approved{color:#2e7d32}
+.stat-value.needs-revision{color:#ed6c02}
+.stat-value.rejected{color:#d32f2f}
+.stat-value.open{color:#0288d1}
+.sec-card{background:#fff;border:1px solid #ddd;border-radius:12px;margin-bottom:16px;overflow:hidden}
+.sec-header{background:#fafafa;padding:16px 20px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.sec-title{font-weight:600;font-size:1rem}
+.sec-id{font-size:0.75rem;color:#999;background:#f0f0f0;padding:2px 8px;border-radius:4px}
+.sec-body{padding:20px}
+.sec-content{font-size:0.95rem;white-space:pre-wrap}
+.sec-content table{width:100%;border-collapse:collapse;margin:12px 0}
+.sec-content th,.sec-content td{border:1px solid #ddd;padding:8px 12px;text-align:left;font-size:0.9rem}
+.sec-content th{background:#f5f5f5;font-weight:600}
+.sec-content code{background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:0.85rem}
+.review-controls{padding:16px 20px;background:#fafafa;border-top:1px solid #eee}
+.control-group{margin-bottom:12px}
+.control-group:last-child{margin-bottom:0}
+.control-label{font-size:0.8rem;font-weight:600;color:#666;text-transform:uppercase;margin-bottom:6px}
+.status-options{display:flex;gap:12px}
+.status-btn{padding:6px 14px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.status-btn:hover{border-color:#bbb}
+.status-btn.active[data-status="approved"]{background:#e8f5e9;border-color:#4caf50;color:#2e7d32}
+.status-btn.active[data-status="needs-revision"]{background:#fff3e0;border-color:#ff9800;color:#e65100}
+.status-btn.active[data-status="rejected"]{background:#ffebee;border-color:#f44336;color:#c62828}
+.status-btn.active[data-status="open-question"]{background:#e3f2fd;border-color:#2196f3;color:#1565c0}
+.ratings{display:flex;gap:16px}
+.rating{display:flex;align-items:center;gap:6px}
+.rating-label{font-size:0.8rem;color:#666}
+.rating select{border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:0.85rem}
+.comments{margin-top:12px}
+.comment-list{margin-bottom:8px}
+.comment-item{background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;margin-bottom:6px;font-size:0.9rem}
+.comment-input-wrap{display:flex;gap:8px}
+.comment-input{flex:1;border:1px solid #ddd;border-radius:6px;padding:8px 12px;font-size:0.9rem;resize:vertical;min-height:60px}
+.add-comment{background:#2196f3;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:0.85rem;white-space:nowrap}
+.add-comment:hover{background:#1976d2}
+.export-section{background:#fff;border:1px solid #ddd;border-radius:12px;padding:20px;margin-top:24px}
+.export-section h2{font-size:1rem;margin-bottom:12px}
+.xml-preview{background:#1a1a1a;color:#a5d6a7;font-family:'Monaco','Menlo',monospace;font-size:0.8rem;padding:16px;border-radius:8px;white-space:pre-wrap;overflow-x:auto;max-height:400px;margin-bottom:16px}
+.copy-btn{background:#4caf50;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:1rem;cursor:pointer}
+.copy-btn:hover{background:#388e3c}
+.copy-btn:disabled{background:#ccc;cursor:not-allowed}
+.copy-success{color:#4caf50;font-weight:600;margin-left:12px;display:none}
+.toc{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;margin-bottom:24px}
+.toc h2{font-size:1rem;margin-bottom:12px}
+.toc-list{list-style:none}
+.toc-item{margin-bottom:4px}
+.toc-link{color:#2196f3;text-decoration:none;font-size:0.9rem}
+.toc-link:hover{text-decoration:underline}
+@media(max-width:600px){.stats{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>Spec Review: Admin Dashboard Default Date + Cutoff Logic</h1>
+<div class="meta">2026-05-21 | Status: <span id="overall-status">Draft</span></div>
+</div>
+</header>
+<div class="container">
+<div class="review-summary">
+<h2>Review Progress</h2>
+<div class="stats">
+<span class="stat"><span class="stat-label">Approved:</span><span class="stat-value approved" id="count-approved">0</span></span>
+<span class="stat"><span class="stat-label">Needs Revision:</span><span class="stat-value needs-revision" id="count-needs-revision">0</span></span>
+<span class="stat"><span class="stat-label">Rejected:</span><span class="stat-value rejected" id="count-rejected">0</span></span>
+<span class="stat"><span class="stat-label">Open Questions:</span><span class="stat-value open" id="count-open">0</span></span>
+</div>
+</div>
+
+<nav class="toc">
+<h2>Table of Contents</h2>
+<ul class="toc-list">
+<li class="toc-item"><a class="toc-link" href="#sec-001">1. Problem Statement</a></li>
+<li class="toc-item"><a class="toc-link" href="#sec-002">2. Cutoff Rule Summary</a></li>
+<li class="toc-item"><a class="toc-link" href="#sec-003">3. Part B: Cutoff Logic - Already Correct</a></li>
+<li class="toc-item"><a class="toc-link" href="#sec-004">4. Design: Dashboard Default Date</a></li>
+<li class="toc-item"><a class="toc-link" href="#sec-005">5. Files to Modify</a></li>
+</ul>
+</nav>
+
+<section class="sec-card" id="sec-001">
+<div class="sec-header">
+<span class="sec-title">1. Problem Statement</span>
+<span class="sec-id">sec-001</span>
+</div>
+<div class="sec-body">
+<div class="sec-content"><h3>Part A: Dashboard Default Date</h3>
+<p>Khi admin vào dashboard vào ngày <strong>Thursday</strong>, mặc định nó hiển thị stats cho Thursday. Tuy nhiên, theo business rule:</p>
+<ul>
+<li>Hôm nay Thursday → admin đặt cutoff 23h Thursday → <strong>Friday bị khóa</strong> không cho đổi</li>
+<li>Các ngày khác (tuần sau) vẫn đổi được</li>
+</ul>
+<p><strong>Yêu cầu:</strong> Khi admin vào dashboard vào Thursday, mặc định nên hiển thị stats cho <strong>Friday</strong>.</p>
+
+<h3>Part B: Cutoff Logic cho Monday</h3>
+<p>Khi hôm nay <strong>Friday</strong>, muốn đăng ký <strong>Monday</strong> tuần sau → cutoff phải là <strong>23h Sunday</strong> (để người quên có thời gian cuối tuần nhớ lại)</p>
+<p>Logic hiện tại: <code>getCutoffAt()</code> cắt ngày -1 ngày, cho Monday ra Sunday 23h → <strong>đã đúng</strong></p>
+<p>Cần verify: với Saturday (non-workday), không cho đăng ký</p></div>
+<div class="review-controls">
+<div class="control-group">
+<div class="control-label">Status</div>
+<div class="status-options">
+<button class="status-btn" data-status="approved" onclick="setStatus('sec-001','approved')">Approved</button>
+<button class="status-btn" data-status="needs-revision" onclick="setStatus('sec-001','needs-revision')">Needs Revision</button>
+<button class="status-btn" data-status="rejected" onclick="setStatus('sec-001','rejected')">Rejected</button>
+<button class="status-btn" data-status="open-question" onclick="setStatus('sec-001','open-question')">Open Question</button>
+</div>
+</div>
+<div class="control-group">
+<div class="control-label">Ratings</div>
+<div class="ratings">
+<div class="rating"><span class="rating-label">Clarity:</span><select onchange="setRating('sec-001','clarity',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Completeness:</span><select onchange="setRating('sec-001','completeness',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Feasibility:</span><select onchange="setRating('sec-001','feasibility',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+</div>
+</div>
+<div class="comments" id="comments-sec-001">
+<div class="comment-list"></div>
+<div class="comment-input-wrap"><textarea class="comment-input" id="input-sec-001" placeholder="Add comment..."></textarea><button class="add-comment" onclick="addComment('sec-001')">Add</button></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="sec-card" id="sec-002">
+<div class="sec-header">
+<span class="sec-title">2. Cutoff Rule Summary</span>
+<span class="sec-id">sec-002</span>
+</div>
+<div class="sec-body">
+<div class="sec-content"><table>
+<thead><tr><th>Registration Date</th><th>Cutoff Time</th><th>Example (when booking)</th></tr></thead>
+<tbody>
+<tr><td>Monday</td><td>23:00 Sunday</td><td>Fri booking Mon → cutoff Sun 23:00</td></tr>
+<tr><td>Tuesday</td><td>23:00 Monday</td><td>Mon booking Tue → cutoff Mon 23:00</td></tr>
+<tr><td>Wednesday</td><td>23:00 Tuesday</td><td>Tue booking Wed → cutoff Tue 23:00</td></tr>
+<tr><td>Thursday</td><td>23:00 Wednesday</td><td>Wed booking Thu → cutoff Wed 23:00</td></tr>
+<tr><td>Friday</td><td>23:00 Thursday</td><td>Thu booking Fri → cutoff Thu 23:00</td></tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> Thứ 7 và Chủ nhật là non-workday, không báo cơm.</p></div>
+<div class="review-controls">
+<div class="control-group">
+<div class="control-label">Status</div>
+<div class="status-options">
+<button class="status-btn" data-status="approved" onclick="setStatus('sec-002','approved')">Approved</button>
+<button class="status-btn" data-status="needs-revision" onclick="setStatus('sec-002','needs-revision')">Needs Revision</button>
+<button class="status-btn" data-status="rejected" onclick="setStatus('sec-002','rejected')">Rejected</button>
+<button class="status-btn" data-status="open-question" onclick="setStatus('sec-002','open-question')">Open Question</button>
+</div>
+</div>
+<div class="control-group">
+<div class="control-label">Ratings</div>
+<div class="ratings">
+<div class="rating"><span class="rating-label">Clarity:</span><select onchange="setRating('sec-002','clarity',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Completeness:</span><select onchange="setRating('sec-002','completeness',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Feasibility:</span><select onchange="setRating('sec-002','feasibility',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+</div>
+</div>
+<div class="comments" id="comments-sec-002">
+<div class="comment-list"></div>
+<div class="comment-input-wrap"><textarea class="comment-input" id="input-sec-002" placeholder="Add comment..."></textarea><button class="add-comment" onclick="addComment('sec-002')">Add</button></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="sec-card" id="sec-003">
+<div class="sec-header">
+<span class="sec-title">3. Part B: Cutoff Logic - Already Correct</span>
+<span class="sec-id">sec-003</span>
+</div>
+<div class="sec-body">
+<div class="sec-content"><p>Đã verify: <code>getCutoffAt()</code> hiện tại đã đúng rule mới:</p>
+
+<pre><code>export function getCutoffAt(targetDate: Date, config?: CutoffTimeConfig): Date {
+  const cutoffAt = startOfLocalDay(targetDate)
+  cutoffAt.setDate(cutoffAt.getDate() - 1)  // -1 ngày
+  cutoffAt.setHours(config?.hour ?? 23, config?.minute ?? 0, 0, 0)
+  return cutoffAt
+}</code></pre>
+
+<ul>
+<li>Monday → cutoff Sunday 23:00 ✓</li>
+<li>Tuesday → cutoff Monday 23:00 ✓</li>
+<li>... (các ngày khác tương tự)</li>
+</ul>
+<p><strong>Không cần thay đổi code cho Part B.</strong></p></div>
+<div class="review-controls">
+<div class="control-group">
+<div class="control-label">Status</div>
+<div class="status-options">
+<button class="status-btn" data-status="approved" onclick="setStatus('sec-003','approved')">Approved</button>
+<button class="status-btn" data-status="needs-revision" onclick="setStatus('sec-003','needs-revision')">Needs Revision</button>
+<button class="status-btn" data-status="rejected" onclick="setStatus('sec-003','rejected')">Rejected</button>
+<button class="status-btn" data-status="open-question" onclick="setStatus('sec-003','open-question')">Open Question</button>
+</div>
+</div>
+<div class="control-group">
+<div class="control-label">Ratings</div>
+<div class="ratings">
+<div class="rating"><span class="rating-label">Clarity:</span><select onchange="setRating('sec-003','clarity',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Completeness:</span><select onchange="setRating('sec-003','completeness',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Feasibility:</span><select onchange="setRating('sec-003','feasibility',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+</div>
+</div>
+<div class="comments" id="comments-sec-003">
+<div class="comment-list"></div>
+<div class="comment-input-wrap"><textarea class="comment-input" id="input-sec-003" placeholder="Add comment..."></textarea><button class="add-comment" onclick="addComment('sec-003')">Add</button></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="sec-card" id="sec-004">
+<div class="sec-header">
+<span class="sec-title">4. Design: Dashboard Default Date</span>
+<span class="sec-id">sec-004</span>
+</div>
+<div class="sec-body">
+<div class="sec-content"><h3>1. Logic Change</h3>
+<p><strong>File:</strong> <code>src/lib/registrationWindow.ts</code></p>
+<p>Thêm helper function <code>getNextLockedDay</code>:</p>
+
+<pre><code>/**
+ * Returns the next date (from today) that is locked due to cutoff having passed.
+ * Returns null if no such date found within booking window.
+ */
+export function getNextLockedDay(now: Date): RegistrationDayState | null {
+  const weekdays = getCurrentWeekFutureWeekdays(now)
+  return weekdays.find(day => day.locked) ?? null
+}</code></pre>
+
+<h3>2. Dashboard Change</h3>
+<p><strong>File:</strong> <code>app/admin/dashboard/page.tsx</code></p>
+<p>Thay đổi initial state của <code>selectedDate</code>:</p>
+
+<p><strong>Before:</strong></p>
+<pre><code>const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()))</code></pre>
+
+<p><strong>After:</strong></p>
+<pre><code>const [selectedDate, setSelectedDate] = useState(() => {
+  const nextLocked = getNextLockedDay(new Date())
+  return nextLocked ? nextLocked.dateKey : toDateKey(new Date())
+})</code></pre>
+
+<h3>3. Behavior Summary</h3>
+<table>
+<thead><tr><th>Hôm nay</th><th>Mặc định hiển thị</th><th>Lý do</th></tr></thead>
+<tbody>
+<tr><td>Thursday</td><td>Friday</td><td>Friday đã past cutoff (23h Thursday)</td></tr>
+<tr><td>Friday</td><td>Monday (tuần sau)</td><td>Friday past cutoff rồi</td></tr>
+<tr><td>Monday-Tuesday</td><td>Ngày đầu tiên chưa bị khóa</td><td>Không có ngày nào bị khóa trong tuần</td></tr>
+</tbody>
+</table>
+
+<h3>4. Edge Cases</h3>
+<ul>
+<li>Nếu không có ngày nào bị khóa → fallback về today như hiện tại</li>
+<li>Nếu today là Friday/Saturday/Sunday (weekend) → vẫn fallback về today</li>
+<li>Nút "Hôm nay" vẫn hoạt động như cũ</li>
+</ul></div>
+<div class="review-controls">
+<div class="control-group">
+<div class="control-label">Status</div>
+<div class="status-options">
+<button class="status-btn" data-status="approved" onclick="setStatus('sec-004','approved')">Approved</button>
+<button class="status-btn" data-status="needs-revision" onclick="setStatus('sec-004','needs-revision')">Needs Revision</button>
+<button class="status-btn" data-status="rejected" onclick="setStatus('sec-004','rejected')">Rejected</button>
+<button class="status-btn" data-status="open-question" onclick="setStatus('sec-004','open-question')">Open Question</button>
+</div>
+</div>
+<div class="control-group">
+<div class="control-label">Ratings</div>
+<div class="ratings">
+<div class="rating"><span class="rating-label">Clarity:</span><select onchange="setRating('sec-004','clarity',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Completeness:</span><select onchange="setRating('sec-004','completeness',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Feasibility:</span><select onchange="setRating('sec-004','feasibility',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+</div>
+</div>
+<div class="comments" id="comments-sec-004">
+<div class="comment-list"></div>
+<div class="comment-input-wrap"><textarea class="comment-input" id="input-sec-004" placeholder="Add comment..."></textarea><button class="add-comment" onclick="addComment('sec-004')">Add</button></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="sec-card" id="sec-005">
+<div class="sec-header">
+<span class="sec-title">5. Files to Modify</span>
+<span class="sec-id">sec-005</span>
+</div>
+<div class="sec-body">
+<div class="sec-content"><ol>
+<li><code>src/lib/registrationWindow.ts</code> - thêm <code>getNextLockedDay()</code></li>
+<li><code>app/admin/dashboard/page.tsx</code> - đổi initial state của <code>selectedDate</code></li>
+</ol></div>
+<div class="review-controls">
+<div class="control-group">
+<div class="control-label">Status</div>
+<div class="status-options">
+<button class="status-btn" data-status="approved" onclick="setStatus('sec-005','approved')">Approved</button>
+<button class="status-btn" data-status="needs-revision" onclick="setStatus('sec-005','needs-revision')">Needs Revision</button>
+<button class="status-btn" data-status="rejected" onclick="setStatus('sec-005','rejected')">Rejected</button>
+<button class="status-btn" data-status="open-question" onclick="setStatus('sec-005','open-question')">Open Question</button>
+</div>
+</div>
+<div class="control-group">
+<div class="control-label">Ratings</div>
+<div class="ratings">
+<div class="rating"><span class="rating-label">Clarity:</span><select onchange="setRating('sec-005','clarity',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Completeness:</span><select onchange="setRating('sec-005','completeness',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="rating"><span class="rating-label">Feasibility:</span><select onchange="setRating('sec-005','feasibility',this.value)"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+</div>
+</div>
+<div class="comments" id="comments-sec-005">
+<div class="comment-list"></div>
+<div class="comment-input-wrap"><textarea class="comment-input" id="input-sec-005" placeholder="Add comment..."></textarea><button class="add-comment" onclick="addComment('sec-005')">Add</button></div>
+</div>
+</div>
+</div>
+</section>
+
+<div class="export-section">
+<h2>Export XML Prompt</h2>
+<button class="copy-btn" id="copyBtn" onclick="copyXml()">Copy XML Prompt</button>
+<span class="copy-success" id="copySuccess">Copied!</span>
+<pre class="xml-preview" id="xmlPreview">// XML will appear here after review</pre>
+</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'spec_review_admin_dashboard';
+let reviews = {};
+
+function load(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved) reviews = JSON.parse(saved);
+}
+
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
+}
+
+function getSectionContent(id){
+  const el = document.querySelector('#'+id+' .sec-content');
+  return el ? el.innerText : '';
+}
+
+function setStatus(id, status){
+  if(!reviews[id]) reviews[id] = {};
+  reviews[id].status = status;
+  save();
+  render();
+}
+
+function setRating(id, name, value){
+  if(!reviews[id]) reviews[id] = {};
+  if(!reviews[id].ratings) reviews[id].ratings = {};
+  reviews[id].ratings[name] = value;
+  save();
+  render();
+}
+
+function addComment(id){
+  const input = document.getElementById('input-'+id);
+  const text = input.value.trim();
+  if(!text) return;
+  if(!reviews[id]) reviews[id] = {};
+  if(!reviews[id].comments) reviews[id].comments = [];
+  reviews[id].comments.push(text);
+  input.value = '';
+  save();
+  render();
+}
+
+function render(){
+  let approved=0,needsRevision=0,rejected=0,open=0;
+  const ids = ['sec-001','sec-002','sec-003','sec-004','sec-005'];
+  ids.forEach(id => {
+    const r = reviews[id] || {};
+    const btns = document.querySelectorAll('#'+id+' .status-btn');
+    btns.forEach(b => {
+      b.classList.toggle('active', b.dataset.status === r.status);
+    });
+    const selClarity = document.querySelector('#'+id+' select:nth-of-type(1)');
+    const selCompleteness = document.querySelector('#'+id+' select:nth-of-type(2)');
+    const selFeasibility = document.querySelector('#'+id+' select:nth-of-type(3)');
+    const commentList = document.querySelector('#'+id+' .comment-list');
+    commentList.innerHTML = '';
+    if(r.comments){
+      r.comments.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'comment-item';
+        div.innerText = c;
+        commentList.appendChild(div);
+      });
+    }
+    if(r.status === 'approved') approved++;
+    else if(r.status === 'needs-revision') needsRevision++;
+    else if(r.status === 'rejected') rejected++;
+    else if(r.status === 'open-question') open++;
+  });
+  document.getElementById('count-approved').innerText = approved;
+  document.getElementById('count-needs-revision').innerText = needsRevision;
+  document.getElementById('count-rejected').innerText = rejected;
+  document.getElementById('count-open').innerText = open;
+  updateXml();
+}
+
+function escapeXml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+function updateXml(){
+  const ids = ['sec-001','sec-002','sec-003','sec-004','sec-005'];
+  let xml = `<spec_review_prompt version="1.0">
+  <metadata>
+    <title>Admin Dashboard Default Date + Cutoff Logic</title>
+    <source>provided_spec</source>
+    <created_at>2026-05-21T00:00:00Z</created_at>
+    <review_goal>Review dashboard default date behavior and confirm cutoff logic</review_goal>
+  </metadata>
+  <spec>`;
+  ids.forEach((id, idx) => {
+    const r = reviews[id] || {};
+    const content = getSectionContent(id);
+    xml += `
+    <section id="${id}">
+      <title>Section ${idx+1}</title>
+      <content>${escapeXml(content)}</content>
+      <review>
+        <status>${r.status || 'pending'}</status>
+        <ratings>
+          <rating name="clarity">${r.ratings?.clarity || ''}</rating>
+          <rating name="completeness">${r.ratings?.completeness || ''}</rating>
+          <rating name="feasibility">${r.ratings?.feasibility || ''}</rating>
+        </ratings>
+        <comments>
+          ${(r.comments || []).map(c => '<comment>'+escapeXml(c)+'</comment>').join('\n          ')}
+        </comments>
+      </review>
+    </section>`;
+  });
+  xml += `
+  </spec>
+  <summary>
+    <approved_sections>${approved}</approved_sections>
+    <needs_revision_sections>${needsRevision}</needs_revision_sections>
+    <rejected_sections>${rejected}</rejected_sections>
+    <open_questions>${open}</open_questions>
+  </summary>
+  <instruction>
+    Proceed with implementation of the approved sections according to the design document.
+  </instruction>
+</spec_review_prompt>`;
+  document.getElementById('xmlPreview').innerText = xml;
+}
+
+function copyXml(){
+  const xml = document.getElementById('xmlPreview').innerText;
+  if(!xml || xml.includes('// XML will')){
+    alert('Please review at least one section before copying.');
+    return;
+  }
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(xml).then(() => {
+      document.getElementById('copySuccess').style.display = 'inline';
+      setTimeout(() => document.getElementById('copySuccess').style.display = 'none', 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = xml;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    document.getElementById('copySuccess').style.display = 'inline';
+    setTimeout(() => document.getElementById('copySuccess').style.display = 'none', 2000);
+  }
+}
+
+load();
+render();
+</script>
+</body>
+</html>
