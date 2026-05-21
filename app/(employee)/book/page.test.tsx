@@ -49,12 +49,12 @@ describe('BookPage weekly cards', () => {
     expect(within(monday).getByRole('button', { name: 'Không ăn' })).toBeDisabled()
   })
 
-  it('renders seven day cards when today is Saturday', () => {
+  it('renders five day cards when today is Saturday', () => {
     vi.setSystemTime(new Date('2026-05-16T10:00:00+07:00'))
 
     render(<BookPage />)
 
-    expect(screen.getAllByTestId(/^book-day-/)).toHaveLength(7)
+    expect(screen.getAllByTestId(/^book-day-/)).toHaveLength(5)
     expect(screen.getByTestId('book-day-2026-05-15')).toBeInTheDocument()
   })
 

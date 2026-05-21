@@ -70,7 +70,7 @@ describe('registrationWindow', () => {
     expect(isAllowedRegistrationDate(new Date('2026-06-15T00:00:00+07:00'), now)).toEqual({ ok: false, reason: 'OUTSIDE_CURRENT_WEEK' })
   })
 
-  it('returns Monday through Sunday for the current week when today is Monday', () => {
+  it('returns Monday through Friday for the current week when today is Monday', () => {
     const now = new Date('2026-05-11T10:00:00+07:00')
 
     const days = getCurrentWeekWeekdays(now)
@@ -81,12 +81,10 @@ describe('registrationWindow', () => {
       '2026-05-13',
       '2026-05-14',
       '2026-05-15',
-      '2026-05-16',
-      '2026-05-17',
     ])
   })
 
-  it('returns Monday through Sunday for the current week when today is Friday', () => {
+  it('returns Monday through Friday for the current week when today is Friday', () => {
     const now = new Date('2026-05-15T10:00:00+07:00')
 
     const days = getCurrentWeekWeekdays(now)
@@ -97,12 +95,10 @@ describe('registrationWindow', () => {
       '2026-05-13',
       '2026-05-14',
       '2026-05-15',
-      '2026-05-16',
-      '2026-05-17',
     ])
   })
 
-  it('returns Monday through Sunday for the same current week when today is Saturday', () => {
+  it('returns Monday through Friday for the past week when today is Saturday', () => {
     const now = new Date('2026-05-16T10:00:00+07:00')
 
     const days = getCurrentWeekWeekdays(now)
@@ -112,12 +108,10 @@ describe('registrationWindow', () => {
       '2026-05-13',
       '2026-05-14',
       '2026-05-15',
-      '2026-05-16',
-      '2026-05-17',
     ])
   })
 
-  it('returns Monday through Sunday for the same current week when today is Sunday', () => {
+  it('returns Monday through Friday for the past week when today is Sunday', () => {
     const now = new Date('2026-05-17T10:00:00+07:00')
 
     const days = getCurrentWeekWeekdays(now)
@@ -127,12 +121,10 @@ describe('registrationWindow', () => {
       '2026-05-13',
       '2026-05-14',
       '2026-05-15',
-      '2026-05-16',
-      '2026-05-17',
     ])
   })
 
-  it('returns Monday through Sunday for next week offset', () => {
+  it('returns Monday through Friday for next week offset', () => {
     const now = new Date('2026-05-15T10:00:00+07:00')
 
     const days = getWeekdaysForOffset(now, 1)
@@ -143,12 +135,10 @@ describe('registrationWindow', () => {
       '2026-05-20',
       '2026-05-21',
       '2026-05-22',
-      '2026-05-23',
-      '2026-05-24',
     ])
   })
 
-  it('returns Monday through Sunday for fourth future week offset', () => {
+  it('returns Monday through Friday for fourth future week offset', () => {
     const now = new Date('2026-05-15T10:00:00+07:00')
 
     const days = getWeekdaysForOffset(now, 4)
@@ -159,8 +149,6 @@ describe('registrationWindow', () => {
       '2026-06-10',
       '2026-06-11',
       '2026-06-12',
-      '2026-06-13',
-      '2026-06-14',
     ])
   })
 
