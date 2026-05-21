@@ -132,6 +132,8 @@ export function isAllowedRegistrationDate(targetDate: Date, now = new Date()): R
 export function getRegistrationDayState(targetDate: Date, now = new Date()): RegistrationDayState {
   const date = startOfLocalDay(targetDate)
   const cutoffAt = getCutoffAt(date)
+  const dayOfWeek = date.getDay()
+  const isWorkday = dayOfWeek !== 0 && dayOfWeek !== 6  // true cho T2-T6, false cho T7(6) và CN(0)
 
   return {
     date,
@@ -139,6 +141,7 @@ export function getRegistrationDayState(targetDate: Date, now = new Date()): Reg
     dayName: WEEKDAY_NAMES[date.getDay()],
     cutoffAt,
     locked: now >= cutoffAt,
+    isWorkday,
   }
 }
 
