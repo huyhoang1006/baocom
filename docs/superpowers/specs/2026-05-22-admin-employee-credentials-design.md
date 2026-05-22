@@ -38,9 +38,10 @@ Cải thiện trang Nhân Sự của admin để:
 | Phòng ban | ❌ | Select dropdown |
 
 **Logic auto-generate:**
-- **Username:** Lấy ký tự cuối của họ + ký tự đầu của tên + ký tự đầu phòng ban (nếu chọn)
-  - VD: "Phạm Xuân Hùng" + phòng "Kỹ thuật" → `hungpx` + `k` = `hungpxk`
-  - Nếu trùng → thêm số: `hungpxk2`, `hungpxk3`,...
+- **Username:** Lấy **tên** (từ cuối cùng) + **chữ cái đầu của họ và đệm**
+  - VD: "Phạm Xuân Hùng" → `hung` + `p` + `x` = `hungpx`
+  - VD: "Nguyễn Văn A" → `a` + `n` + `v` = `anv`
+  - Nếu trùng → thêm số: `hungpx2`, `hungpx3`,...
 - **Password:** Random 8 ký tự (a-z, 0-9)
 - Preview username trước khi submit
 
@@ -122,27 +123,37 @@ GET /api/users/{id}/credentials
 ### 3.3 Logic Generate Username
 
 ```typescript
-function generateUsername(name: string, department?: string): string {
-  // Tách tên
+function generateUsername(name: string): string {
+  // Tách tên theo khoảng trắng
   const parts = name.trim().split(/\s+/)
-  const lastName = parts[parts.length - 1].toLowerCase().replace(/[^a-z]/g, '')
   
-  // Lấy ký tự đầu của từng từ
-  const initials = parts.map(p => p[0]).join('').toLowerCase()
+  // Lấy tên (từ cuối cùng)
+  const lastName = parts[parts.length - 1]
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // bỏ dấu
+    .replace(/[^a-z]/g, '')
   
-  // Tạo base username
-  let username = initials.slice(-3) + lastName.slice(0, 3)
+  // Lấy chữ cái đầu của các từ còn lại (họ + đệm)
+  const initials = parts.slice(0, -1)
+    .map(p => p[0])
+    .join('')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
   
-  // Thêm ký tự phòng ban nếu có
-  if (department) {
-    const deptCode = department.charAt(0).toLowerCase()
-    username += deptCode
-  }
+  // Ghép: tên + chữ cái đầu
+  const baseUsername = lastName + initials
   
-  // Check trùng, thêm số nếu cần
+  // Check trùng trong DB, thêm số nếu cần
   // ...
-  return username
+  
+  return baseUsername
 }
+
+// VD: "Phạm Xuân Hùng" → "hungpx"
+// VD: "Nguyễn Văn A" → "anv"
+// VD: "Trần" → "tran"
 ```
 
 ---
