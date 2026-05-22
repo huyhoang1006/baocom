@@ -101,6 +101,11 @@ export const dailyMenusApi = {
       method: 'POST',
       body: JSON.stringify({ date, mealIds }),
     }),
+  batch: (menus: { date: string; mealIds: string[] }[]) =>
+    apiFetch('/daily-menus/batch', {
+      method: 'POST',
+      body: JSON.stringify({ menus }),
+    }),
 }
 
 // Users API (Admin)
