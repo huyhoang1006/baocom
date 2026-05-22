@@ -100,4 +100,19 @@ export class DailyMenuRepository extends BaseRepository<
   async delete(id: string): Promise<void> {
     await this.prisma.dailyMenu.delete({ where: { id } })
   }
+
+  async deleteMealFromDate(date: Date, mealId: string): Promise<void> {
+    const dailyMenu = await this.prisma.dailyMenu.findUnique({ where: { date } })
+
+    if (!dailyMenu) {
+      throw new Error('Not found')
+    }
+
+    await this.prisma.dailyMenuMeal.deleteMany({
+      where: {
+        dailyMenuId: dailyMenu.id,
+        mealId
+      }
+    })
+  }
 }

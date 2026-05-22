@@ -28,4 +28,8 @@ export class DailyMenuService {
   async delete(id: string) {
     return this.dailyMenuRepository.delete(id)
   }
+
+  async deleteMealFromDate(date: string, mealId: string) {
+    return this.dailyMenuRepository.deleteMealFromDate(new Date(date), mealId)
+  }
 }

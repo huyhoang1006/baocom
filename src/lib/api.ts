@@ -166,11 +166,20 @@ export const holidaysApi = {
     apiFetch<{ success: boolean }>(`/holidays/${id}`, { method: 'DELETE' }),
 }
 
-// Meals extended API
-export const mealsExtendedApi = {
+// Meals API
+export const mealsApi = {
   findOrCreate: (name: string, type: string) =>
     apiFetch<{ meal: { id: string; name: string; type: string } }>('/meals/find-or-create', {
       method: 'POST',
       body: JSON.stringify({ name, type }),
+    }),
+  update: (id: string, data: { name?: string; type?: string }) =>
+    apiFetch<{ meal: { id: string; name: string; type: string } }>(`/meals/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  deleteFromDate: (date: string, mealId: string) =>
+    apiFetch<{ success: boolean }>(`/daily-menus/${date}/meals/${mealId}`, {
+      method: 'DELETE',
     }),
 }

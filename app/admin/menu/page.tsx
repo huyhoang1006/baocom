@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { dailyMenusApi, mealsExtendedApi } from "@/lib/api"
+import { dailyMenusApi, mealsApi } from "@/lib/api"
 import { toDateKey } from "@/lib/registrationWindow"
 
 const WEEKDAY_LABELS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
@@ -154,7 +154,7 @@ export default function MenuPage() {
         for (const [type, names] of Object.entries(mealNamesByType)) {
           for (const name of names) {
             try {
-              const res = await mealsExtendedApi.findOrCreate(name, type)
+              const res = await mealsApi.findOrCreate(name, type)
               if (res.meal && !allMeals.includes(res.meal.id)) {
                 allMeals.push(res.meal.id)
               }

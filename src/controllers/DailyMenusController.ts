@@ -71,4 +71,16 @@ export class DailyMenusController {
       throw error
     }
   }
+
+  async deleteMealFromDate(dateStr: string, mealId: string) {
+    try {
+      await this.dailyMenuService.deleteMealFromDate(dateStr, mealId)
+      return NextResponse.json({ success: true })
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Not found') {
+        return NextResponse.json({ error: 'Daily menu or meal not found' }, { status: 404 })
+      }
+      throw error
+    }
+  }
 }
