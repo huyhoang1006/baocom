@@ -110,17 +110,45 @@ export const dailyMenusApi = {
 
 // Users API (Admin)
 export const usersApi = {
-  getAll: () => apiFetch<{ users: Array<{ id: string; username: string; name: string; role: string; isActive: boolean; createdAt: string }> }>('/users'),
-  create: (data: { username: string; password?: string; name: string; role?: string }) =>
-    apiFetch<{ user: { id: string; username: string; name: string; role: string } }>('/users', {
+  getAll: () => apiFetch<{ users: Array<{ 
+    id: string; 
+    username: string; 
+    name: string; 
+    role: string; 
+    isActive: boolean; 
+    createdAt: string;
+    phone?: string;
+    email?: string;
+    department?: string;
+  }> }>('/users'),
+  
+  getOne: (id: string) => apiFetch<{ user: { 
+    id: string; 
+    username: string; 
+    name: string; 
+    role: string; 
+    isActive: boolean; 
+    createdAt: string;
+    phone?: string;
+    email?: string;
+    department?: string;
+  } }>(`/users/${id}`),
+  
+  create: (data: { name: string; phone?: string; email?: string; department?: string }) =>
+    apiFetch<{ 
+      user: { id: string; username: string; name: string; role: string }; 
+      credentials: { username: string; password: string }
+    }>('/users', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  update: (id: string, data: { name?: string; role?: string; isActive?: boolean }) =>
+    
+  update: (id: string, data: { name?: string; role?: string; isActive?: boolean; phone?: string; email?: string; department?: string }) =>
     apiFetch<{ user: { id: string; username: string; name: string; role: string } }>(`/users/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
+    
   delete: (id: string) =>
     apiFetch<{ success: boolean }>(`/users/${id}`, { method: 'DELETE' }),
 }
