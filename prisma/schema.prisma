@@ -11,9 +11,6 @@ model User {
   username  String @unique
   password  String
   name      String
-  phone     String?
-  email     String?
-  department String?
   role      String @default("employee")
   isActive  Boolean @default(true)
 

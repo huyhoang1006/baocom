@@ -18,10 +18,7 @@ export class UsersController {
         name: u.name,
         role: u.role,
         isActive: u.isActive,
-        createdAt: u.createdAt,
-        phone: u.phone,
-        email: u.email,
-        department: u.department
+        createdAt: u.createdAt
       }))
     })
   }
@@ -38,10 +35,7 @@ export class UsersController {
         name: user.name,
         role: user.role,
         isActive: user.isActive,
-        createdAt: user.createdAt,
-        phone: user.phone,
-        email: user.email,
-        department: user.department
+        createdAt: user.createdAt
       }
     })
   }

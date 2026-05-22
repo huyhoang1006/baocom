@@ -50,10 +50,7 @@ export class UserService {
       username,
       password: hashedPassword,
       name: data.name,
-      role: data.role || 'employee',
-      phone: data.phone,
-      email: data.email,
-      department: data.department
+      role: data.role || 'employee'
     })
 
     return {
@@ -63,10 +60,7 @@ export class UserService {
         name: user.name,
         role: user.role,
         isActive: user.isActive,
-        createdAt: user.createdAt,
-        phone: user.phone ?? undefined,
-        email: user.email ?? undefined,
-        department: user.department ?? undefined
+        createdAt: user.createdAt
       },
       credentials: {
         username: user.username,
@@ -81,9 +75,6 @@ export class UserService {
     if (data.role) updateData.role = data.role
     if (typeof data.isActive === 'boolean') updateData.isActive = data.isActive
     if (data.password) updateData.password = await hashPassword(data.password)
-    if (data.phone !== undefined) updateData.phone = data.phone
-    if (data.email !== undefined) updateData.email = data.email
-    if (data.department !== undefined) updateData.department = data.department
 
     return this.userRepository.update(id, updateData)
   }

@@ -3,9 +3,6 @@ export interface CreateUserDTO {
   password?: string  // Optional - auto-generated if not provided
   name: string
   role?: string
-  phone?: string
-  email?: string
-  department?: string
 }
 
 export interface UpdateUserDTO {
@@ -13,9 +10,6 @@ export interface UpdateUserDTO {
   password?: string
   role?: string
   isActive?: boolean
-  phone?: string
-  email?: string
-  department?: string
 }
 
 export interface UserResponseDTO {
@@ -25,7 +19,4 @@ export interface UserResponseDTO {
   role: string
   isActive: boolean
   createdAt: Date
-  phone?: string
-  email?: string
-  department?: string
 }

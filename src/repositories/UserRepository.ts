@@ -44,9 +44,8 @@ export class UserRepository extends BaseRepository<
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.user.update({
-      where: { id },
-      data: { isActive: false }
+    await this.prisma.user.delete({
+      where: { id }
     })
   }
 
