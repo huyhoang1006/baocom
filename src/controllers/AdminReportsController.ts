@@ -3,6 +3,7 @@ import { withAdmin } from '@/lib/authMiddleware'
 import { RegistrationService } from '@/services/RegistrationService'
 import { UserService } from '@/services/UserService'
 import { toDateKey } from '@/lib/registrationWindow'
+import ExcelJS from 'exceljs'
 
 export class AdminReportsController {
   private registrationService: RegistrationService
@@ -96,6 +97,126 @@ export class AdminReportsController {
       headers: {
         'Content-Type': 'text/csv',
         'Content-Disposition': `attachment; filename="BAOCOM_Report_${startDate}_${endDate}.csv"`,
+      }
+    })
+  }
+
+  async exportXlsx(req: NextRequest) {
+    const { searchParams } = req.nextUrl
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
+
+    if (!startDate || !endDate) {
+      return NextResponse.json({ error: 'Missing date range' }, { status: 400 })
+    }
+
+    const registrations = await this.registrationService.findByDateRange(startDate, endDate)
+
+    // Group by user and count eating/not_eating
+    const userStats: Record<string, { name: string; eating: number; notEating: number }> = {}
+    registrations.forEach(r => {
+      if (!r.userId) return
+      const name = r.user?.name || 'Unknown'
+      if (!userStats[r.userId]) {
+        userStats[r.userId] = { name, eating: 0, notEating: 0 }
+      }
+      if (r.status === 'eating' || r.status === 'registered') {
+        userStats[r.userId].eating++
+      } else if (r.status === 'not_eating') {
+        userStats[r.userId].notEating++
+      }
+    })
+
+    // Create workbook
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = 'BAOCOM'
+    workbook.created = new Date()
+
+    const sheet = workbook.addWorksheet('Báo Cáo')
+
+    // Title row
+    sheet.getCell('A1').value = 'BAOCOM LUNCH REPORT'
+    sheet.getCell('A1').font = { bold: true, size: 16 }
+    sheet.mergeCells('A1:D1')
+
+    // Date range row
+    sheet.getCell('A2').value = `Date Range: ${startDate} - ${endDate}`
+    sheet.getCell('A2').font = { size: 11 }
+    sheet.mergeCells('A2:D2')
+
+    // Generated row
+    const generatedAt = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+    sheet.getCell('A3').value = `Generated: ${generatedAt}`
+    sheet.getCell('A3').font = { size: 11 }
+    sheet.mergeCells('A3:D3')
+
+    // Header row (row 4)
+    const headers = ['STT', 'Họ tên', 'Tổng báo cơm', 'Báo cắt cơm']
+    headers.forEach((header, idx) => {
+      const cell = sheet.getCell(4, idx + 1)
+      cell.value = header
+      cell.font = { bold: true }
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE0E0E0' }
+      }
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      }
+    })
+
+    // Data rows
+    let rowNum = 5
+    let totalEating = 0
+    let totalNotEating = 0
+    let stt = 1
+
+    Object.values(userStats).forEach(stats => {
+      const row = sheet.getRow(rowNum)
+      row.getCell(1).value = stt++
+      row.getCell(2).value = stats.name
+      row.getCell(3).value = stats.eating
+      row.getCell(4).value = stats.notEating
+      totalEating += stats.eating
+      totalNotEating += stats.notEating
+      rowNum++
+    })
+
+    // Summary row
+    const summaryRow = sheet.getRow(rowNum)
+    summaryRow.getCell(1).value = ''
+    summaryRow.getCell(2).value = 'Tổng cộng'
+    summaryRow.getCell(2).font = { bold: true }
+    summaryRow.getCell(3).value = totalEating
+    summaryRow.getCell(3).font = { bold: true }
+    summaryRow.getCell(4).value = totalNotEating
+    summaryRow.getCell(4).font = { bold: true }
+    summaryRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF99' }
+    }
+
+    // Auto-fit columns
+    sheet.columns.forEach((column) => {
+      column.width = 20
+    })
+
+    // Freeze top rows
+    sheet.views = [
+      { state: 'frozen', xSplit: 0, ySplit: 4 }
+    ]
+
+    const buffer = await workbook.xlsx.writeBuffer()
+
+    return new NextResponse(buffer, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="BAOCOM_Report_${startDate}_${endDate}.xlsx"`,
       }
     })
   }
