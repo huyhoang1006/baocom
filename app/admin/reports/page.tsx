@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import * as XLSX from "xlsx"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { adminReportsApi } from "@/lib/api"
 import { toDateKey } from "@/lib/registrationWindow"
 
@@ -66,7 +65,18 @@ export default function ReportsPage() {
 
   const todayStr = toDateKey(new Date())
 
-  const handlePreview = async () => {
+  const dateRangeLabel = useMemo(() => {
+    if (reportType === "day" && selectedDate) {
+      return `Ngày ${selectedDate}`
+    } else if (reportType === "week") {
+      return weekOptions[selectedWeekIndex]?.label || ""
+    } else if (reportType === "month") {
+      return monthOptions[selectedMonthIndex]?.label || ""
+    }
+    return ""
+  }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
+
+  const handlePreview = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -114,42 +124,24 @@ export default function ReportsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
 
-  const handleDateChange = () => {
+  const handleDateChange = useCallback(() => {
     handlePreview()
-  }
+  }, [handlePreview])
 
-  const handleReportTypeChange = (type: "day" | "week" | "month") => {
+  const handleReportTypeChange = useCallback((type: "day" | "week" | "month") => {
     setReportType(type)
     setPreviewData([])
-  }
+  }, [])
 
   useEffect(() => {
     if (selectedDate) {
       handlePreview()
     }
-  }, [reportType])
+  }, [reportType, handlePreview])
 
-  const handleExport = () => {
-    if (previewData.length === 0) return
-
-    const ws = XLSX.utils.json_to_sheet(previewData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "BaoCom Report")
-
-    const today = new Date()
-    const yyyy = today.getFullYear()
-    const mm = (today.getMonth() + 1).toString().padStart(2, "0")
-    const dd = today.getDate().toString().padStart(2, "0")
-    const filename = `BAOCOM_Report_${yyyy}${mm}${dd}.xlsx`
-
-    XLSX.writeFile(wb, filename)
-  }
-
-  const handleExportCsv = () => {
-    if (previewData.length === 0) return
-
+  const handleExport = useCallback(() => {
     let startDate: string
     let endDate: string
 
@@ -176,196 +168,202 @@ export default function ReportsPage() {
       return
     }
 
-    const url = adminReportsApi.exportCsvUrl(startDate, endDate)
+    const url = adminReportsApi.exportXlsxUrl(startDate, endDate)
     window.open(url, '_blank')
-  }
+  }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
 
-  const displayedData = showAll ? previewData : previewData.slice(0, 5)
+  const displayedData = useMemo(() => showAll ? previewData : previewData.slice(0, 5), [showAll, previewData])
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
-      {/* Page Header */}
-      <header className="pt-10 pb-6 px-6 lg:px-10">
+      {/* Page Header - Redesigned */}
+      <header className="pt-8 pb-6 px-4 sm:pt-12 sm:pb-8 sm:px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
-          <p className="text-sm text-ink-muted-80 mb-1">Báo cáo</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">Xuất Báo Cáo</h1>
-          <p className="text-sm text-ink-muted-80 mt-1">
-            Tạo báo cáo suất ăn cho bếp nấu theo ngày, tuần hoặc tháng
-          </p>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="material-symbols-outlined text-[24px] sm:text-[28px] text-primary">restaurant</span>
+            <p className="text-xs sm:text-sm font-medium text-ink-muted-48 uppercase tracking-wider">Báo cáo</p>
+          </div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-ink mb-1">Xuất Báo Cáo</h1>
+          <p className="text-sm sm:text-base text-ink-muted-48">Tạo báo cáo suất ăn cho bếp nấu theo ngày, tuần hoặc tháng</p>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="px-6 lg:px-10">
-        <div className="max-w-[900px] mx-auto space-y-5">
+      <main className="px-4 sm:px-6 lg:px-10">
+        <div className="max-w-[900px] mx-auto space-y-4 sm:space-y-6">
           {/* Error State */}
           {error && (
             <div className="p-4 rounded-[18px] bg-error-bg border border-error text-error">
-              <p className="font-medium">{error}</p>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined">error</span>
+                <p className="font-medium">{error}</p>
+              </div>
             </div>
           )}
 
-          {/* Report Type Selector - 3 pills in a row */}
-          <div className="flex items-center justify-center gap-2">
+          {/* Report Type Selector - Redesigned card */}
+          <div className="rounded-[18px] bg-surface-container-low p-1 flex">
             {[
-              { id: "day" as const, label: "Ngày" },
-              { id: "week" as const, label: "Tuần" },
-              { id: "month" as const, label: "Tháng" },
+              { id: "day" as const, label: "Ngày", icon: "today" },
+              { id: "week" as const, label: "Tuần", icon: "date_range" },
+              { id: "month" as const, label: "Tháng", icon: "calendar_month" },
             ].map((type) => (
               <button
                 key={type.id}
                 onClick={() => handleReportTypeChange(type.id)}
-                className={`flex-1 max-w-[140px] py-3 px-6 rounded-full text-sm font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-[14px] text-sm font-medium transition-all ${
                   reportType === type.id
-                    ? "bg-primary text-on-primary"
-                    : "bg-surface-container-low text-ink hover:bg-surface-container"
+                    ? "bg-canvas shadow-sm text-ink"
+                    : "text-ink-muted-48 hover:text-ink"
                 }`}
               >
+                <span className="material-symbols-outlined text-lg">{type.icon}</span>
                 {type.label}
               </button>
             ))}
           </div>
 
-          {/* Date Selector Card */}
-          <div className="p-4 rounded-[18px] bg-surface-container-low flex flex-wrap items-center gap-3">
-            {reportType === "day" && (
-              <>
-                <label className="text-sm font-medium text-ink-muted-80">Ngày:</label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => {
-                    setSelectedDate(e.target.value)
-                    handleDateChange()
-                  }}
-                  max={todayStr}
-                  placeholder="dd/mm/yyyy"
-                  className="form-input w-auto rounded-full"
-                />
-              </>
-            )}
-            {reportType === "week" && (
-              <>
-                <label className="text-sm font-medium text-ink-muted-80">Tuần:</label>
-                <select
-                  value={selectedWeekIndex}
-                  onChange={(e) => {
-                    setSelectedWeekIndex(parseInt(e.target.value))
-                    handleDateChange()
-                  }}
-                  className="form-input w-auto rounded-full"
-                >
-                  {weekOptions.map((opt, idx) => (
-                    <option key={idx} value={idx}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </>
-            )}
-            {reportType === "month" && (
-              <>
-                <label className="text-sm font-medium text-ink-muted-80">Tháng:</label>
-                <select
-                  value={selectedMonthIndex}
-                  onChange={(e) => {
-                    setSelectedMonthIndex(parseInt(e.target.value))
-                    handleDateChange()
-                  }}
-                  className="form-input w-auto rounded-full"
-                >
-                  {monthOptions.map((opt, idx) => (
-                    <option key={idx} value={idx}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </>
-            )}
-          </div>
-
-          {/* Preview Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={handlePreview}
-              disabled={loading}
-              className="w-full max-w-xs inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-sm font-medium text-on-primary bg-primary hover:bg-primary-hover transition-all disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-lg">{loading ? "hourglass" : "preview"}</span>
-              {loading ? "Đang tải..." : "Xem trước"}
-            </button>
-          </div>
-
-          {/* Preview Section */}
-          {previewData.length > 0 && (
-            <div className="space-y-4">
-              {/* Stats and Export */}
-              <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[40px] font-bold text-ink">{previewData.length}</span>
-                  <span className="text-sm text-ink-muted-80">suất ăn</span>
-                </div>
-                <button
-                  onClick={handleExport}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-on-primary bg-primary hover:bg-primary-hover transition-all"
-                >
-                  <span className="material-symbols-outlined text-lg">download</span>
-                  Tải Excel
-                </button>
-                <button
-                  onClick={handleExportCsv}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-low transition-all border border-hairline"
-                >
-                  <span className="material-symbols-outlined text-lg">table</span>
-                  Tải CSV
-                </button>
+          {/* Date Selector - Redesigned */}
+          <div className="rounded-[18px] bg-canvas border border-hairline p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-2 text-ink-muted-48">
+                <span className="material-symbols-outlined text-xl">schedule</span>
+                <span className="text-sm font-medium">Phạm vi:</span>
               </div>
 
-              {/* Table Preview Card */}
-              <div className="rounded-[18px] bg-surface-container-low border border-hairline overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-surface-container border-b border-hairline">
-                      <th className="text-left py-3 px-4 text-[12px] font-semibold uppercase tracking-wider text-ink-muted-80">STT</th>
-                      <th className="text-left py-3 px-4 text-[12px] font-semibold uppercase tracking-wider text-ink-muted-80">Họ tên</th>
-                      <th className="text-left py-3 px-4 text-[12px] font-semibold uppercase tracking-wider text-ink-muted-80">SĐT</th>
-                      <th className="text-left py-3 px-4 text-[12px] font-semibold uppercase tracking-wider text-ink-muted-80">Ngày</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-hairline">
-                    {displayedData.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-surface-container-low">
-                        <td className="py-3 px-4 text-sm text-ink-muted-80">{row.stt}</td>
-                        <td className="py-3 px-4 text-sm font-medium text-ink">{row.name}</td>
-                        <td className="py-3 px-4 text-sm text-ink-muted-80">{row.phone}</td>
-                        <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded bg-surface-container text-xs text-ink">{row.date}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Expandable - Xem them */}
-                {previewData.length > 5 && (
-                  <div className="p-3 border-t border-hairline text-center">
-                    <button
-                      onClick={() => setShowAll(!showAll)}
-                      className="text-sm text-primary hover:text-primary-hover font-medium"
-                    >
-                      {showAll ? "Thu gọn" : `Xem thêm (+${previewData.length - 5} bản ghi)`}
-                    </button>
-                  </div>
+              <div className="flex-1">
+                {reportType === "day" && (
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => {
+                      setSelectedDate(e.target.value)
+                      handleDateChange()
+                    }}
+                    max={todayStr}
+                    className="form-input w-full sm:max-w-[240px]"
+                  />
                 )}
+                {reportType === "week" && (
+                  <select
+                    value={selectedWeekIndex}
+                    onChange={(e) => {
+                      setSelectedWeekIndex(parseInt(e.target.value))
+                      handleDateChange()
+                    }}
+                    className="form-input w-full sm:max-w-[280px]"
+                  >
+                    {weekOptions.map((opt, idx) => (
+                      <option key={idx} value={idx}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {reportType === "month" && (
+                  <select
+                    value={selectedMonthIndex}
+                    onChange={(e) => {
+                      setSelectedMonthIndex(parseInt(e.target.value))
+                      handleDateChange()
+                    }}
+                    className="form-input w-full sm:max-w-[240px]"
+                  >
+                    {monthOptions.map((opt, idx) => (
+                      <option key={idx} value={idx}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <button
+                onClick={handlePreview}
+                disabled={loading}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-primary text-on-primary hover:bg-primary-hover transition-all disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-lg">{loading ? "hourglass" : "search"}</span>
+                {loading ? "Đang tải..." : "Tra cứu"}
+              </button>
+            </div>
+          </div>
+
+          {/* Stats Section - Redesigned */}
+          {previewData.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-end">
+              <div className="rounded-[18px] bg-canvas border border-hairline p-5 sm:p-6">
+                <div className="flex flex-wrap items-end gap-2 sm:gap-3">
+                  <span className="text-[40px] sm:text-[56px] font-semibold tracking-tight text-ink leading-none">{previewData.length}</span>
+                  <span className="text-base text-ink-muted-48 pb-1">suất ăn</span>
+                  <span className="ml-0 sm:ml-4 px-3 py-1 rounded-full bg-primary-bg text-primary text-sm font-medium">
+                    {dateRangeLabel}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleExport}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-primary text-on-primary hover:bg-primary-hover transition-all"
+                >
+                  <span className="material-symbols-outlined text-lg">table</span>
+                  Excel
+                </button>
               </div>
             </div>
           )}
 
-          {/* Empty State */}
+          {/* Table - Redesigned */}
+          {previewData.length > 0 && (
+            <div className="rounded-[18px] bg-canvas border border-hairline overflow-hidden">
+              {/* Table Header - horizontal scroll on mobile */}
+              <div className="min-w-[480px] sm:min-w-0">
+                <div className="grid grid-cols-[48px_1fr_120px_100px] sm:grid-cols-[48px_1fr_120px_100px] gap-4 px-5 py-4 bg-surface-container-low border-b border-hairline">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">STT</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Họ tên</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48 hidden sm:block">SĐT</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Ngày</span>
+                </div>
+
+                {/* Table Body */}
+                <div className="divide-y divide-hairline">
+                  {displayedData.map((row, idx) => (
+                    <div
+                      key={idx}
+                      className="grid grid-cols-[48px_1fr_100px] sm:grid-cols-[48px_1fr_120px_100px] gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors"
+                    >
+                      <span className="text-sm text-ink-muted-48">{row.stt}</span>
+                      <span className="text-sm font-medium text-ink">{row.name}</span>
+                      <span className="text-sm text-ink-muted-80 hidden sm:block">{row.phone}</span>
+                      <span className="text-xs">
+                        <span className="px-2 py-1 rounded-full bg-surface-container text-ink-muted-80">{row.date}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Expandable */}
+              {previewData.length > 5 && (
+                <div className="p-4 border-t border-hairline text-center">
+                  <button
+                    onClick={() => setShowAll(!showAll)}
+                    className="text-sm font-medium text-primary hover:text-primary-hover transition-colors"
+                  >
+                    {showAll ? "Thu gọn" : `Xem thêm ${previewData.length - 5} bản ghi`}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Empty State - Redesigned */}
           {!loading && previewData.length === 0 && reportType && (
-            <div className="text-center py-12 text-ink-muted-80">
-              <span className="material-symbols-outlined text-5xl mb-3">description</span>
-              <p>Chọn ngày/tuần/tháng và nhấn "Xem trước" để xem báo cáo</p>
+            <div className="rounded-[18px] bg-surface-container-low border border-hairline border-dashed py-16 text-center">
+              <span className="material-symbols-outlined text-5xl text-ink-muted-48 mb-4">assignment</span>
+              <p className="text-base text-ink-muted-80 mb-1">Chưa có dữ liệu báo cáo</p>
+              <p className="text-sm text-ink-muted-48">Chọn phạm vi thời gian và nhấn "Tra cứu" để xem</p>
             </div>
           )}
         </div>
