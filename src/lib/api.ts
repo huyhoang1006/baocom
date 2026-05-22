@@ -160,9 +160,9 @@ export const adminReportsApi = {
     if (includeSundays) params.set('includeSundays', 'true')
     return apiFetch<{ reportData: Array<{ stt: number; name: string; phone: string; date: string }>; stats: { total: number; byDate: Record<string, number> } }>(`/admin/reports?${params}`)
   },
-  exportCsvUrl: (startDate: string, endDate: string) => {
+  exportXlsxUrl: (startDate: string, endDate: string) => {
     const params = new URLSearchParams({ startDate, endDate })
-    return `/api/admin/reports/export?${params}`
+    return `/api/admin/reports/export-xlsx?${params}`
   },
 }
 
