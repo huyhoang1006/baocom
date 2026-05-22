@@ -18,7 +18,10 @@ export class UsersController {
         name: u.name,
         role: u.role,
         isActive: u.isActive,
-        createdAt: u.createdAt
+        createdAt: u.createdAt,
+        phone: u.phone,
+        email: u.email,
+        department: u.department
       }))
     })
   }
@@ -28,7 +31,19 @@ export class UsersController {
     if (!user) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
-    return NextResponse.json({ user })
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        phone: user.phone,
+        email: user.email,
+        department: user.department
+      }
+    })
   }
 
   async create(req: NextRequest) {
@@ -39,18 +54,22 @@ export class UsersController {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    if (!body.username || !body.name) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!body.name) {
+      return NextResponse.json({ error: 'Missing required field: name' }, { status: 400 })
     }
 
     try {
-      const user = await this.userService.create(body)
+      const result = await this.userService.create(body)
       return NextResponse.json({
         user: {
-          id: user.id,
-          username: user.username,
-          name: user.name,
-          role: user.role
+          id: result.user.id,
+          username: result.user.username,
+          name: result.user.name,
+          role: result.user.role
+        },
+        credentials: {
+          username: result.credentials.username,
+          password: result.credentials.password
         }
       }, { status: 201 })
     } catch (error) {

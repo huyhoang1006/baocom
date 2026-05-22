@@ -23,6 +23,18 @@ export class UserRepository extends BaseRepository<
     return this.prisma.user.findUnique({ where: { username } })
   }
 
+  async findByUsernamePattern(pattern: string): Promise<string[]> {
+    const users = await this.prisma.user.findMany({
+      where: {
+        username: {
+          startsWith: pattern
+        }
+      },
+      select: { username: true }
+    })
+    return users.map(u => u.username)
+  }
+
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({ data })
   }
