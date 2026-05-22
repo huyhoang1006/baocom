@@ -1,6 +1,6 @@
 export interface CreateUserDTO {
   username: string
-  password: string
+  password?: string  // Optional - auto-generated if not provided
   name: string
   role?: string
 }

@@ -39,7 +39,7 @@ export class UsersController {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    if (!body.username || !body.password || !body.name) {
+    if (!body.username || !body.name) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 

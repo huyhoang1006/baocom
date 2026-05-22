@@ -1,0 +1,30 @@
+{
+  "skill_name": "ascii-diagram",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Tạo sequence diagram cho luồng đặt hàng: User -> Cart -> Payment -> Order",
+      "expected_output": "Sequence diagram với 4 thành phần: User, Cart, Payment, Order và các interaction arrows"
+    },
+    {
+      "id": 2,
+      "prompt": "Vẽ workflow cho quy trình đăng ký user mới gồm: form -> validate -> create -> welcome email",
+      "expected_output": "Workflow diagram với các bước nối tiếp và có thể có rẽ nhánh"
+    },
+    {
+      "id": 3,
+      "prompt": "Tạo use case diagram cho hệ thống ATM với các actor: Customer, Bank, và các usecase:Withdraw, Deposit, Transfer, CheckBalance",
+      "expected_output": "Use case diagram với actor ở hai bên và các use case ở giữa"
+    },
+    {
+      "id": 4,
+      "prompt": "Vẽ data flow diagram cho luồng xử lý đơn hàng: Input Order -> Process -> Validate -> Save DB -> Send notification",
+      "expected_output": "Data flow diagram với input, process, data store và output"
+    },
+    {
+      "id": 5,
+      "prompt": "Tạo stage diagram cho development pipeline: Dev -> Code Review -> Test -> Staging -> Production",
+      "expected_output": "Stage diagram với các stage nối tiếp bằng arrows"
+    }
+  ]
+}

@@ -24,7 +24,10 @@ export class UserService {
       throw new Error('Username already exists')
     }
 
-    const hashedPassword = await hashPassword(data.password)
+    // Auto-generate password if not provided (use username as default password)
+    const password = data.password || data.username
+    const hashedPassword = await hashPassword(password)
+
     return this.userRepository.create({
       username: data.username,
       password: hashedPassword,
