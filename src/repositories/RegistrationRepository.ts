@@ -75,25 +75,19 @@ export class RegistrationRepository extends BaseRepository<
     userId: string,
     startDate?: Date,
     endDate?: Date
-  ): Promise<Array<Registration & { overrides: Array<{ originalStatus: string | null; newStatus: string; note: string | null; performedAt: Date; performedBy: string; registration: { user: { name: string } } }> }>> {
+  ): Promise<Array<Registration & { overrides: Array<{ originalStatus: string | null; newStatus: string; note: string | null; performedAt: Date; performedBy: string }> }>> {
     const where: Prisma.RegistrationWhereInput = { userId }
-    if (startDate && endDate) {
-      where.date = { gte: startDate, lte: endDate }
+    if (startDate || endDate) {
+      where.date = {}
+      if (startDate) where.date.gte = startDate
+      if (endDate) where.date.lte = endDate
     }
 
     return this.prisma.registration.findMany({
       where,
       orderBy: { date: 'desc' },
       include: {
-        overrides: {
-          include: {
-            registration: {
-              include: {
-                user: { select: { name: true } }
-              }
-            }
-          }
-        }
+        overrides: true
       }
     })
   }
