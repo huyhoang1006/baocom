@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xem Lịch Sử Đặt Cơm - Design Review</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #3B82F6;
+      --success: #22C55E;
+      --error: #EF4444;
+      --warning: #F59E0B;
+      --bg: #FAFAFA;
+      --surface: #FFFFFF;
+      --border: #E5E7EB;
+      --text: #1F2937;
+      --muted: #6B7280;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: var(--muted); margin-bottom: 24px; }
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .toc h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; }
+    .toc-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .toc-link { padding: 6px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; text-decoration: none; color: var(--text); font-size: 13px; }
+    .toc-link:hover { border-color: var(--primary); color: var(--primary); }
+    .summary-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 24px; flex-wrap: wrap; }
+    .summary-item { text-align: center; }
+    .summary-num { font-size: 24px; font-weight: 700; }
+    .summary-label { font-size: 12px; color: var(--muted); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-size: 16px; font-weight: 600; }
+    .card-id { font-size: 12px; color: var(--muted); background: var(--bg); padding: 4px 8px; border-radius: 4px; }
+    .card-body { padding: 20px; }
+    .card-content { font-size: 14px; white-space: pre-wrap; }
+    .card-content code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    pre { background: var(--bg); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+    .controls { padding: 16px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .control-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .control-row:last-child { margin-bottom: 0; }
+    .status-group { display: flex; gap: 8px; }
+    .status-btn { padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .status-btn:hover { border-color: var(--primary); }
+    .status-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .status-btn.approved { border-color: var(--success); }
+    .status-btn.approved.active { background: var(--success); }
+    .status-btn.needs-revision { border-color: var(--warning); }
+    .status-btn.needs-revision.active { background: var(--warning); color: white; }
+    .status-btn.rejected { border-color: var(--error); }
+    .status-btn.rejected.active { background: var(--error); color: white; }
+    .rating-group { display: flex; gap: 8px; align-items: center; }
+    .rating-label { font-size: 13px; color: var(--muted); }
+    .rating-btn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .rating-btn:hover { border-color: var(--primary); }
+    .rating-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .comment-box { width: 100%; min-height: 80px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; resize: vertical; font-family: inherit; }
+    .export-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 24px; }
+    .export-section h2 { font-size: 16px; margin-bottom: 12px; }
+    .export-preview { background: var(--bg); padding: 16px; border-radius: 8px; font-size: 12px; max-height: 300px; overflow: auto; white-space: pre-wrap; margin-bottom: 12px; font-family: monospace; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: #2563EB; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--primary); }
+    .section-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+    .badge-approved { background: #DCFCE7; color: #166534; }
+    .badge-revision { background: #FEF3C7; color: #92400E; }
+    .badge-rejected { background: #FEE2E2; color: #991B1B; }
+    .badge-open { background: #F3F4F6; color: #374151; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Xem Lịch Sử Đặt Cơm Nhân Viên</h1>
+  <p class="subtitle">Design Review — 2026-05-23</p>
+
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-item"><div class="summary-num" id="totalSections">6</div><div class="summary-label">Sections</div></div>
+    <div class="summary-item"><div class="summary-num" id="approvedCount">0</div><div class="summary-label">Approved</div></div>
+    <div class="summary-item"><div class="summary-num" id="revisionCount">0</div><div class="summary-label">Needs Revision</div></div>
+    <div class="summary-item"><div class="summary-num" id="openCount">0</div><div class="summary-label">Open</div></div>
+  </div>
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <div class="toc-links">
+      <a href="#sec-001" class="toc-link">Overview</a>
+      <a href="#sec-002" class="toc-link">Architecture</a>
+      <a href="#sec-003" class="toc-link">API Design</a>
+      <a href="#sec-004" class="toc-link">Page Layout</a>
+      <a href="#sec-005" class="toc-link">Components</a>
+      <a href="#sec-006" class="toc-link">Implementation</a>
+    </div>
+  </div>
+
+  <!-- Section 1: Overview -->
+  <div class="card" id="sec-001">
+    <div class="card-header">
+      <div><span class="card-title">Overview</span></div>
+      <span class="card-id">sec-001</span>
+    </div>
+    <div class="card-body">
+      <div class="card-content">Cho phép admin xem toàn bộ lịch sử đặt cơm/báo cơm của bất kỳ nhân viên nào từ trang Nhân Sự. Mở trang riêng để hiển thị danh sách chi tiết.</div>
+    </div>
+    <div class="controls">
+      <div class="control-row">
+        <span class="rating-label">Status:</span>
+        <div class="status-group">
+          <button class="status-btn approved" data-section="sec-001" data-status="approved">Approved</button>
+          <button class="status-btn needs-revision" data-section="sec-001" data-status="needs-revision">Needs Revision</button>
+          <button class="status-btn rejected" data-section="sec-001" data-status="rejected">Rejected</button>
+          <button class="status-btn active" data-section="sec-001" data-status="open">Open</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <span class="rating-label">Clarity:</span>
+        <div class="rating-group" data-section="sec-001" data-rating="clarity">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+        <span class="rating-label" style="margin-left:16px">Completeness:</span>
+        <div class="rating-group" data-section="sec-001" data-rating="completeness">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+      </div>
+      <textarea class="comment-box" data-section="sec-001" placeholder="Add comments..."></textarea>
+    </div>
+  </div>
+
+  <!-- Section 2: Architecture -->
+  <div class="card" id="sec-002">
+    <div class="card-header">
+      <div><span class="card-title">Architecture</span></div>
+      <span class="card-id">sec-002</span>
+    </div>
+    <div class="card-body">
+      <div class="card-content"><strong>Route Structure</strong>
+• /admin/employees/[id]/registrations — Trang lịch sử đặt cơm của một nhân viên
+• GET /api/admin/employees/[id]/registrations — API lấy lịch sử (không giới hạn ngày)
+
+<strong>Data Flow</strong>
+1. Admin click nút "Lịch sử đặt cơm" trong modal chi tiết nhân viên
+2. Navigate sang /admin/employees/{userId}/registrations
+3. Trang gọi API lấy toàn bộ registration của nhân viên đó
+4. Hiển thị bảng với ngày, trạng thái, ghi chú</div>
+    </div>
+    <div class="controls">
+      <div class="control-row">
+        <span class="rating-label">Status:</span>
+        <div class="status-group">
+          <button class="status-btn approved" data-section="sec-002" data-status="approved">Approved</button>
+          <button class="status-btn needs-revision" data-section="sec-002" data-status="needs-revision">Needs Revision</button>
+          <button class="status-btn rejected" data-section="sec-002" data-status="rejected">Rejected</button>
+          <button class="status-btn active" data-section="sec-002" data-status="open">Open</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <span class="rating-label">Clarity:</span>
+        <div class="rating-group" data-section="sec-002" data-rating="clarity">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+        <span class="rating-label" style="margin-left:16px">Feasibility:</span>
+        <div class="rating-group" data-section="sec-002" data-rating="feasibility">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+      </div>
+      <textarea class="comment-box" data-section="sec-002" placeholder="Add comments..."></textarea>
+    </div>
+  </div>
+
+  <!-- Section 3: API Design -->
+  <div class="card" id="sec-003">
+    <div class="card-header">
+      <div><span class="card-title">API Design</span></div>
+      <span class="card-id">sec-003</span>
+    </div>
+    <div class="card-body">
+      <div class="card-content"><strong>Endpoint:</strong> GET /api/admin/employees/:id/registrations
+
+<strong>Query Parameters:</strong>
+• ?startDate=YYYY-MM-DD (optional)
+• ?endDate=YYYY-MM-DD (optional)
+Nếu không có date params, trả về tất cả.
+
+<strong>Response:</strong>
+<pre>{
+  "user": { "id", "name", "username" },
+  "registrations": [
+    {
+      "id": "...",
+      "date": "2026-05-20",
+      "status": "eating" | "not_eating",
+      "note": "...",
+      "createdAt": "...",
+      "overrides": [
+        {
+          "originalStatus": "eating",
+          "newStatus": "not_eating",
+          "note": "Lý do",
+          "performedAt": "...",
+          "performedBy": "Admin Name"
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "total": 45,
+    "eating": 38,
+    "notEating": 7
+  }
+}</pre></div>
+    </div>
+    <div class="controls">
+      <div class="control-row">
+        <span class="rating-label">Status:</span>
+        <div class="status-group">
+          <button class="status-btn approved" data-section="sec-003" data-status="approved">Approved</button>
+          <button class="status-btn needs-revision" data-section="sec-003" data-status="needs-revision">Needs Revision</button>
+          <button class="status-btn rejected" data-section="sec-003" data-status="rejected">Rejected</button>
+          <button class="status-btn active" data-section="sec-003" data-status="open">Open</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <span class="rating-label">Clarity:</span>
+        <div class="rating-group" data-section="sec-003" data-rating="clarity">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+        <span class="rating-label" style="margin-left:16px">Completeness:</span>
+        <div class="rating-group" data-section="sec-003" data-rating="completeness">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+      </div>
+      <textarea class="comment-box" data-section="sec-003" placeholder="Add comments..."></textarea>
+    </div>
+  </div>
+
+  <!-- Section 4: Page Layout -->
+  <div class="card" id="sec-004">
+    <div class="card-header">
+      <div><span class="card-title">Page Layout</span></div>
+      <span class="card-id">sec-004</span>
+    </div>
+    <div class="card-body">
+      <div class="card-content"><strong>Header</strong>
+• Nút back quay về trang Nhân Sự
+• Tên nhân viên + username
+• Stats tổng quan: Tổng ngày | Ăn | Không ăn
+
+<strong>Filter (tùy chọn)</strong>
+• Date range picker: Từ ngày - Đến ngày
+• Mặc định: all (không filter)
+
+<strong>Table</strong>
+| Ngày | Trạng thái | Ghi chú | Thao tác |
+|------|------------|---------|----------|
+| 20/05/2026 | Ăn | - | - |
+| 19/05/2026 | Không ăn | Không ăn được món này | Xem chi tiết |
+
+• Trạng thái: badge màu xanh (ăn) / đỏ (không ăn)
+• Ngày nghỉ lễ: hiển thị badge "Nghỉ lễ" thay vì trạng thái
+• Sort theo ngày giảm dần (mới nhất trước)
+
+<strong>Empty State</strong>
+"Không có lịch sử đặt cơm cho nhân viên này"</div>
+    </div>
+    <div class="controls">
+      <div class="control-row">
+        <span class="rating-label">Status:</span>
+        <div class="status-group">
+          <button class="status-btn approved" data-section="sec-004" data-status="approved">Approved</button>
+          <button class="status-btn needs-revision" data-section="sec-004" data-status="needs-revision">Needs Revision</button>
+          <button class="status-btn rejected" data-section="sec-004" data-status="rejected">Rejected</button>
+          <button class="status-btn active" data-section="sec-004" data-status="open">Open</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <span class="rating-label">Clarity:</span>
+        <div class="rating-group" data-section="sec-004" data-rating="clarity">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+      </div>
+      <textarea class="comment-box" data-section="sec-004" placeholder="Add comments..."></textarea>
+    </div>
+  </div>
+
+  <!-- Section 5: Components -->
+  <div class="card" id="sec-005">
+    <div class="card-header">
+      <div><span class="card-title">Components</span></div>
+      <span class="card-id">sec-005</span>
+    </div>
+    <div class="card-body">
+      <div class="card-content"><strong>StatsCard</strong>
+3 ô stats: Tổng | Ăn | Không ăn
+• Background: surface-container
+• Border-radius: 12px
+
+<strong>RegistrationTable</strong>
+• Columns: Ngày, Trạng thái, Ghi chú
+• Row hover highlight
+• Empty state khi không có data
+
+<strong>DateRangeFilter</strong>
+• 2 date inputs với nút "Lọc" và "Xóa lọc"
+• Optional - page hoạt động không cần filter</div>
+    </div>
+    <div class="controls">
+      <div class="control-row">
+        <span class="rating-label">Status:</span>
+        <div class="status-group">
+          <button class="status-btn approved" data-section="sec-005" data-status="approved">Approved</button>
+          <button class="status-btn needs-revision" data-section="sec-005" data-status="needs-revision">Needs Revision</button>
+          <button class="status-btn rejected" data-section="sec-005" data-status="rejected">Rejected</button>
+          <button class="status-btn active" data-section="sec-005" data-status="open">Open</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <span class="rating-label">Clarity:</span>
+        <div class="rating-group" data-section="sec-005" data-rating="clarity">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+      </div>
+      <textarea class="comment-box" data-section="sec-005" placeholder="Add comments..."></textarea>
+    </div>
+  </div>
+
+  <!-- Section 6: Implementation -->
+  <div class="card" id="sec-006">
+    <div class="card-header">
+      <div><span class="card-title">Implementation</span></div>
+      <span class="card-id">sec-006</span>
+    </div>
+    <div class="card-body">
+      <div class="card-content"><strong>Files to create/modify:</strong>
+
+1. app/api/admin/employees/[id]/registrations/route.ts — API endpoint
+2. app/admin/employees/[id]/registrations/page.tsx — New page
+3. src/controllers/AdminEmployeesController.ts — Add method for employee registrations
+4. src/services/RegistrationService.ts — Add method to get by userId without date limit
+5. src/repositories/RegistrationRepository.ts — Add method to find by userId with overrides
+6. app/admin/employees/page.tsx — Add "Xem lịch sử" button in detail modal
+
+<strong>Security</strong>
+• Admin only (withAdmin middleware)
+• Validate employee belongs to org (always true for single-tenant)</div>
+    </div>
+    <div class="controls">
+      <div class="control-row">
+        <span class="rating-label">Status:</span>
+        <div class="status-group">
+          <button class="status-btn approved" data-section="sec-006" data-status="approved">Approved</button>
+          <button class="status-btn needs-revision" data-section="sec-006" data-status="needs-revision">Needs Revision</button>
+          <button class="status-btn rejected" data-section="sec-006" data-status="rejected">Rejected</button>
+          <button class="status-btn active" data-section="sec-006" data-status="open">Open</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <span class="rating-label">Feasibility:</span>
+        <div class="rating-group" data-section="sec-006" data-rating="feasibility">
+          <button class="rating-btn" data-value="1">1</button><button class="rating-btn" data-value="2">2</button><button class="rating-btn" data-value="3">3</button><button class="rating-btn" data-value="4">4</button><button class="rating-btn" data-value="5">5</button>
+        </div>
+      </div>
+      <textarea class="comment-box" data-section="sec-006" placeholder="Add comments..."></textarea>
+    </div>
+  </div>
+
+  <!-- Export Section -->
+  <div class="export-section">
+    <h2>Export XML Prompt</h2>
+    <div class="export-preview" id="exportPreview"></div>
+    <button class="btn btn-primary" id="copyBtn">Copy XML Prompt</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'spec-review-employee-registration-history';
+
+const specData = {
+  title: 'Xem Lịch Sử Đặt Cơm Nhân Viên',
+  source: 'agent_generated_spec',
+  created_at: '2026-05-23',
+  review_goal: 'Review design before implementation'
+};
+
+const sections = [
+  { id: 'sec-001', title: 'Overview', content: 'Cho phép admin xem toàn bộ lịch sử đặt cơm/báo cơm của bất kỳ nhân viên nào từ trang Nhân Sự. Mở trang riêng để hiển thị danh sách chi tiết.' },
+  { id: 'sec-002', title: 'Architecture', content: 'Route Structure:\n• /admin/employees/[id]/registrations — Trang lịch sử đặt cơm của một nhân viên\n• GET /api/admin/employees/[id]/registrations — API lấy lịch sử (không giới hạn ngày)\n\nData Flow:\n1. Admin click nút "Lịch sử đặt cơm" trong modal chi tiết nhân viên\n2. Navigate sang /admin/employees/{userId}/registrations\n3. Trang gọi API lấy toàn bộ registration của nhân viên đó\n4. Hiển thị bảng với ngày, trạng thái, ghi chú' },
+  { id: 'sec-003', title: 'API Design', content: 'Endpoint: GET /api/admin/employees/:id/registrations\n\nQuery Parameters:\n• ?startDate=YYYY-MM-DD (optional)\n• ?endDate=YYYY-MM-DD (optional)\n\nResponse: user, registrations[], stats' },
+  { id: 'sec-004', title: 'Page Layout', content: 'Header: back button, employee name, stats\nFilter: date range picker (optional)\nTable: Ngày, Trạng thái, Ghi chú\nSort: ngày giảm dần' },
+  { id: 'sec-005', title: 'Components', content: 'StatsCard, RegistrationTable, DateRangeFilter' },
+  { id: 'sec-006', title: 'Implementation', content: 'Files: route.ts, page.tsx, controller, service, repository' }
+];
+
+let reviewState = {};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) reviewState = JSON.parse(saved);
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reviewState));
+}
+
+function escapeXml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+function updateSummary() {
+  let approved = 0, revision = 0, open = 0;
+  Object.values(reviewState).forEach(s => {
+    if (s.status === 'approved') approved++;
+    else if (s.status === 'needs-revision') revision++;
+    else if (s.status === 'open') open++;
+  });
+  document.getElementById('approvedCount').textContent = approved;
+  document.getElementById('revisionCount').textContent = revision;
+  document.getElementById('openCount').textContent = open;
+}
+
+function buildXml() {
+  let xml = `<spec_review_prompt version="1.0">
+  <metadata>
+    <title>${escapeXml(specData.title)}</title>
+    <source>${specData.source}</source>
+    <created_at>${specData.created_at}</created_at>
+    <review_goal>${escapeXml(specData.review_goal)}</review_goal>
+  </metadata>
+  <spec>`;
+
+  sections.forEach(sec => {
+    const state = reviewState[sec.id] || {};
+    xml += `
+    <section id="${sec.id}">
+      <title>${escapeXml(sec.title)}</title>
+      <content>${escapeXml(sec.content)}</content>
+      <review>
+        <status>${state.status || 'open'}</status>
+        <ratings>
+          ${state.ratings ? Object.entries(state.ratings).map(([k,v]) => `<rating name="${k}">${v}</rating>`).join('\n          ') : ''}
+        </ratings>
+        <comments>
+          ${(state.comments || []).map(c => `<comment>${escapeXml(c)}</comment>`).join('\n          ')}
+        </comments>
+      </review>
+    </section>`;
+  });
+
+  let approved = 0, revision = 0, open = 0;
+  Object.values(reviewState).forEach(s => {
+    if (s.status === 'approved') approved++;
+    else if (s.status === 'needs-revision') revision++;
+    else if (s.status === 'open') open++;
+  });
+
+  xml += `
+  </spec>
+  <summary>
+    <approved_sections>${approved}</approved_sections>
+    <needs_revision_sections>${revision}</needs_revision_sections>
+    <open_questions>${open}</open_questions>
+  </summary>
+  <instruction>
+    Use the reviewed spec, comments, selected options, and follow-ups above as the source of truth for the next implementation or planning step.
+  </instruction>
+</spec_review_prompt>`;
+
+  return xml;
+}
+
+function updatePreview() {
+  document.getElementById('exportPreview').textContent = buildXml();
+}
+
+// Status buttons
+document.querySelectorAll('.status-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const section = btn.dataset.section;
+    const status = btn.dataset.status;
+    if (!reviewState[section]) reviewState[section] = {};
+    reviewState[section].status = status;
+    saveState();
+
+    // Update active states
+    document.querySelectorAll(`[data-section="${section}"].status-btn`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    updateSummary();
+    updatePreview();
+  });
+});
+
+// Rating buttons
+document.querySelectorAll('.rating-group').forEach(group => {
+  group.querySelectorAll('.rating-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = group.dataset.section;
+      const ratingType = group.dataset.rating;
+      const value = parseInt(btn.dataset.value);
+      if (!reviewState[section]) reviewState[section] = {};
+      if (!reviewState[section].ratings) reviewState[section].ratings = {};
+      reviewState[section].ratings[ratingType] = value;
+      saveState();
+
+      group.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      updatePreview();
+    });
+  });
+});
+
+// Comment boxes
+document.querySelectorAll('.comment-box').forEach(box => {
+  box.addEventListener('input', () => {
+    const section = box.dataset.section;
+    if (!reviewState[section]) reviewState[section] = {};
+    reviewState[section].comments = [box.value];
+    saveState();
+    updatePreview();
+  });
+});
+
+// Copy button
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const xml = buildXml();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(xml).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy XML Prompt', 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = xml;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy XML Prompt', 2000);
+  }
+});
+
+// Init
+loadState();
+updateSummary();
+updatePreview();
+
+// Set initial active states
+Object.entries(reviewState).forEach(([section, state]) => {
+  if (state.status) {
+    document.querySelectorAll(`[data-section="${section}"].status-btn`).forEach(b => {
+      b.classList.toggle('active', b.dataset.status === state.status);
+    });
+  }
+  if (state.ratings) {
+    Object.entries(state.ratings).forEach(([type, value]) => {
+      const group = document.querySelector(`.rating-group[data-section="${section}"][data-rating="${type}"]`);
+      if (group) {
+        group.querySelectorAll('.rating-btn').forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.value) === value);
+        });
+      }
+    });
+  }
+  if (state.comments && state.comments[0]) {
+    const box = document.querySelector(`.comment-box[data-section="${section}"]`);
+    if (box) box.value = state.comments[0];
+  }
+});
+</script>
+</body>
+</html>
