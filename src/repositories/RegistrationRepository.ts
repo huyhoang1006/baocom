@@ -70,4 +70,31 @@ export class RegistrationRepository extends BaseRepository<
       }
     })
   }
+
+  async findAllByUserWithOverrides(
+    userId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<Array<Registration & { overrides: Array<{ originalStatus: string | null; newStatus: string; note: string | null; performedAt: Date; performedBy: string; registration: { user: { name: string } } }> }>> {
+    const where: Prisma.RegistrationWhereInput = { userId }
+    if (startDate && endDate) {
+      where.date = { gte: startDate, lte: endDate }
+    }
+
+    return this.prisma.registration.findMany({
+      where,
+      orderBy: { date: 'desc' },
+      include: {
+        overrides: {
+          include: {
+            registration: {
+              include: {
+                user: { select: { name: true } }
+              }
+            }
+          }
+        }
+      }
+    })
+  }
 }
