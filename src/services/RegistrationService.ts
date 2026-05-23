@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { RegistrationRepository } from '@/repositories/RegistrationRepository'
 import { CreateRegistrationDTO, UpdateRegistrationDTO, RegistrationStatus } from '@/dto/RegistrationDTO'
 import { isAllowedRegistrationDate, startOfLocalDay, parseLocalDate } from '@/lib/registrationWindow'
+import { AuditLogService } from './AuditLogService'
 
 export type RegistrationWithUser = {
   userId: string
@@ -40,8 +41,11 @@ export class RegistrationService {
   }
 
   async findAll(userId?: string, startDate?: string, endDate?: string): Promise<RegistrationWithUser[]> {
-    const where: Record<string, unknown> = {}
-    if (userId) where.userId = userId
+    // SECURITY: userId is always required to prevent IDOR
+    if (!userId) {
+      return []
+    }
+    const where: Record<string, unknown> = { userId }
     if (startDate && endDate) {
       where.date = { gte: new Date(startDate), lte: new Date(endDate) }
     }
@@ -103,6 +107,16 @@ export class RegistrationService {
         newStatus: data.status,
         note: overrideNote,
         originalStatus: registration.status,
+      })
+
+      // Audit log for admin override
+      const auditService = new AuditLogService()
+      await auditService.log({
+        action: 'REGISTRATION_OVERRIDE',
+        entityType: 'registration',
+        entityId: id,
+        performedBy: userId,
+        details: `Status changed from ${registration.status} to ${data.status}. Note: ${overrideNote}`
       })
     }
 
