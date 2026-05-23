@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { usersApi } from "@/lib/api"
 
 interface Employee {
@@ -33,6 +34,7 @@ export default function EmployeesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [detailEmployee, setDetailEmployee] = useState<Employee | null>(null)
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [detailCredentials, setDetailCredentials] = useState<Credentials | null>(null)
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
@@ -208,8 +210,10 @@ export default function EmployeesPage() {
   }
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    showNotification("success", "Đã copy")
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text)
+      showNotification("success", "Đã copy")
+    }
   }
 
   const formatDate = (dateStr: string) => {
@@ -250,11 +254,7 @@ export default function EmployeesPage() {
               <span className="material-symbols-outlined text-lg">person_add</span>
               Thêm nhân viên
             </button>
-            <button onClick={() => showNotification("error", "Tính năng đang phát triển")} className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high border border-hairline transition-colors">
-              <span className="material-symbols-outlined text-lg">upload_file</span>
-              Import
-            </button>
-          </div>
+                      </div>
 
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-ink-muted-48 text-lg">search</span>
@@ -325,6 +325,13 @@ export default function EmployeesPage() {
                               title="Xóa"
                             >
                               <span className="material-symbols-outlined text-base">delete</span>
+                            </button>
+                            <button
+                              onClick={() => router.push(`/admin/employees/${emp.id}/registrations`)}
+                              className="w-9 h-9 rounded-full hover:bg-surface-container-high text-ink-muted-80 hover:text-primary flex items-center justify-center transition-colors"
+                              title="Lịch sử đặt cơm"
+                            >
+                              <span className="material-symbols-outlined text-base">history</span>
                             </button>
                           </div>
                         </td>
