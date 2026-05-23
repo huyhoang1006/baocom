@@ -11,7 +11,7 @@ Cho phép admin xem toàn bộ lịch sử đặt cơm/báo cơm của bất k�
 - `GET /api/admin/employees/[id]/registrations` — API lấy lịch sử (không giới hạn ngày)
 
 ### Data Flow
-1. Admin click nút "Lịch sử đặt cơm" trong modal chi tiết nhân viên
+1. Admin click icon "Lịch sử đặt cơm" cùng dòng với tên nhân viên trong bảng
 2. Navigate sang `/admin/employees/{userId}/registrations`
 3. Trang gọi API lấy toàn bộ registration của nhân viên đó
 4. Hiển thị bảng với ngày, trạng thái, ghi chú
@@ -70,8 +70,13 @@ Nếu không có date params, trả về tất cả.
 - Date range picker: Từ ngày - Đến ngày
 - Mặc định: all (không filter)
 
-### Table
-| Ngày | Trạng thái | Ghi chú | Thao tác |
+### Table (Employees Page)
+| # | Tên | Username | Trạng thái | Actions |
+|---|-----|----------|------------|---------|
+
+- Actions column contains: Edit, Delete, **History** (icon)
+
+### Table (Registration History Page)
 |------|------------|---------|----------|
 | 20/05/2026 | Ăn | - | - |
 | 19/05/2026 | Không ăn | Không ăn được món này | Xem chi tiết |
@@ -107,7 +112,7 @@ Nếu không có date params, trả về tất cả.
 3. `src/controllers/AdminEmployeesController.ts` — Add method for employee registrations
 4. `src/services/RegistrationService.ts` — Add method to get by userId without date limit
 5. `src/repositories/RegistrationRepository.ts` — Add method to find by userId with overrides
-6. `app/admin/employees/page.tsx` — Add "Xem lịch sử" button in detail modal
+6. `app/admin/employees/page.tsx` — Add history button/icon in table row (next to edit/delete)
 
 ## Security
 - Admin only (withAdmin middleware)
