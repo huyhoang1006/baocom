@@ -153,6 +153,23 @@ export class RegistrationService {
     return { eating, notEating, total }
   }
 
+  async findAllByUser(userId: string, startDate?: string, endDate?: string) {
+    const registrations = await this.registrationRepository.findAllByUserWithOverrides(
+      userId,
+      startDate ? new Date(startDate) : undefined,
+      endDate ? new Date(endDate) : undefined
+    )
+
+    // Stats
+    const stats = {
+      total: registrations.length,
+      eating: registrations.filter(r => r.status === 'eating').length,
+      notEating: registrations.filter(r => r.status === 'not_eating').length
+    }
+
+    return { registrations, stats }
+  }
+
   async getAbsencesByDate(date: Date) {
     const dayStart = startOfLocalDay(date)
     const nextDay = new Date(dayStart)
