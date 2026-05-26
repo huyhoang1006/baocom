@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin } from '@/lib/authMiddleware'
 import { upsertCutoffConfig } from '@/lib/cutoffConfig'
+import { AuditLogService } from '@/services/AuditLogService'
+
+const auditService = new AuditLogService()
 
 export const GET = withAdmin(async () => {
   const { getCutoffConfig } = await import('@/lib/cutoffConfig')
@@ -27,5 +30,13 @@ export const PUT = withAdmin(async (req: NextRequest, userId: string) => {
   }
 
   await upsertCutoffConfig(hour, minute, userId)
+
+  await auditService.log({
+    action: 'CUTOFF_UPDATED',
+    entityType: 'cutoff',
+    performedBy: userId,
+    details: `Cutoff updated to ${hour}:${minute.toString().padStart(2, '0')}`
+  })
+
   return NextResponse.json({ success: true, cutoffHour: hour, cutoffMinute: minute })
 })

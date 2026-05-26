@@ -1,0 +1,221 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e7]: restaurant
+        - generic [ref=e8]:
+          - text: BaoCom
+          - paragraph [ref=e9]: Quản trị viên
+      - navigation [ref=e10]:
+        - link "dashboard Dashboard" [ref=e11] [cursor=pointer]:
+          - /url: /admin/dashboard
+          - generic [ref=e12]: dashboard
+          - generic [ref=e13]: Dashboard
+        - link "restaurant_menu Thực đơn" [ref=e14] [cursor=pointer]:
+          - /url: /admin/menu
+          - generic [ref=e15]: restaurant_menu
+          - generic [ref=e16]: Thực đơn
+        - link "event_note Ngày lễ/ngày nghỉ" [ref=e17] [cursor=pointer]:
+          - /url: /admin/holidays
+          - generic [ref=e18]: event_note
+          - generic [ref=e19]: Ngày lễ/ngày nghỉ
+        - link "group Nhân sự chevron_right" [ref=e20] [cursor=pointer]:
+          - /url: /admin/employees
+          - generic [ref=e21]: group
+          - generic [ref=e22]: Nhân sự
+          - generic [ref=e23]: chevron_right
+        - link "description Báo cáo" [ref=e24] [cursor=pointer]:
+          - /url: /admin/reports
+          - generic [ref=e25]: description
+          - generic [ref=e26]: Báo cáo
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e30]: AD
+          - generic [ref=e31]:
+            - paragraph [ref=e32]: Admin
+            - paragraph [ref=e33]: Quản trị viên
+        - generic [ref=e34]:
+          - link "settings Cài đặt" [ref=e35] [cursor=pointer]:
+            - /url: /admin/settings
+            - generic [ref=e36]: settings
+            - generic [ref=e37]: Cài đặt
+          - button "logout Đăng xuất" [ref=e38]:
+            - generic [ref=e39]: logout
+            - generic [ref=e40]: Đăng xuất
+    - main [ref=e41]:
+      - generic [ref=e42]:
+        - heading "Nhân Sự" [level=1] [ref=e45]
+        - main [ref=e46]:
+          - generic [ref=e47]:
+            - button "person_add Thêm nhân viên" [ref=e49]:
+              - generic [ref=e50]: person_add
+              - text: Thêm nhân viên
+            - generic [ref=e51]:
+              - generic [ref=e52]: search
+              - textbox "Tìm kiếm..." [ref=e53]
+            - table [ref=e56]:
+              - rowgroup [ref=e57]:
+                - row "# Tên Username Trạng thái Actions" [ref=e58]:
+                  - columnheader "#" [ref=e59]
+                  - columnheader "Tên" [ref=e60]
+                  - columnheader "Username" [ref=e61]
+                  - columnheader "Trạng thái" [ref=e62]
+                  - columnheader "Actions" [ref=e63]
+              - rowgroup [ref=e64]:
+                - row "1 A Administrator @admin Đang hoạt động edit delete" [ref=e77] [cursor=pointer]:
+                  - cell "1" [ref=e78]
+                  - cell "A Administrator" [ref=e79]:
+                    - generic [ref=e80]:
+                      - generic [ref=e81]: A
+                      - generic [ref=e82]: Administrator
+                  - cell "@admin" [ref=e83]
+                  - cell "Đang hoạt động" [ref=e84]:
+                    - generic [ref=e85]: Đang hoạt động
+                  - cell "edit delete" [ref=e86]:
+                    - generic [ref=e87]:
+                      - button "edit" [ref=e88]:
+                        - generic [ref=e89]: edit
+                      - button "delete" [ref=e90]:
+                        - generic [ref=e91]: delete
+                - row "2 NV Nguyễn Văn A @nguyenvana Đang hoạt động edit delete" [ref=e92] [cursor=pointer]:
+                  - cell "2" [ref=e93]
+                  - cell "NV Nguyễn Văn A" [ref=e94]:
+                    - generic [ref=e95]:
+                      - generic [ref=e96]: NV
+                      - generic [ref=e97]: Nguyễn Văn A
+                  - cell "@nguyenvana" [ref=e98]
+                  - cell "Đang hoạt động" [ref=e99]:
+                    - generic [ref=e100]: Đang hoạt động
+                  - cell "edit delete" [ref=e101]:
+                    - generic [ref=e102]:
+                      - button "edit" [ref=e103]:
+                        - generic [ref=e104]: edit
+                      - button "delete" [ref=e105]:
+                        - generic [ref=e106]: delete
+                - row "3 TT Trần Thị B @tranthib Đang hoạt động edit delete" [ref=e107] [cursor=pointer]:
+                  - cell "3" [ref=e108]
+                  - cell "TT Trần Thị B" [ref=e109]:
+                    - generic [ref=e110]:
+                      - generic [ref=e111]: TT
+                      - generic [ref=e112]: Trần Thị B
+                  - cell "@tranthib" [ref=e113]
+                  - cell "Đang hoạt động" [ref=e114]:
+                    - generic [ref=e115]: Đang hoạt động
+                  - cell "edit delete" [ref=e116]:
+                    - generic [ref=e117]:
+                      - button "edit" [ref=e118]:
+                        - generic [ref=e119]: edit
+                      - button "delete" [ref=e120]:
+                        - generic [ref=e121]: delete
+                - row "4 LV Lê Văn C @levanc Đang hoạt động edit delete" [ref=e122] [cursor=pointer]:
+                  - cell "4" [ref=e123]
+                  - cell "LV Lê Văn C" [ref=e124]:
+                    - generic [ref=e125]:
+                      - generic [ref=e126]: LV
+                      - generic [ref=e127]: Lê Văn C
+                  - cell "@levanc" [ref=e128]
+                  - cell "Đang hoạt động" [ref=e129]:
+                    - generic [ref=e130]: Đang hoạt động
+                  - cell "edit delete" [ref=e131]:
+                    - generic [ref=e132]:
+                      - button "edit" [ref=e133]:
+                        - generic [ref=e134]: edit
+                      - button "delete" [ref=e135]:
+                        - generic [ref=e136]: delete
+                - row "5 PT Phạm Thị D @phamthid Đang hoạt động edit delete" [ref=e137] [cursor=pointer]:
+                  - cell "5" [ref=e138]
+                  - cell "PT Phạm Thị D" [ref=e139]:
+                    - generic [ref=e140]:
+                      - generic [ref=e141]: PT
+                      - generic [ref=e142]: Phạm Thị D
+                  - cell "@phamthid" [ref=e143]
+                  - cell "Đang hoạt động" [ref=e144]:
+                    - generic [ref=e145]: Đang hoạt động
+                  - cell "edit delete" [ref=e146]:
+                    - generic [ref=e147]:
+                      - button "edit" [ref=e148]:
+                        - generic [ref=e149]: edit
+                      - button "delete" [ref=e150]:
+                        - generic [ref=e151]: delete
+                - row "6 HV Hoàng Văn E @hoangvane Đang hoạt động edit delete" [ref=e152] [cursor=pointer]:
+                  - cell "6" [ref=e153]
+                  - cell "HV Hoàng Văn E" [ref=e154]:
+                    - generic [ref=e155]:
+                      - generic [ref=e156]: HV
+                      - generic [ref=e157]: Hoàng Văn E
+                  - cell "@hoangvane" [ref=e158]
+                  - cell "Đang hoạt động" [ref=e159]:
+                    - generic [ref=e160]: Đang hoạt động
+                  - cell "edit delete" [ref=e161]:
+                    - generic [ref=e162]:
+                      - button "edit" [ref=e163]:
+                        - generic [ref=e164]: edit
+                      - button "delete" [ref=e165]:
+                        - generic [ref=e166]: delete
+                - row "7 NY Ngọ Yến Linh @linhny Đang hoạt động edit delete" [ref=e167] [cursor=pointer]:
+                  - cell "7" [ref=e168]
+                  - cell "NY Ngọ Yến Linh" [ref=e169]:
+                    - generic [ref=e170]:
+                      - generic [ref=e171]: NY
+                      - generic [ref=e172]: Ngọ Yến Linh
+                  - cell "@linhny" [ref=e173]
+                  - cell "Đang hoạt động" [ref=e174]:
+                    - generic [ref=e175]: Đang hoạt động
+                  - cell "edit delete" [ref=e176]:
+                    - generic [ref=e177]:
+                      - button "edit" [ref=e178]:
+                        - generic [ref=e179]: edit
+                      - button "delete" [ref=e180]:
+                        - generic [ref=e181]: delete
+  - button "Open Next.js Dev Tools" [ref=e72] [cursor=pointer]:
+    - img [ref=e73]
+  - alert [ref=e76]
+  - generic:
+    - button "Close drawer":
+      - generic: close
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - generic:
+              - generic: restaurant
+            - generic:
+              - text: BaoCom
+              - paragraph: Quản trị viên
+        - navigation:
+          - link "dashboard Dashboard":
+            - /url: /admin/dashboard
+            - generic: dashboard
+            - generic: Dashboard
+          - link "restaurant_menu Thực đơn":
+            - /url: /admin/menu
+            - generic: restaurant_menu
+            - generic: Thực đơn
+          - link "event_note Ngày lễ/ngày nghỉ":
+            - /url: /admin/holidays
+            - generic: event_note
+            - generic: Ngày lễ/ngày nghỉ
+          - link "group Nhân sự chevron_right":
+            - /url: /admin/employees
+            - generic: group
+            - generic: Nhân sự
+            - generic: chevron_right
+          - link "description Báo cáo":
+            - /url: /admin/reports
+            - generic: description
+            - generic: Báo cáo
+        - generic:
+          - generic:
+            - generic:
+              - generic: AD
+            - generic:
+              - paragraph: Admin
+              - paragraph: Quản trị viên
+          - generic:
+            - link "settings Cài đặt":
+              - /url: /admin/settings
+              - generic: settings
+              - generic: Cài đặt
+            - button "logout Đăng xuất":
+              - generic: logout
+              - generic: Đăng xuất

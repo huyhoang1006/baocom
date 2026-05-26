@@ -74,14 +74,7 @@ export class UsersController {
     }
   }
 
-  async update(id: string, req: NextRequest) {
-    let body: UpdateUserDTO
-    try {
-      body = await req.json()
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
-    }
-
+  async update(id: string, body: UpdateUserDTO) {
     try {
       const user = await this.userService.update(id, body)
       return NextResponse.json({

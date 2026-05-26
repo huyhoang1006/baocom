@@ -70,6 +70,11 @@ export class UserService {
   }
 
   async update(id: string, data: UpdateUserDTO) {
+    // Validate role if provided
+    if (data.role && !['admin', 'employee'].includes(data.role)) {
+      throw new Error('Invalid role: must be "admin" or "employee"')
+    }
+
     const updateData: Record<string, unknown> = {}
     if (data.name) updateData.name = data.name
     if (data.role) updateData.role = data.role

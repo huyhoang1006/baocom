@@ -2,13 +2,13 @@ export interface CreateUserDTO {
   username?: string  // Optional - auto-generated if not provided
   password?: string  // Optional - auto-generated if not provided
   name: string
-  role?: string
+  role?: 'admin' | 'employee'
 }
 
 export interface UpdateUserDTO {
   name?: string
   password?: string
-  role?: string
+  role?: 'admin' | 'employee'
   isActive?: boolean
 }
 

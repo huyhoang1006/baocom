@@ -9,10 +9,10 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page
-    this.usernameInput = page.getByTestId('username-input')
-    this.passwordInput = page.getByTestId('password-input')
-    this.submitButton = page.getByTestId('login-submit')
-    this.errorMessage = page.getByTestId('login-error')
+    this.usernameInput = page.getByRole('textbox', { name: 'Tên đăng nhập' })
+    this.passwordInput = page.getByRole('textbox', { name: 'Mật khẩu' })
+    this.submitButton = page.getByRole('button', { name: 'Đăng nhập' })
+    this.errorMessage = page.locator('[role="alert"]')
   }
 
   async goto() {

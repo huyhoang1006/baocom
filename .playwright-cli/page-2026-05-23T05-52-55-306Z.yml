@@ -1,0 +1,107 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]
+  - generic [ref=e28]:
+    - complementary [ref=e29]:
+      - generic [ref=e31]:
+        - generic [ref=e33]: restaurant
+        - generic [ref=e34]:
+          - text: BaoCom
+          - paragraph [ref=e35]: Nhân viên
+      - navigation [ref=e36]:
+        - link "dashboard Dashboard chevron_right" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e38]: dashboard
+          - generic [ref=e39]: Dashboard
+          - generic [ref=e40]: chevron_right
+        - link "restaurant Báo cơm" [ref=e41] [cursor=pointer]:
+          - /url: /book
+          - generic [ref=e42]: restaurant
+          - generic [ref=e43]: Báo cơm
+        - link "history Lịch sử" [ref=e44] [cursor=pointer]:
+          - /url: /my-history
+          - generic [ref=e45]: history
+          - generic [ref=e46]: Lịch sử
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - generic [ref=e50]: HU
+          - generic [ref=e51]:
+            - paragraph [ref=e52]: Phạm Xuân Hùng
+            - paragraph [ref=e53]: "@hungpx"
+        - generic [ref=e54]:
+          - button "settings Cài đặt" [ref=e55]:
+            - generic [ref=e56]: settings
+            - generic [ref=e57]: Cài đặt
+          - button "logout Đăng xuất" [ref=e58]:
+            - generic [ref=e59]: logout
+            - generic [ref=e60]: Đăng xuất
+    - main [ref=e61]:
+      - generic [ref=e62]:
+        - generic [ref=e64]:
+          - paragraph [ref=e65]: Tuần này
+          - heading "Thực Đơn Tuần này" [level=1] [ref=e66]
+        - generic [ref=e69]:
+          - button "2" [ref=e70]
+          - button "3" [ref=e71]
+          - button "4" [ref=e72]
+          - button "5" [ref=e73]
+          - button "6" [ref=e74]
+        - main [ref=e75]:
+          - generic [ref=e77]:
+            - generic [ref=e79]:
+              - heading "Thứ 2, 18/5" [level=2] [ref=e80]
+              - generic [ref=e81]: Chưa đăng ký
+            - generic [ref=e82]:
+              - generic [ref=e83]:
+                - paragraph [ref=e84]: Món chính
+                - paragraph [ref=e86]: Chưa có menu
+              - generic [ref=e87]:
+                - paragraph [ref=e88]: Món rau
+                - paragraph [ref=e91]: Chưa có món rau
+              - generic [ref=e92]:
+                - paragraph [ref=e93]: Tráng miệng
+                - paragraph [ref=e95]: Chưa có
+            - button "event_busy Chưa đăng ký" [disabled] [ref=e97]:
+              - generic [ref=e98]: event_busy
+              - text: Chưa đăng ký
+  - generic:
+    - button "Close drawer":
+      - generic: close
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - generic:
+              - generic: restaurant
+            - generic:
+              - text: BaoCom
+              - paragraph: Nhân viên
+        - navigation:
+          - link "dashboard Dashboard chevron_right":
+            - /url: /dashboard
+            - generic: dashboard
+            - generic: Dashboard
+            - generic: chevron_right
+          - link "restaurant Báo cơm":
+            - /url: /book
+            - generic: restaurant
+            - generic: Báo cơm
+          - link "history Lịch sử":
+            - /url: /my-history
+            - generic: history
+            - generic: Lịch sử
+        - generic:
+          - generic:
+            - generic:
+              - generic: HU
+            - generic:
+              - paragraph: Phạm Xuân Hùng
+              - paragraph: "@hungpx"
+          - generic:
+            - button "settings Cài đặt":
+              - generic: settings
+              - generic: Cài đặt
+            - button "logout Đăng xuất":
+              - generic: logout
+              - generic: Đăng xuất

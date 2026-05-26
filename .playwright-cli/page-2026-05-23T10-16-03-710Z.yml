@@ -1,0 +1,20 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]: restaurant
+      - heading "BaoCom" [level=1] [ref=e7]
+      - paragraph [ref=e8]: Quản lý suất ăn cho công ty
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - textbox "Tên đăng nhập" [ref=e11]
+        - generic [ref=e12]:
+          - textbox "Mật khẩu" [ref=e13]
+          - button "visibility" [ref=e14]:
+            - generic [ref=e15]: visibility
+        - button "Đăng nhập" [ref=e16]
+      - link "Quên mật khẩu?" [ref=e18] [cursor=pointer]:
+        - /url: /forgot-password
+    - paragraph [ref=e20]: "Demo: Đăng nhập với tên chứa admin để vào trang quản lý"
+  - button "Open Next.js Dev Tools" [ref=e26] [cursor=pointer]:
+    - img [ref=e27]
+  - alert [ref=e30]

@@ -1,0 +1,68 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e7]: restaurant
+        - generic [ref=e8]:
+          - text: BaoCom
+          - paragraph [ref=e9]: Quản trị viên
+      - navigation [ref=e10]:
+        - link "dashboard Dashboard" [ref=e11] [cursor=pointer]:
+          - /url: /admin/dashboard
+          - generic [ref=e12]: dashboard
+          - generic [ref=e13]: Dashboard
+        - link "restaurant_menu Thực đơn" [ref=e14] [cursor=pointer]:
+          - /url: /admin/menu
+          - generic [ref=e15]: restaurant_menu
+          - generic [ref=e16]: Thực đơn
+        - link "event_note Ngày lễ/ngày nghỉ" [ref=e17] [cursor=pointer]:
+          - /url: /admin/holidays
+          - generic [ref=e18]: event_note
+          - generic [ref=e19]: Ngày lễ/ngày nghỉ
+        - link "group Nhân sự chevron_right" [ref=e20] [cursor=pointer]:
+          - /url: /admin/employees
+          - generic [ref=e21]: group
+          - generic [ref=e22]: Nhân sự
+          - generic [ref=e23]: chevron_right
+        - link "description Báo cáo" [ref=e24] [cursor=pointer]:
+          - /url: /admin/reports
+          - generic [ref=e25]: description
+          - generic [ref=e26]: Báo cáo
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e30]: AD
+          - generic [ref=e31]:
+            - paragraph [ref=e32]: Admin
+            - paragraph [ref=e33]: Quản trị viên
+        - generic [ref=e34]:
+          - link "settings Cài đặt" [ref=e35] [cursor=pointer]:
+            - /url: /admin/settings
+            - generic [ref=e36]: settings
+            - generic [ref=e37]: Cài đặt
+          - button "logout Đăng xuất" [ref=e38]:
+            - generic [ref=e39]: logout
+            - generic [ref=e40]: Đăng xuất
+    - main [ref=e41]:
+      - generic [ref=e42]:
+        - heading "Nhân Sự" [level=1] [ref=e45]
+        - main [ref=e46]:
+          - generic [ref=e47]:
+            - button "person_add Thêm nhân viên" [ref=e49]:
+              - generic [ref=e50]: person_add
+              - text: Thêm nhân viên
+            - generic [ref=e51]:
+              - generic [ref=e52]: search
+              - textbox "Tìm kiếm..." [ref=e53]
+            - table [ref=e56]:
+              - rowgroup [ref=e57]:
+                - row "# Tên Username Trạng thái Actions" [ref=e58]:
+                  - columnheader "#" [ref=e59]
+                  - columnheader "Tên" [ref=e60]
+                  - columnheader "Username" [ref=e61]
+                  - columnheader "Trạng thái" [ref=e62]
+                  - columnheader "Actions" [ref=e63]
+              - rowgroup [ref=e64]:
+                - row "Không tìm thấy nhân viên" [ref=e65]:
+                  - cell "Không tìm thấy nhân viên" [ref=e66]
+  - button "Open Next.js Dev Tools" [ref=e72] [cursor=pointer]:
+    - img [ref=e73]

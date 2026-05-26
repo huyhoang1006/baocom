@@ -38,6 +38,8 @@ export default function EmployeesPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [detailCredentials, setDetailCredentials] = useState<Credentials | null>(null)
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [page, setPage] = useState(1)
+  const LIMIT = 10
 
   const [formData, setFormData] = useState({
     name: "",
@@ -45,6 +47,10 @@ export default function EmployeesPage() {
   })
 
   const [formErrors, setFormErrors] = useState<{ name?: string }>({})
+
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery])
 
   useEffect(() => {
     async function fetchEmployees() {
@@ -95,6 +101,12 @@ export default function EmployeesPage() {
       return matchesSearch
     })
   }, [employees, searchQuery])
+
+  const totalPages = Math.ceil(filteredEmployees.length / LIMIT)
+  const paginatedEmployees = useMemo(() => {
+    const start = (page - 1) * LIMIT
+    return filteredEmployees.slice(start, start + LIMIT)
+  }, [filteredEmployees, page])
 
   const openAddModal = () => {
     setModalMode("add")
@@ -239,20 +251,21 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      <header className="pt-12 pb-8 px-6 lg:px-10">
+      <header className="pt-16 pb-4 px-4 lg:pt-12 lg:pb-8 lg:px-6">
         <div className="max-w-[1140px] mx-auto">
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">
+          <h1 className="text-xl font-semibold tracking-tight text-ink lg:text-3xl">
             Nhân Sự
           </h1>
         </div>
       </header>
 
-      <main className="px-6 lg:px-10">
-        <div className="max-w-[1140px] mx-auto space-y-5">
+      <main className="px-4 lg:px-6">
+        <div className="max-w-[1140px] mx-auto space-y-4 lg:space-y-5">
           <div className="flex gap-2">
             <button onClick={openAddModal} className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-primary text-on-primary hover:bg-primary-hover transition-all">
               <span className="material-symbols-outlined text-lg">person_add</span>
-              Thêm nhân viên
+              <span className="hidden sm:inline">Thêm nhân viên</span>
+              <span className="sm:hidden">Thêm</span>
             </button>
                       </div>
 
@@ -267,7 +280,8 @@ export default function EmployeesPage() {
             />
           </div>
 
-          <div className="bg-canvas border border-hairline rounded-[18px] overflow-hidden">
+          {/* Desktop: Table | Mobile: Cards */}
+          <div className="hidden lg:block bg-canvas border border-hairline rounded-[18px] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -280,14 +294,14 @@ export default function EmployeesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEmployees.length === 0 ? (
+                  {paginatedEmployees.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-10 text-center text-ink-muted-48">
                         Không tìm thấy nhân viên
                       </td>
                     </tr>
                   ) : (
-                    filteredEmployees.map((emp, index) => (
+                    paginatedEmployees.map((emp, index) => (
                       <tr
                         key={emp.id}
                         className={`border-b border-hairline last:border-b-0 hover:bg-surface-container transition-colors cursor-pointer ${emp.status === "inactive" ? "opacity-60" : ""}`}
@@ -342,6 +356,96 @@ export default function EmployeesPage() {
               </table>
             </div>
           </div>
+
+          {/* Mobile: Card list */}
+          <div className="lg:hidden space-y-3">
+            {paginatedEmployees.length === 0 ? (
+              <div className="bg-canvas border border-hairline rounded-xl px-4 py-10 text-center text-ink-muted-48">
+                Không tìm thấy nhân viên
+              </div>
+            ) : (
+              paginatedEmployees.map((emp) => (
+                <div
+                  key={emp.id}
+                  className={`bg-canvas border border-hairline rounded-xl p-4 ${emp.status === "inactive" ? "opacity-60" : ""}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3" onClick={() => openDetailModal(emp)}>
+                      <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-semibold text-sm">
+                        {getInitials(emp.name)}
+                      </div>
+                      <div>
+                        <div className="font-medium text-ink">{emp.name}</div>
+                        <div className="text-sm text-ink-muted-48">@{emp.username}</div>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      emp.status === "active" ? "bg-success-bg text-success" : "bg-error-bg text-error"
+                    }`}>
+                      {emp.status === "active" ? "Đang hoạt động" : "Đã khóa"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 mt-3" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => openEditModal(emp)}
+                      className="flex-1 h-9 rounded-full hover:bg-surface-container text-ink-muted-80 hover:text-primary flex items-center justify-center transition-colors text-sm"
+                    >
+                      <span className="material-symbols-outlined text-base mr-1">edit</span>
+                      Sửa
+                    </button>
+                    <button
+                      onClick={() => router.push(`/admin/employees/${emp.id}/registrations`)}
+                      className="flex-1 h-9 rounded-full hover:bg-surface-container text-ink-muted-80 hover:text-primary flex items-center justify-center transition-colors text-sm"
+                    >
+                      <span className="material-symbols-outlined text-base mr-1">history</span>
+                      Lịch sử
+                    </button>
+                    <button
+                      onClick={() => handleDelete(emp)}
+                      className="w-9 h-9 rounded-full hover:bg-error-bg text-ink-muted-80 hover:text-error flex items-center justify-center transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="w-9 h-9 rounded-full hover:bg-surface-container text-ink-muted-80 hover:text-ink flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-base">chevron_left</span>
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-9 h-9 rounded-full text-sm font-medium transition-colors ${
+                      page === p
+                        ? "bg-primary text-on-primary"
+                        : "hover:bg-surface-container text-ink-muted-80 hover:text-ink"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="w-9 h-9 rounded-full hover:bg-surface-container text-ink-muted-80 hover:text-ink flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-base">chevron_right</span>
+              </button>
+            </div>
+          )}
         </div>
       </main>
 

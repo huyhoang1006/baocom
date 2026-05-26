@@ -9,6 +9,14 @@ interface ReportRow {
   name: string
   phone: string
   date: string
+  status: string
+}
+
+interface AggregatedUser {
+  name: string
+  phone: string
+  eating: number
+  notEating: number
 }
 
 function formatDisplayDate(date: Date): string {
@@ -55,7 +63,7 @@ export default function ReportsPage() {
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(0)
-  const [previewData, setPreviewData] = useState<ReportRow[]>([])
+  const [rawData, setRawData] = useState<ReportRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
@@ -75,6 +83,33 @@ export default function ReportsPage() {
     }
     return ""
   }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
+
+  const aggregatedData = useMemo(() => {
+    const userMap: Record<string, AggregatedUser> = {}
+
+    rawData.forEach(r => {
+      if (!userMap[r.name]) {
+        userMap[r.name] = { name: r.name, phone: r.phone, eating: 0, notEating: 0 }
+      }
+      if (r.status === 'eating' || r.status === 'registered') {
+        userMap[r.name].eating++
+      } else if (r.status === 'not_eating') {
+        userMap[r.name].notEating++
+      }
+    })
+
+    return Object.values(userMap).map((user, idx) => ({
+      stt: idx + 1,
+      ...user
+    }))
+  }, [rawData])
+
+  const totals = useMemo(() => {
+    return aggregatedData.reduce((acc, user) => ({
+      eating: acc.eating + user.eating,
+      notEating: acc.notEating + user.notEating
+    }), { eating: 0, notEating: 0 })
+  }, [aggregatedData])
 
   const handlePreview = useCallback(async () => {
     setLoading(true)
@@ -107,20 +142,23 @@ export default function ReportsPage() {
         throw new Error("Vui lòng chọn ngày")
       }
 
+      // Fetch raw data with status included
+      const params = new URLSearchParams({ startDate, endDate })
       const data = await adminReportsApi.getReport(startDate, endDate, false)
 
-      const rows: ReportRow[] = (data.reportData || []).map((r, idx) => ({
+      const rows: ReportRow[] = (data.reportData || []).map((r: { stt: number; name: string; phone: string; date: string; status?: string }, idx: number) => ({
         stt: idx + 1,
         name: r.name || '',
         phone: r.phone || '',
         date: r.date || '',
+        status: (r as { status?: string }).status || 'eating',
       }))
 
-      setPreviewData(rows)
+      setRawData(rows)
       setShowAll(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể tải báo cáo")
-      setPreviewData([])
+      setRawData([])
     } finally {
       setLoading(false)
     }
@@ -132,7 +170,7 @@ export default function ReportsPage() {
 
   const handleReportTypeChange = useCallback((type: "day" | "week" | "month") => {
     setReportType(type)
-    setPreviewData([])
+    setRawData([])
   }, [])
 
   useEffect(() => {
@@ -172,11 +210,11 @@ export default function ReportsPage() {
     window.open(url, '_blank')
   }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
 
-  const displayedData = useMemo(() => showAll ? previewData : previewData.slice(0, 5), [showAll, previewData])
+  const displayedData = useMemo(() => showAll ? aggregatedData : aggregatedData.slice(0, 5), [showAll, aggregatedData])
 
   return (
     <div className="min-h-dvh bg-canvas pb-12">
-      {/* Page Header - Redesigned */}
+      {/* Page Header */}
       <header className="pt-8 pb-6 px-4 sm:pt-12 sm:pb-8 sm:px-6 lg:px-10">
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center gap-3 mb-3">
@@ -201,7 +239,7 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* Report Type Selector - Redesigned card */}
+          {/* Report Type Selector */}
           <div className="rounded-[18px] bg-surface-container-low p-1 flex">
             {[
               { id: "day" as const, label: "Ngày", icon: "today" },
@@ -223,7 +261,7 @@ export default function ReportsPage() {
             ))}
           </div>
 
-          {/* Date Selector - Redesigned */}
+          {/* Date Selector */}
           <div className="rounded-[18px] bg-canvas border border-hairline p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-2 text-ink-muted-48">
@@ -289,14 +327,25 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* Stats Section - Redesigned */}
-          {previewData.length > 0 && (
+          {/* Stats Section */}
+          {aggregatedData.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-end">
               <div className="rounded-[18px] bg-canvas border border-hairline p-5 sm:p-6">
-                <div className="flex flex-wrap items-end gap-2 sm:gap-3">
-                  <span className="text-[40px] sm:text-[56px] font-semibold tracking-tight text-ink leading-none">{previewData.length}</span>
-                  <span className="text-base text-ink-muted-48 pb-1">suất ăn</span>
-                  <span className="ml-0 sm:ml-4 px-3 py-1 rounded-full bg-primary-bg text-primary text-sm font-medium">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[32px] sm:text-[40px] font-semibold tracking-tight text-ink leading-none">{aggregatedData.length}</span>
+                    <span className="text-base text-ink-muted-48">nhân viên</span>
+                  </div>
+                  <div className="h-10 w-px bg-hairline hidden sm:block" />
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[24px] sm:text-[32px] font-semibold tracking-tight text-success">{totals.eating}</span>
+                    <span className="text-sm text-ink-muted-48">suất ăn</span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[24px] sm:text-[32px] font-semibold tracking-tight text-error">{totals.notEating}</span>
+                    <span className="text-sm text-ink-muted-48">suất hủy</span>
+                  </div>
+                  <span className="ml-0 sm:ml-2 px-3 py-1 rounded-full bg-primary-bg text-primary text-xs sm:text-sm font-medium">
                     {dateRangeLabel}
                   </span>
                 </div>
@@ -314,52 +363,58 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* Table - Redesigned */}
-          {previewData.length > 0 && (
+          {/* Table */}
+          {aggregatedData.length > 0 && (
             <div className="rounded-[18px] bg-canvas border border-hairline overflow-hidden">
-              {/* Table Header - horizontal scroll on mobile */}
-              <div className="min-w-[480px] sm:min-w-0">
-                <div className="grid grid-cols-[48px_1fr_120px_100px] sm:grid-cols-[48px_1fr_120px_100px] gap-4 px-5 py-4 bg-surface-container-low border-b border-hairline">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">STT</span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Họ tên</span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48 hidden sm:block">SĐT</span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Ngày</span>
-                </div>
-
-                {/* Table Body */}
-                <div className="divide-y divide-hairline">
-                  {displayedData.map((row, idx) => (
-                    <div
-                      key={idx}
-                      className="grid grid-cols-[48px_1fr_100px] sm:grid-cols-[48px_1fr_120px_100px] gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors"
-                    >
-                      <span className="text-sm text-ink-muted-48">{row.stt}</span>
-                      <span className="text-sm font-medium text-ink">{row.name}</span>
-                      <span className="text-sm text-ink-muted-80 hidden sm:block">{row.phone}</span>
-                      <span className="text-xs">
-                        <span className="px-2 py-1 rounded-full bg-surface-container text-ink-muted-80">{row.date}</span>
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              {/* Table Header */}
+              <div className="grid grid-cols-[48px_1fr_100px_100px] gap-4 px-5 py-4 bg-surface-container-low border-b border-hairline">
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">STT</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Họ tên</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Tổng báo cơm</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Báo cắt cơm</span>
               </div>
 
+              {/* Table Body */}
+              <div className="divide-y divide-hairline">
+                {displayedData.map((row, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-[48px_1fr_100px_100px] gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors"
+                  >
+                    <span className="text-sm text-ink-muted-48">{row.stt}</span>
+                    <span className="text-sm font-medium text-ink">{row.name}</span>
+                    <span className="text-sm text-success font-medium">{row.eating}</span>
+                    <span className="text-sm text-error font-medium">{row.notEating}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Summary Row */}
+              {aggregatedData.length > 0 && (
+                <div className="grid grid-cols-[48px_1fr_100px_100px] gap-4 px-5 py-4 bg-surface-container-low border-t border-hairline font-semibold">
+                  <span className="text-sm text-ink-muted-48"></span>
+                  <span className="text-sm text-ink">Tổng cộng</span>
+                  <span className="text-sm text-success">{totals.eating}</span>
+                  <span className="text-sm text-error">{totals.notEating}</span>
+                </div>
+              )}
+
               {/* Expandable */}
-              {previewData.length > 5 && (
+              {aggregatedData.length > 5 && (
                 <div className="p-4 border-t border-hairline text-center">
                   <button
                     onClick={() => setShowAll(!showAll)}
                     className="text-sm font-medium text-primary hover:text-primary-hover transition-colors"
                   >
-                    {showAll ? "Thu gọn" : `Xem thêm ${previewData.length - 5} bản ghi`}
+                    {showAll ? "Thu gọn" : `Xem thêm ${aggregatedData.length - 5} nhân viên`}
                   </button>
                 </div>
               )}
             </div>
           )}
 
-          {/* Empty State - Redesigned */}
-          {!loading && previewData.length === 0 && reportType && (
+          {/* Empty State */}
+          {!loading && aggregatedData.length === 0 && reportType && (
             <div className="rounded-[18px] bg-surface-container-low border border-hairline border-dashed py-16 text-center">
               <span className="material-symbols-outlined text-5xl text-ink-muted-48 mb-4">assignment</span>
               <p className="text-base text-ink-muted-80 mb-1">Chưa có dữ liệu báo cáo</p>

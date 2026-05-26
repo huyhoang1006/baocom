@@ -38,7 +38,7 @@ export function useDailyMenus(take?: number) {
 
   const getMenuByDate = useCallback((dateStr: string): DailyMenu | null => {
     return menus.find(m => {
-      const menuDate = toDateKey(parseLocalDate(m.date.split('T')[0]))
+      const menuDate = toDateKey(new Date(m.date))
       return menuDate === dateStr
     }) || null
   }, [menus])

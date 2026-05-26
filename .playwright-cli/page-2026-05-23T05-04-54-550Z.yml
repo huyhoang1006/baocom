@@ -1,0 +1,66 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e7]: restaurant
+      - generic [ref=e8]:
+        - text: BaoCom
+        - paragraph [ref=e9]: Nhân viên
+    - navigation [ref=e10]:
+      - link "dashboard Dashboard" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e12]: dashboard
+        - generic [ref=e13]: Dashboard
+      - link "restaurant Báo cơm" [ref=e14] [cursor=pointer]:
+        - /url: /book
+        - generic [ref=e15]: restaurant
+        - generic [ref=e16]: Báo cơm
+      - link "history Lịch sử chevron_right" [ref=e17] [cursor=pointer]:
+        - /url: /my-history
+        - generic [ref=e18]: history
+        - generic [ref=e19]: Lịch sử
+        - generic [ref=e20]: chevron_right
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - generic [ref=e24]: HU
+        - generic [ref=e25]:
+          - paragraph [ref=e26]: Phạm Xuân Hùng
+          - paragraph [ref=e27]: "@hungpx"
+      - generic [ref=e28]:
+        - button "settings Cài đặt" [ref=e29]:
+          - generic [ref=e30]: settings
+          - generic [ref=e31]: Cài đặt
+        - button "logout Đăng xuất" [active] [ref=e32]:
+          - generic [ref=e33]: logout
+          - generic [ref=e34]: Đăng xuất
+  - main [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e38]:
+        - heading "Lịch Sử" [level=1] [ref=e39]
+        - paragraph [ref=e40]: Xin chào, Phạm Xuân Hùng
+      - main [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - paragraph [ref=e45]: Tổng
+              - text: "-"
+            - generic [ref=e46]:
+              - paragraph [ref=e47]: Có ăn
+              - text: "-"
+            - generic [ref=e48]:
+              - paragraph [ref=e49]: Không ăn
+              - text: "-"
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - button "Tháng trước" [ref=e52]:
+                - generic [ref=e53]: ◀
+              - heading "Tháng 5 2026" [level=2] [ref=e54]
+              - button "Tháng sau" [ref=e55]:
+                - generic [ref=e56]: ▶
+            - generic [ref=e57]:
+              - generic [ref=e58]: CN
+              - generic [ref=e59]: T2
+              - generic [ref=e60]: T3
+              - generic [ref=e61]: T4
+              - generic [ref=e62]: T5
+              - generic [ref=e63]: T6
+              - generic [ref=e64]: T7

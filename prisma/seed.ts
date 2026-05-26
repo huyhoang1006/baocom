@@ -20,6 +20,7 @@ async function main() {
   // Create employee users
   const employeePassword = await bcrypt.hash('employee123', 12)
   const employees = [
+    { username: 'hungpx', name: 'Hùng PX' },
     { username: 'nguyenvana', name: 'Nguyễn Văn A' },
     { username: 'tranthib', name: 'Trần Thị B' },
     { username: 'levanc', name: 'Lê Văn C' },
