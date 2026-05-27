@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { CutoffTimeConfig } from "@/lib/registrationWindow"
 import { useRegistrations } from "@/hooks/useRegistrations"
 import { MAX_BOOKING_WEEK_OFFSET, getWeekdaysForOffset, startOfLocalDay } from "@/lib/registrationWindow"
 
@@ -14,11 +15,19 @@ export default function BookPage() {
   const today = useMemo(() => new Date(), [])
   const { loading, error, setStatus, getStatusForDate } = useRegistrations()
   const [weekOffset, setWeekOffset] = useState(0)
+  const [cutoffConfig, setCutoffConfig] = useState<CutoffTimeConfig | null>(null)
+
+  useEffect(() => {
+    fetch('/api/settings/cutoff')
+      .then((r) => r.json())
+      .then((data) => setCutoffConfig({ hour: data.cutoffHour, minute: data.cutoffMinute }))
+      .catch(console.error)
+  }, [])
 
   const days = useMemo(() => {
     const todayStart = startOfLocalDay(today)
 
-    return getWeekdaysForOffset(today, weekOffset).map((day) => {
+    return getWeekdaysForOffset(today, weekOffset, cutoffConfig ?? undefined).map((day) => {
       const isPastOrToday = day.date <= todayStart
       const rawStatus = getStatusForDate(day.dateKey)
 
@@ -29,7 +38,7 @@ export default function BookPage() {
         isDefault: rawStatus === null,
       }
     })
-  }, [today, weekOffset, getStatusForDate])
+  }, [today, weekOffset, getStatusForDate, cutoffConfig])
 
   const row1 = useMemo(() => days.slice(0, 2), [days])
   const row2 = useMemo(() => days.slice(2, 5), [days])
