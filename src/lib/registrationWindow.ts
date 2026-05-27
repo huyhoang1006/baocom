@@ -91,14 +91,18 @@ export function getWeekStart(now = new Date(), weekOffset = 0): Date {
   return monday
 }
 
-export function getWeekdaysForOffset(now = new Date(), weekOffset = 0): RegistrationDayState[] {
+export function getWeekdaysForOffset(
+  now = new Date(),
+  weekOffset = 0,
+  config?: CutoffTimeConfig
+): RegistrationDayState[] {
   const monday = getWeekStart(now, weekOffset)
 
   // Chỉ trả về 5 ngày T2-T6 (offset 0-4), không có T7 và CN
   return [0, 1, 2, 3, 4].map((offset) => {
     const date = new Date(monday)
     date.setDate(monday.getDate() + offset)
-    return getRegistrationDayState(date, now)
+    return getRegistrationDayState(date, now, config)
   })
 }
 
@@ -128,9 +132,13 @@ export function isAllowedRegistrationDate(targetDate: Date, now = new Date()): R
   return { ok: true }
 }
 
-export function getRegistrationDayState(targetDate: Date, now = new Date()): RegistrationDayState {
+export function getRegistrationDayState(
+  targetDate: Date,
+  now = new Date(),
+  config?: CutoffTimeConfig
+): RegistrationDayState {
   const date = startOfLocalDay(targetDate)
-  const cutoffAt = getCutoffAt(date)
+  const cutoffAt = getCutoffAt(date, config)
   const dayOfWeek = date.getDay()
   const isWorkday = dayOfWeek !== 0 && dayOfWeek !== 6  // true cho T2-T6, false cho T7(6) và CN(0)
 
