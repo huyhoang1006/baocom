@@ -144,7 +144,7 @@ export default function BookPage() {
 
       {notification && (
         <div
-          className="fixed top-6 left-4 right-4 sm:left-auto sm:right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-floating animate-slide-down"
+          className="fixed bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-floating animate-fade-in-up"
           style={{
             background: notification.type === "success" ? "var(--color-success-bg)" : "var(--color-error-bg)",
             color: notification.type === "success" ? "var(--color-success)" : "var(--color-error)",
