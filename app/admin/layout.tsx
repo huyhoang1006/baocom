@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { AdminSidebar } from "../components/sidebar/AdminSidebar"
 import { MobileSidebar } from "../components/sidebar/MobileSidebar"
+import { authApi } from "@/lib/api"
 
 export default function AdminLayout({
   children,
@@ -11,22 +12,39 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [admin, setAdmin] = useState<{ username: string; name: string } | null>(null)
+  const [loading, setLoading] = useState(true)
   const pathname = usePathname()
 
   useEffect(() => {
     setIsDrawerOpen(false)
   }, [pathname])
 
-  const mockAdmin = {
-    username: "admin",
-    name: "Admin",
-  }
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const { user } = await authApi.me()
+        setAdmin({
+          username: user.username,
+          name: user.name,
+        })
+      } catch (err) {
+        console.error('Failed to fetch admin:', err)
+        window.location.href = '/login'
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAdmin()
+  }, [])
 
   return (
     <div className="min-h-dvh bg-canvas">
       {/* Desktop Sidebar - hidden on mobile */}
       <div className="hidden md:block">
-        <AdminSidebar adminName={mockAdmin.name} />
+        {!loading && admin && (
+          <AdminSidebar adminName={admin.name} />
+        )}
       </div>
 
       {/* Mobile Header: 44px height, surface-black bg, white title, hamburger left, avatar right */}
@@ -48,11 +66,13 @@ export default function AdminLayout({
         <span className="text-[#1d1d1f] text-xs tracking-[-0.12px]">BaoCom Admin</span>
 
         {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-          <span className="text-xs font-semibold text-white">
-            {mockAdmin.username.substring(0, 2).toUpperCase()}
-          </span>
-        </div>
+        {!loading && admin && (
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <span className="text-xs font-semibold text-white">
+              {admin.username.substring(0, 2).toUpperCase()}
+            </span>
+          </div>
+        )}
       </header>
 
       {/* Mobile Sidebar with scroll lock and animations */}
@@ -60,7 +80,9 @@ export default function AdminLayout({
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
       >
-        <AdminSidebar adminName={mockAdmin.name} />
+        {!loading && admin && (
+          <AdminSidebar adminName={admin.name} />
+        )}
       </MobileSidebar>
 
       {/* Main Content - offset for desktop sidebar, pt-11 for mobile header */}
