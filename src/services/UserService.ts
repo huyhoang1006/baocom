@@ -50,7 +50,8 @@ export class UserService {
       username,
       password: hashedPassword,
       name: data.name,
-      role: data.role || 'employee'
+      role: data.role || 'employee',
+      departmentId: data.departmentId
     })
 
     return {
@@ -59,6 +60,7 @@ export class UserService {
         username: user.username,
         name: user.name,
         role: user.role,
+        departmentId: user.departmentId,
         isActive: user.isActive,
         createdAt: user.createdAt
       },
@@ -80,6 +82,7 @@ export class UserService {
     if (data.role) updateData.role = data.role
     if (typeof data.isActive === 'boolean') updateData.isActive = data.isActive
     if (data.password) updateData.password = await hashPassword(data.password)
+    if (data.departmentId !== undefined) updateData.departmentId = data.departmentId
 
     return this.userRepository.update(id, updateData)
   }
