@@ -39,6 +39,15 @@ export const PATCH = withAdmin(async (req: NextRequest, userId: string, role: st
 
 export const DELETE = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params
+
+  // Ngăn admin tự xóa chính mình
+  if (id === userId) {
+    return NextResponse.json(
+      { error: 'Không thể xóa tài khoản của chính bạn' },
+      { status: 400 }
+    )
+  }
+
   // Get user info before deletion for audit log
   const targetUser = await userService.findOne(id)
   const result = await controller.delete(id)
