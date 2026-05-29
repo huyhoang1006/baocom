@@ -12,11 +12,21 @@ export class UserRepository extends BaseRepository<
   }
 
   async findAll(where?: Prisma.UserWhereInput): Promise<User[]> {
-    return this.prisma.user.findMany({ where })
+    return this.prisma.user.findMany({
+      where,
+      include: {
+        department: true
+      }
+    })
   }
 
   async findOne(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { id } })
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        department: true
+      }
+    })
   }
 
   async findByUsername(username: string): Promise<User | null> {
