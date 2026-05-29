@@ -26,10 +26,15 @@ export class AdminReportsController {
 
     const registrations = await this.registrationService.findByDateRange(startDate, endDate)
 
-    // Filter out Sundays from results (no lunch service on Sundays)
+    // Filter out Sundays and admin accounts from results (no lunch service on Sundays, admin accounts excluded)
     const filtered = registrations.filter(r => {
       const day = new Date(r.date).getDay()
-      return day !== 0 || includeSundays
+      if (day === 0 && !includeSundays) return false
+
+      const userRole = (r.user as { role?: string })?.role
+      if (userRole === 'admin') return false
+
+      return true
     })
 
     // Group by date for stats
@@ -70,7 +75,12 @@ export class AdminReportsController {
     const registrations = await this.registrationService.findByDateRange(startDate, endDate)
     const filtered = registrations.filter(r => {
       const day = new Date(r.date).getDay()
-      return day !== 0 || includeSundays
+      if (day === 0 && !includeSundays) return false
+
+      const userRole = (r.user as { role?: string })?.role
+      if (userRole === 'admin') return false
+
+      return true
     })
 
     const totalEmployees = await this.userService.count()
@@ -118,6 +128,10 @@ export class AdminReportsController {
     const userStats: Record<string, { name: string; department: string; eating: number; notEating: number }> = {}
     registrations.forEach(r => {
       if (!r.userId) return
+
+      const userRole = (r.user as { role?: string })?.role
+      if (userRole === 'admin') return
+
       const name = r.user?.name || 'Unknown'
       const department = (r.user as { department?: { name?: string } })?.department?.name ?? ''
       if (!userStats[r.userId]) {
