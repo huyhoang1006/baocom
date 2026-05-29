@@ -10,11 +10,13 @@ interface ReportRow {
   phone: string
   date: string
   status: string
+  department?: string
 }
 
 interface AggregatedUser {
   name: string
   phone: string
+  department: string
   eating: number
   notEating: number
 }
@@ -60,7 +62,11 @@ function getMonthOptions(): { label: string; year: number; month: number }[] {
 
 export default function ReportsPage() {
   const [reportType, setReportType] = useState<"day" | "week" | "month">("day")
-  const [selectedDate, setSelectedDate] = useState("")
+  const [selectedDate, setSelectedDate] = useState(() => {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  return toDateKey(tomorrow)
+})
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(0)
   const [rawData, setRawData] = useState<ReportRow[]>([])
@@ -89,7 +95,13 @@ export default function ReportsPage() {
 
     rawData.forEach(r => {
       if (!userMap[r.name]) {
-        userMap[r.name] = { name: r.name, phone: r.phone, eating: 0, notEating: 0 }
+        userMap[r.name] = { 
+          name: r.name, 
+          phone: r.phone, 
+          department: (r as { department?: string }).department ?? '',
+          eating: 0, 
+          notEating: 0 
+        }
       }
       if (r.status === 'eating' || r.status === 'registered') {
         userMap[r.name].eating++
@@ -146,12 +158,13 @@ export default function ReportsPage() {
       const params = new URLSearchParams({ startDate, endDate })
       const data = await adminReportsApi.getReport(startDate, endDate, false)
 
-      const rows: ReportRow[] = (data.reportData || []).map((r: { stt: number; name: string; phone: string; date: string; status?: string }, idx: number) => ({
+      const rows: ReportRow[] = (data.reportData || []).map((r: { stt: number; name: string; phone: string; date: string; status?: string; department?: string }, idx: number) => ({
         stt: idx + 1,
         name: r.name || '',
         phone: r.phone || '',
         date: r.date || '',
         status: (r as { status?: string }).status || 'eating',
+        department: r.department || '',
       }))
 
       setRawData(rows)
@@ -367,9 +380,10 @@ export default function ReportsPage() {
           {aggregatedData.length > 0 && (
             <div className="rounded-[18px] bg-canvas border border-hairline overflow-hidden">
               {/* Table Header */}
-              <div className="grid grid-cols-[48px_1fr_100px_100px] gap-4 px-5 py-4 bg-surface-container-low border-b border-hairline">
+              <div className="grid grid-cols-[48px_1fr_100px_100px_100px] gap-4 px-5 py-4 bg-surface-container-low border-b border-hairline">
                 <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">STT</span>
                 <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Họ tên</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Phòng ban</span>
                 <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Tổng báo cơm</span>
                 <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted-48">Báo cắt cơm</span>
               </div>
@@ -379,10 +393,11 @@ export default function ReportsPage() {
                 {displayedData.map((row, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-[48px_1fr_100px_100px] gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors"
+                    className="grid grid-cols-[48px_1fr_100px_100px_100px] gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors"
                   >
                     <span className="text-sm text-ink-muted-48">{row.stt}</span>
                     <span className="text-sm font-medium text-ink">{row.name}</span>
+                    <span className="text-sm text-ink">{row.department}</span>
                     <span className="text-sm text-success font-medium">{row.eating}</span>
                     <span className="text-sm text-error font-medium">{row.notEating}</span>
                   </div>
@@ -391,9 +406,10 @@ export default function ReportsPage() {
 
               {/* Summary Row */}
               {aggregatedData.length > 0 && (
-                <div className="grid grid-cols-[48px_1fr_100px_100px] gap-4 px-5 py-4 bg-surface-container-low border-t border-hairline font-semibold">
+                <div className="grid grid-cols-[48px_1fr_100px_100px_100px] gap-4 px-5 py-4 bg-surface-container-low border-t border-hairline font-semibold">
                   <span className="text-sm text-ink-muted-48"></span>
                   <span className="text-sm text-ink">Tổng cộng</span>
+                  <span className="text-sm text-ink"></span>
                   <span className="text-sm text-success">{totals.eating}</span>
                   <span className="text-sm text-error">{totals.notEating}</span>
                 </div>

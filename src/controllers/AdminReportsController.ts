@@ -44,7 +44,8 @@ export class AdminReportsController {
       name: r.user?.name,
       phone: (r.user as { phone?: string })?.phone ?? r.user?.username ?? '',
       date: new Date(r.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-      status: r.status
+      status: r.status,
+      department: (r.user as { department?: { name?: string } })?.department?.name ?? ''
     }))
 
     return NextResponse.json({
@@ -114,12 +115,13 @@ export class AdminReportsController {
     const registrations = await this.registrationService.findByDateRange(startDate, endDate)
 
     // Group by user and count eating/not_eating
-    const userStats: Record<string, { name: string; eating: number; notEating: number }> = {}
+    const userStats: Record<string, { name: string; department: string; eating: number; notEating: number }> = {}
     registrations.forEach(r => {
       if (!r.userId) return
       const name = r.user?.name || 'Unknown'
+      const department = (r.user as { department?: { name?: string } })?.department?.name ?? ''
       if (!userStats[r.userId]) {
-        userStats[r.userId] = { name, eating: 0, notEating: 0 }
+        userStats[r.userId] = { name, department, eating: 0, notEating: 0 }
       }
       if (r.status === 'eating' || r.status === 'registered') {
         userStats[r.userId].eating++
@@ -138,21 +140,21 @@ export class AdminReportsController {
     // Title row
     sheet.getCell('A1').value = 'BAOCOM LUNCH REPORT'
     sheet.getCell('A1').font = { bold: true, size: 16 }
-    sheet.mergeCells('A1:D1')
+    sheet.mergeCells('A1:E1')
 
     // Date range row
     sheet.getCell('A2').value = `Date Range: ${startDate} - ${endDate}`
     sheet.getCell('A2').font = { size: 11 }
-    sheet.mergeCells('A2:D2')
+    sheet.mergeCells('A2:E2')
 
     // Generated row
     const generatedAt = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
     sheet.getCell('A3').value = `Generated: ${generatedAt}`
     sheet.getCell('A3').font = { size: 11 }
-    sheet.mergeCells('A3:D3')
+    sheet.mergeCells('A3:E3')
 
     // Header row (row 4)
-    const headers = ['STT', 'Họ tên', 'Tổng báo cơm', 'Báo cắt cơm']
+    const headers = ['STT', 'Họ tên', 'Phòng ban', 'Tổng báo cơm', 'Báo cắt cơm']
     headers.forEach((header, idx) => {
       const cell = sheet.getCell(4, idx + 1)
       cell.value = header
@@ -180,8 +182,9 @@ export class AdminReportsController {
       const row = sheet.getRow(rowNum)
       row.getCell(1).value = stt++
       row.getCell(2).value = stats.name
-      row.getCell(3).value = stats.eating
-      row.getCell(4).value = stats.notEating
+      row.getCell(3).value = stats.department
+      row.getCell(4).value = stats.eating
+      row.getCell(5).value = stats.notEating
       totalEating += stats.eating
       totalNotEating += stats.notEating
       rowNum++
@@ -192,10 +195,11 @@ export class AdminReportsController {
     summaryRow.getCell(1).value = ''
     summaryRow.getCell(2).value = 'Tổng cộng'
     summaryRow.getCell(2).font = { bold: true }
-    summaryRow.getCell(3).value = totalEating
-    summaryRow.getCell(3).font = { bold: true }
-    summaryRow.getCell(4).value = totalNotEating
+    summaryRow.getCell(3).value = ''
+    summaryRow.getCell(4).value = totalEating
     summaryRow.getCell(4).font = { bold: true }
+    summaryRow.getCell(5).value = totalNotEating
+    summaryRow.getCell(5).font = { bold: true }
     summaryRow.fill = {
       type: 'pattern',
       pattern: 'solid',
