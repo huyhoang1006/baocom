@@ -58,13 +58,15 @@ export default function EmployeesPage() {
         setLoading(true)
         setError(null)
         const data = await usersApi.getAll()
-        setEmployees(data.users.map(u => ({
-          id: u.id,
-          name: u.name,
-          username: u.username,
-          status: u.isActive ? "active" as const : "inactive" as const,
-          createdAt: u.createdAt,
-        })))
+        setEmployees(data.users
+          .filter(u => u.role !== 'admin')
+          .map(u => ({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            status: u.isActive ? "active" as const : "inactive" as const,
+            createdAt: u.createdAt,
+          })))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load employees')
       } finally {
