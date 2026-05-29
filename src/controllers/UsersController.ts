@@ -18,7 +18,8 @@ export class UsersController {
         name: u.name,
         role: u.role,
         isActive: u.isActive,
-        createdAt: u.createdAt
+        createdAt: u.createdAt,
+        departmentId: u.departmentId
       }))
     })
   }
@@ -35,7 +36,8 @@ export class UsersController {
         name: user.name,
         role: user.role,
         isActive: user.isActive,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        departmentId: user.departmentId
       }
     })
   }
@@ -82,7 +84,8 @@ export class UsersController {
           id: user.id,
           username: user.username,
           name: user.name,
-          role: user.role
+          role: user.role,
+          departmentId: user.departmentId
         }
       })
     } catch {
