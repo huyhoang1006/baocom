@@ -291,7 +291,6 @@ export default function ReportsPage() {
                       setSelectedDate(e.target.value)
                       handleDateChange()
                     }}
-                    max={todayStr}
                     className="form-input w-full sm:max-w-[240px]"
                   />
                 )}

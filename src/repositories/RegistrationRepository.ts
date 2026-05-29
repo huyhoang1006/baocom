@@ -15,7 +15,7 @@ export class RegistrationRepository extends BaseRepository<
     return this.prisma.registration.findMany({
       where,
       orderBy: { date: 'asc' },
-      include: { user: { select: { name: true, username: true } } }
+      include: { user: { include: { department: true } } }
     })
   }
 
