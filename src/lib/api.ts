@@ -117,6 +117,7 @@ export const usersApi = {
     role: string;
     isActive: boolean;
     createdAt: string;
+    departmentId: string | null;
   }> }>('/users'),
 
   getOne: (id: string) => apiFetch<{ user: {
@@ -126,19 +127,20 @@ export const usersApi = {
     role: string;
     isActive: boolean;
     createdAt: string;
+    departmentId: string | null;
   } }>(`/users/${id}`),
 
-  create: (data: { name: string }) =>
+  create: (data: { name: string; departmentId?: string }) =>
     apiFetch<{
-      user: { id: string; username: string; name: string; role: string };
+      user: { id: string; username: string; name: string; role: string; departmentId: string | null };
       credentials: { username: string; password: string }
     }>('/users', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  update: (id: string, data: { name?: string; password?: string }) =>
-    apiFetch<{ user: { id: string; username: string; name: string; role: string } }>(`/users/${id}`, {
+  update: (id: string, data: { name?: string; password?: string; departmentId?: string | null }) =>
+    apiFetch<{ user: { id: string; username: string; name: string; role: string; departmentId: string | null } }>(`/users/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
