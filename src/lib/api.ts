@@ -210,3 +210,20 @@ export const mealsApi = {
       method: 'DELETE',
     }),
 }
+
+// Departments API
+export const departmentsApi = {
+  getAll: () => apiFetch<{ departments: Array<{ id: string; name: string; description?: string; isActive: boolean; createdAt: string }> }>('/departments'),
+  create: (data: { name: string; description?: string }) =>
+    apiFetch<{ department: { id: string; name: string; description?: string } }>('/departments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  update: (id: string, data: { name?: string; description?: string }) =>
+    apiFetch<{ department: { id: string; name: string; description?: string } }>(`/departments/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string) =>
+    apiFetch<{ success: boolean }>(`/departments/${id}`, { method: 'DELETE' }),
+}
