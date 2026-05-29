@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRegistrations } from "@/hooks/useRegistrations"
 import { toUIStatus } from "@/lib/statusUtils"
 import { toDateKey } from "@/lib/registrationWindow"
+import { authApi } from "@/lib/api"
 
 interface HistoryEntry {
   dateKey: string
@@ -38,10 +39,22 @@ export default function HistoryPage() {
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
 
-  const [mockUser] = useState({
-    username: "hungpx",
-    fullName: "Phạm Xuân Hùng",
-  })
+  const [user, setUser] = useState<{ username: string; fullName: string } | null>(null)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { user: userData } = await authApi.me()
+        setUser({
+          username: userData.username,
+          fullName: userData.name,
+        })
+      } catch (err) {
+        console.error('Failed to fetch user:', err)
+      }
+    }
+    fetchUser()
+  }, [])
 
   // Calculate date range for the current month
   const startDate = useMemo(() => {
@@ -140,7 +153,7 @@ export default function HistoryPage() {
         <div className="max-w-[900px] mx-auto">
           <h1 className="text-3xl font-semibold tracking-tight text-ink">Lịch Sử</h1>
           <p className="text-sm text-ink-muted-80 mt-1">
-            Xin chào, <span className="font-semibold text-ink">{mockUser.fullName}</span>
+            Xin chào, <span className="font-semibold text-ink">{user?.fullName || '...'}</span>
           </p>
         </div>
       </header>
