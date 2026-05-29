@@ -85,10 +85,6 @@ export function EmployeeSidebar({ username, fullName }: Props) {
 
         {/* Bottom actions - button-utility style (14px), text-link style */}
         <div className="space-y-1">
-          <button className="flex items-center gap-2 w-full px-4 py-2.5 text-ink-muted-80 hover:bg-error-bg hover:text-error transition-colors rounded-xl" style={{ fontSize: '14px' }}>
-            <span className="material-symbols-outlined">settings</span>
-            <span>Cài đặt</span>
-          </button>
           <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-ink-muted-80 hover:bg-error-bg hover:text-error transition-colors rounded-xl" style={{ fontSize: '14px' }}>
             <span className="material-symbols-outlined">logout</span>
             <span>Đăng xuất</span>

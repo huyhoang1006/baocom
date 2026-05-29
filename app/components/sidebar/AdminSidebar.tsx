@@ -8,6 +8,7 @@ const navItems = [
   { label: "Thực đơn", href: "/admin/menu", icon: "restaurant_menu" },
   { label: "Ngày lễ/ngày nghỉ", href: "/admin/holidays", icon: "event_note" },
   { label: "Nhân sự", href: "/admin/employees", icon: "group" },
+  { label: "Phòng ban", href: "/admin/departments", icon: "apartment" },
   { label: "Báo cáo", href: "/admin/reports", icon: "description" },
 ]
 

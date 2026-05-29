@@ -123,7 +123,7 @@ model AuditLog {
 
 model Department {
   id          String @id @default(cuid())
-  name        String
+  name        String @unique
   description String?
   isActive    Boolean @default(true)
   createdAt   DateTime @default(now())

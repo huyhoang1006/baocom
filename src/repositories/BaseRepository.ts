@@ -1,7 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 
 export abstract class BaseRepository<T, CreateInput, UpdateInput> {
-  constructor(protected prisma: PrismaClient) {}
+  protected prisma: PrismaClient
+
+  constructor(prisma: PrismaClient) {
+    this.prisma = prisma
+  }
 
   abstract findAll(where?: Partial<T>): Promise<T[]>
   abstract findOne(id: string): Promise<T | null>

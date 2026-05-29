@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { usersApi } from "@/lib/api"
+import { usersApi, departmentsApi } from "@/lib/api"
 
 interface Employee {
   id: string
@@ -10,6 +10,7 @@ interface Employee {
   username: string
   status: "active" | "inactive"
   createdAt: string
+  departmentId?: string | null
 }
 
 interface Credentials {
@@ -23,6 +24,7 @@ function getInitials(name: string): string {
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([])
+  const [departments, setDepartments] = useState<{id: string, name: string}[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,6 +46,7 @@ export default function EmployeesPage() {
   const [formData, setFormData] = useState({
     name: "",
     password: "",
+    departmentId: undefined as string | undefined,
   })
 
   const [formErrors, setFormErrors] = useState<{ name?: string }>({})
@@ -66,6 +69,7 @@ export default function EmployeesPage() {
             username: u.username,
             status: u.isActive ? "active" as const : "inactive" as const,
             createdAt: u.createdAt,
+            departmentId: u.departmentId,
           })))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load employees')
@@ -74,6 +78,11 @@ export default function EmployeesPage() {
       }
     }
     fetchEmployees()
+
+    // Fetch departments
+    departmentsApi.getAll().then(data => {
+      setDepartments(data.departments.map((d: any) => ({ id: d.id, name: d.name })))
+    }).catch(console.error)
   }, [])
 
   const validateForm = (): boolean => {
@@ -112,7 +121,7 @@ export default function EmployeesPage() {
 
   const openAddModal = () => {
     setModalMode("add")
-    setFormData({ name: "", password: "" })
+    setFormData({ name: "", password: "", departmentId: undefined })
     clearFormErrors()
     setIsModalOpen(true)
   }
@@ -123,6 +132,7 @@ export default function EmployeesPage() {
     setFormData({
       name: emp.name,
       password: "",
+      departmentId: emp.departmentId ?? undefined,
     })
     clearFormErrors()
     setIsModalOpen(true)
@@ -143,6 +153,7 @@ export default function EmployeesPage() {
       if (modalMode === "add") {
         const result = await usersApi.create({
           name: formData.name,
+          departmentId: formData.departmentId,
         })
 
         setDetailCredentials({
@@ -156,6 +167,7 @@ export default function EmployeesPage() {
           username: result.user.username,
           status: "active",
           createdAt: new Date().toISOString(),
+          departmentId: result.user.departmentId,
         }
         setEmployees((prev) => [...prev, emp])
 
@@ -165,8 +177,9 @@ export default function EmployeesPage() {
         setIsDetailModalOpen(true)
         showNotification("success", "Đã thêm nhân viên mới")
       } else if (editingEmployee) {
-        const updateData: { name: string; password?: string } = {
+        const updateData: { name: string; password?: string; departmentId?: string | undefined } = {
           name: formData.name,
+          departmentId: formData.departmentId,
         }
         if (formData.password) {
           updateData.password = formData.password
@@ -177,7 +190,7 @@ export default function EmployeesPage() {
         setEmployees((prev) =>
           prev.map((e) =>
             e.id === editingEmployee.id
-              ? { ...e, name: result.user.name }
+              ? { ...e, name: result.user.name, departmentId: result.user.departmentId }
               : e
           )
         )
@@ -292,13 +305,14 @@ export default function EmployeesPage() {
                     <th className="text-left px-4 py-3 text-sm font-medium text-ink-muted-48">Tên</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-ink-muted-48">Username</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-ink-muted-48">Trạng thái</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-ink-muted-48">Phòng ban</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-ink-muted-48">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedEmployees.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-10 text-center text-ink-muted-48">
+                      <td colSpan={6} className="px-4 py-10 text-center text-ink-muted-48">
                         Không tìm thấy nhân viên
                       </td>
                     </tr>
@@ -325,6 +339,9 @@ export default function EmployeesPage() {
                           }`}>
                             {emp.status === "active" ? "Đang hoạt động" : "Đã khóa"}
                           </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-ink">
+                          {departments.find(d => d.id === emp.departmentId)?.name || "-"}
                         </td>
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-1">
@@ -470,6 +487,20 @@ export default function EmployeesPage() {
                   className={`form-input ${formErrors.name ? "border-error" : ""}`}
                 />
                 {formErrors.name && <p className="text-xs text-error mt-1">{formErrors.name}</p>}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-ink mb-1 block">Phòng ban</label>
+                <select
+                  value={formData.departmentId || ""}
+                  onChange={(e) => setFormData({ ...formData, departmentId: e.target.value || undefined })}
+                  className="form-input"
+                >
+                  <option value="">Không có</option>
+                  {departments.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
               </div>
 
               {modalMode === "edit" && (
