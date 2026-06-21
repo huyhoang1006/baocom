@@ -5,6 +5,36 @@ import { UserService } from '@/services/UserService'
 import { toDateKey } from '@/lib/registrationWindow'
 import ExcelJS from 'exceljs'
 
+// BUG-013: Standardize reports query params with friendly errors.
+function parseDateRange(searchParams: URLSearchParams):
+  | { ok: true; startDate: string; endDate: string }
+  | { ok: false; error: string } {
+
+  // Primary names
+  let startDate = searchParams.get('startDate')
+  let endDate = searchParams.get('endDate')
+
+  // Aliases for backward compatibility (BUG-013 fix)
+  if (!startDate) startDate = searchParams.get('from')
+  if (!endDate) endDate = searchParams.get('to')
+
+  if (!startDate || !endDate) {
+    return {
+      ok: false,
+      error: 'Missing required query params: startDate, endDate (or aliases: from, to). Use YYYY-MM-DD format.'
+    }
+  }
+
+  const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+  if (!DATE_REGEX.test(startDate) || !DATE_REGEX.test(endDate)) {
+    return { ok: false, error: 'Invalid date format. Expected YYYY-MM-DD.' }
+  }
+  if (startDate > endDate) {
+    return { ok: false, error: 'startDate must be before or equal to endDate' }
+  }
+  return { ok: true, startDate, endDate }
+}
+
 export class AdminReportsController {
   private registrationService: RegistrationService
   private userService: UserService
@@ -15,14 +45,12 @@ export class AdminReportsController {
   }
 
   async getReport(req: NextRequest) {
-    const { searchParams } = req.nextUrl
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-    const includeSundays = searchParams.get('includeSundays') === 'true'
-
-    if (!startDate || !endDate) {
-      return NextResponse.json({ error: 'Missing date range' }, { status: 400 })
+    const range = parseDateRange(req.nextUrl.searchParams)
+    if (!range.ok) {
+      return NextResponse.json({ error: range.error }, { status: 400 })
     }
+    const { startDate, endDate } = range
+    const includeSundays = req.nextUrl.searchParams.get('includeSundays') === 'true'
 
     const registrations = await this.registrationService.findByDateRange(startDate, endDate)
 
@@ -63,14 +91,12 @@ export class AdminReportsController {
   }
 
   async exportCsv(req: NextRequest) {
-    const { searchParams } = req.nextUrl
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-    const includeSundays = searchParams.get('includeSundays') === 'true'
-
-    if (!startDate || !endDate) {
-      return NextResponse.json({ error: 'Missing date range' }, { status: 400 })
+    const range = parseDateRange(req.nextUrl.searchParams)
+    if (!range.ok) {
+      return NextResponse.json({ error: range.error }, { status: 400 })
     }
+    const { startDate, endDate } = range
+    const includeSundays = req.nextUrl.searchParams.get('includeSundays') === 'true'
 
     const registrations = await this.registrationService.findByDateRange(startDate, endDate)
     const filtered = registrations.filter(r => {
@@ -114,13 +140,11 @@ export class AdminReportsController {
   }
 
   async exportXlsx(req: NextRequest) {
-    const { searchParams } = req.nextUrl
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-
-    if (!startDate || !endDate) {
-      return NextResponse.json({ error: 'Missing date range' }, { status: 400 })
+    const range = parseDateRange(req.nextUrl.searchParams)
+    if (!range.ok) {
+      return NextResponse.json({ error: range.error }, { status: 400 })
     }
+    const { startDate, endDate } = range
 
     const registrations = await this.registrationService.findByDateRange(startDate, endDate)
 
