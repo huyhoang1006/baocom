@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server'
+import { withAuth } from '@/lib/authMiddleware'
+import { prisma } from '@/lib/prisma'
 
-export async function POST() {
+export const POST = withAuth(async (_req, userId) => {
+  // Bump tokenVersion → all existing JWT tokens for this user become invalid
+  // The authMiddleware checks: user.tokenVersion !== payload.tokenVersion → 401
+  await prisma.user.update({
+    where: { id: userId },
+    data: { tokenVersion: { increment: 1 } }
+  })
+
   const response = NextResponse.json({ success: true })
-  // Clear the token cookie by setting it to expire immediately
   response.cookies.set('token', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -11,4 +19,4 @@ export async function POST() {
     path: '/'
   })
   return response
-}
+})
