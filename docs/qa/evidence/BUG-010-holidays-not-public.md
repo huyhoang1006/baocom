@@ -6,7 +6,7 @@
 **Test case ID**: HOL-07, API-15
 **Reported by**: dogfood agent
 **Date**: 2026-06-21
-**Status**: Open
+**Status**: Deferred — no frontend consumer
 
 ## URL / Endpoint
 - API: `GET http://127.0.0.1:3000/api/holidays`
@@ -43,5 +43,13 @@ Nếu design intent là cho employee đọc holidays:
 - Cho phép GET public (hoặc GET with any auth)
 - Giữ POST/PATCH/DELETE admin-only
 
+## Resolution (2026-06-21)
+- Checked `grep -rn "api/holidays" app/ src/ components/`: **no frontend usage found**.
+- The web UI does not consume `/api/holidays`, so there is no current friction for employees.
+- `app/api/holidays/route.ts` currently wraps GET in `withAdmin` (admin-only).
+- **Decision: DEFERRED (Low priority, no change needed).**
+- If a future feature (e.g. employee dashboard "today's lunch" widget) needs public holidays,
+  reopen this bug and apply the helper snippet kept in T13 task description.
+
 ## File reference
-- `app/api/holidays/route.ts` (GET handler — cần verify auth wrapper)
+- `app/api/holidays/route.ts` (GET handler — `withAdmin` wrapper, see resolution above)
