@@ -12,7 +12,18 @@ export type RegistrationWithUser = {
   updatedAt: Date
   date: Date
   note: string | null
-  user: { name: string; username: string }
+  user: {
+    id: string
+    username: string
+    name: string
+    role: string
+    isActive: boolean
+    departmentId: string | null
+    department?: {
+      id: string
+      name: string
+    } | null
+  } | null
 }
 
 export class RegistrationService {
