@@ -26,6 +26,13 @@ export type RegistrationWithUser = {
   } | null
 }
 
+export class RegistrationDateError extends Error {
+  constructor(public readonly code: 'DATE_LOCKED' | 'DATE_OUTSIDE_WINDOW', message: string) {
+    super(message)
+    this.name = 'RegistrationDateError'
+  }
+}
+
 export class RegistrationService {
   private registrationRepository: RegistrationRepository
 
@@ -38,10 +45,10 @@ export class RegistrationService {
     if (validation.ok) return
 
     if (validation.reason === 'LOCKED') {
-      throw new Error('Ngay nay da khoa bao com')
+      throw new RegistrationDateError('DATE_LOCKED', 'Ngày này đã khóa báo cơm')
     }
 
-    throw new Error('Ngay nay khong nam trong lich bao com')
+    throw new RegistrationDateError('DATE_OUTSIDE_WINDOW', 'Ngày này không nằm trong lịch báo cơm')
   }
 
   async findByDateRange(startDate: string, endDate: string): Promise<RegistrationWithUser[]> {

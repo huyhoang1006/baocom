@@ -58,8 +58,11 @@ export class RegistrationsController {
         if (error.message === 'Invalid status') {
           return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
         }
-        if (error.message === 'Ngay nay da khoa bao com' || error.message === 'Ngay nay khong nam trong lich bao com') {
-          return NextResponse.json({ error: error.message }, { status: 400 })
+        if (error.name === 'RegistrationDateError') {
+          return NextResponse.json({
+            error: error.message,
+            code: (error as { code?: string }).code
+          }, { status: 400 })
         }
       }
       throw error
@@ -87,8 +90,11 @@ export class RegistrationsController {
         if (error.message === 'Forbidden') {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
-        if (error.message === 'Ngay nay da khoa bao com' || error.message === 'Ngay nay khong nam trong lich bao com') {
-          return NextResponse.json({ error: error.message }, { status: 400 })
+        if (error.name === 'RegistrationDateError') {
+          return NextResponse.json({
+            error: error.message,
+            code: (error as { code?: string }).code
+          }, { status: 400 })
         }
       }
       throw error
