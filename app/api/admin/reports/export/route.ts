@@ -11,13 +11,13 @@ export const GET = withAdmin(async (req: NextRequest, userId: string) => {
   const startDate = searchParams.get('startDate') || ''
   const endDate = searchParams.get('endDate') || ''
 
-  const result = await controller.exportXlsx(req)
+  const result = await controller.exportCsv(req)
 
   await auditService.log({
     action: 'REPORT_EXPORTED',
     entityType: 'report',
     performedBy: userId,
-    details: `XLSX export for period ${startDate} to ${endDate}`
+    details: `CSV export for period ${startDate} to ${endDate}`
   })
 
   return result
