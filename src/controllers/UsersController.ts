@@ -62,11 +62,8 @@ export class UsersController {
           username: result.user.username,
           name: result.user.name,
           role: result.user.role
-        },
-        credentials: {
-          username: result.credentials.username,
-          password: result.credentials.password
         }
+        // Removed credentials field — passwords never leave the server in cleartext
       }, { status: 201 })
     } catch (error) {
       if (error instanceof Error && error.message === 'Username already exists') {
