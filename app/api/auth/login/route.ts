@@ -3,18 +3,27 @@ import { prisma } from '@/lib/prisma'
 import { verifyPassword, signToken } from '@/lib/auth'
 
 export async function POST(request: Request) {
+  // Parse JSON body — separate try/catch so malformed JSON returns 400
+  // instead of being swallowed by the outer try/catch (BUG-011 fix).
+  let body: { username?: string; password?: string }
   try {
-    const { username, password } = await request.json()
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
-    if (!username || !password) {
-      return NextResponse.json({ error: 'Missing username or password' }, { status: 400 })
-    }
+  const { username, password } = body
 
-    // Validate username length to prevent abuse
-    if (username.length > 255) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
-    }
+  if (!username || !password) {
+    return NextResponse.json({ error: 'Missing username or password' }, { status: 400 })
+  }
 
+  // Validate username length to prevent abuse
+  if (username.length > 255) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+  }
+
+  try {
     const user = await prisma.user.findUnique({
       where: { username }
     })
