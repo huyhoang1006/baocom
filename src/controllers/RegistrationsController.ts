@@ -58,6 +58,9 @@ export class RegistrationsController {
         if (error.message === 'Invalid status') {
           return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
         }
+        if (error.message === 'Invalid date format. Expected YYYY-MM-DD.') {
+          return NextResponse.json({ error: error.message }, { status: 400 })
+        }
         if (error.name === 'RegistrationDateError') {
           return NextResponse.json({
             error: error.message,
@@ -89,6 +92,9 @@ export class RegistrationsController {
         }
         if (error.message === 'Forbidden') {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
+        if (error.message === 'Invalid date format. Expected YYYY-MM-DD.') {
+          return NextResponse.json({ error: error.message }, { status: 400 })
         }
         if (error.name === 'RegistrationDateError') {
           return NextResponse.json({

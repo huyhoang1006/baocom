@@ -79,6 +79,11 @@ export class RegistrationService {
       throw new Error('Invalid status')
     }
 
+    // Validate date format BEFORE business logic (BUG-014 fix)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date)) {
+      throw new Error('Invalid date format. Expected YYYY-MM-DD.')
+    }
+
     const date = parseLocalDate(data.date)
     this.validateEditableDate(date, now)
 
