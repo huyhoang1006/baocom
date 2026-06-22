@@ -1,94 +1,26 @@
-"use client"
+import { redirect } from 'next/navigation'
+import { getCurrentUser } from '@/lib/auth-server'
+import { AdminSidebar } from '../components/sidebar/AdminSidebar'
+import { ClientSidebarWrapper } from './ClientSidebarWrapper'
 
-import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
-import { AdminSidebar } from "../components/sidebar/AdminSidebar"
-import { MobileSidebar } from "../components/sidebar/MobileSidebar"
-import { authApi } from "@/lib/api"
-
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [admin, setAdmin] = useState<{ username: string; name: string } | null>(null)
-  const [loading, setLoading] = useState(true)
-  const pathname = usePathname()
-
-  useEffect(() => {
-    setIsDrawerOpen(false)
-  }, [pathname])
-
-  useEffect(() => {
-    const fetchAdmin = async () => {
-      try {
-        const { user } = await authApi.me()
-        setAdmin({
-          username: user.username,
-          name: user.name,
-        })
-      } catch (err) {
-        console.error('Failed to fetch admin:', err)
-        window.location.href = '/login'
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchAdmin()
-  }, [])
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser()
+  if (!user || user.role !== 'admin') {
+    redirect('/login')
+  }
 
   return (
     <div className="min-h-dvh bg-canvas">
       {/* Desktop Sidebar - hidden on mobile */}
       <div className="hidden md:block">
-        {!loading && admin && (
-          <AdminSidebar adminName={admin.name} />
-        )}
+        <AdminSidebar adminName={user.name} />
       </div>
-
-      {/* Mobile Header: 44px height, surface-black bg, white title, hamburger left, avatar right */}
-      {/* z-40 for header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-11 bg-white z-40 flex items-center justify-between px-4">
-        {/* Hamburger: 44px tap target, rounded.sm (8px), dark icon */}
-        <button
-          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-          className="w-11 h-11 flex items-center justify-center rounded-sm active:scale-95 transition-transform"
-          style={{ touchAction: 'manipulation' }}
-          aria-label={isDrawerOpen ? "Close menu" : "Open menu"}
-        >
-          <span className="material-symbols-outlined text-[#1d1d1f]">
-            {isDrawerOpen ? "close" : "menu"}
-          </span>
-        </button>
-
-        {/* Title - ink color */}
-        <span className="text-[#1d1d1f] text-xs tracking-[-0.12px]">BaoCom Admin</span>
-
-        {/* Avatar */}
-        {!loading && admin && (
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-xs font-semibold text-white">
-              {admin.username.substring(0, 2).toUpperCase()}
-            </span>
-          </div>
-        )}
-      </header>
-
-      {/* Mobile Sidebar with scroll lock and animations */}
-      <MobileSidebar
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-      >
-        {!loading && admin && (
-          <AdminSidebar adminName={admin.name} />
-        )}
-      </MobileSidebar>
-
-      {/* Main Content - offset for desktop sidebar, pt-11 for mobile header */}
-      <main className="md:ml-[260px] min-h-dvh md:pt-0 pt-11">
-        {children}
-      </main>
+      <ClientSidebarWrapper adminName={user.name}>
+        {/* Main Content - offset for desktop sidebar, pt-11 for mobile header */}
+        <main className="md:ml-[260px] min-h-dvh md:pt-0 pt-11">
+          {children}
+        </main>
+      </ClientSidebarWrapper>
     </div>
   )
 }
