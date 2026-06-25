@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["192.168.0.102", "192.168.4.98"],
+  allowedDevOrigins: ["192.168.0.102", "192.168.4.98", "127.0.0.1", "localhost"],
 
   async headers() {
     return [
