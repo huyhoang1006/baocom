@@ -2,18 +2,21 @@
 
 import { useEffect, useState } from 'react'
 import type { BotStatus, GroupInfo } from '@/lib/zalo/types'
+import type { ToastType } from './Toast'
 
 interface Props {
   status: BotStatus
   onUpdate: () => Promise<void>
+  showToast: (type: ToastType, message: string, opts?: { description?: string }) => void
 }
 
-export function StatusCard({ status, onUpdate }: Props) {
+export function StatusCard({ status, onUpdate, showToast }: Props) {
   const [groups, setGroups] = useState<GroupInfo[]>([])
-  const [config, setConfig] = useState<{ groupId: string | null; autoSendEnabled: boolean; cron: string; template: string } | null>(null)
+  const [config, setConfig] = useState<{ groupId: string | null } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [manualGroupId, setManualGroupId] = useState('')
+  const [search, setSearch] = useState('')
 
   async function loadData() {
     try {
@@ -33,10 +36,6 @@ export function StatusCard({ status, onUpdate }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status.state])
 
-  async function selectGroup(groupId: string) {
-    await patchGroup(groupId)
-  }
-
   async function patchGroup(groupId: string) {
     setLoading(true)
     setError(null)
@@ -49,42 +48,92 @@ export function StatusCard({ status, onUpdate }: Props) {
       })
       if (!res.ok) throw new Error((await res.json()).error ?? 'Lỗi')
       setConfig(await res.json())
+      showToast('success', 'Đã chọn group!')
       await onUpdate()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi')
+      const msg = err instanceof Error ? err.message : 'Lỗi'
+      setError(msg)
+      showToast('error', 'Lỗi chọn group', { description: msg })
     } finally {
       setLoading(false)
     }
   }
 
+  const filteredGroups = search
+    ? groups.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()) || g.groupId.includes(search))
+    : groups
+
+  const isDisabled = status.state !== 'CONNECTED'
+
   return (
     <section className="bg-white rounded-lg border border-hairline p-5">
       <h2 className="font-semibold text-lg mb-3">2. Group đích</h2>
 
-      {status.state !== 'CONNECTED' ? (
-        <p className="text-sm text-ink-muted-48">Kết nối bot trước để xem danh sách group.</p>
+      {isDisabled ? (
+        /* Empty state with CTA */
+        <div className="text-center py-8">
+          <div className="text-4xl mb-3">🔒</div>
+          <p className="text-sm text-ink-muted-48 mb-2">
+            Kết nối bot trước để chọn group nhận thông báo.
+          </p>
+          <a
+            href="#card-setup"
+            className="text-sm text-primary hover:underline"
+          >
+            ← Kết nối bot ngay
+          </a>
+        </div>
       ) : (
         <>
+          {/* Search */}
+          {groups.length > 2 && (
+            <div className="mb-3">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="🔍 Tìm kiếm group..."
+                className="w-full px-3 py-2 border border-hairline rounded-md text-sm"
+              />
+            </div>
+          )}
+
+          {/* Group list */}
           {groups.length === 0 ? (
-            <p className="text-sm text-ink-muted-48 mb-3">
-              Bot chưa tham gia group nào (hoặc zca-js chưa đồng bộ danh sách).
-            </p>
+            <div className="text-center py-6">
+              <p className="text-sm text-ink-muted-48 mb-2">
+                Bot chưa tham gia group nào.
+              </p>
+              <p className="text-xs text-ink-muted-48">
+                Thêm tài khoản Zalo bot vào group trước, sau đó quay lại đây.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-2 mb-3">
-              {groups.map((g) => {
+            <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
+              {filteredGroups.map((g) => {
                 const selected = config?.groupId === g.groupId
                 return (
                   <button
                     key={g.groupId}
-                    onClick={() => selectGroup(g.groupId)}
+                    onClick={() => patchGroup(g.groupId)}
                     disabled={loading}
                     className={`w-full text-left px-3 py-2 rounded-md border transition ${
-                      selected ? 'border-primary bg-primary/5' : 'border-hairline hover:bg-canvas'
+                      selected
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                        : 'border-hairline hover:bg-canvas'
                     } disabled:opacity-50`}
                   >
-                    <div className="font-medium">{g.name}</div>
-                    <div className="text-xs text-ink-muted-48">
-                      ID: {g.groupId} {g.memberCount !== undefined ? `· ${g.memberCount} thành viên` : ''}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-medium text-sm">{g.name}</span>
+                        <span className="text-xs text-ink-muted-48 ml-2">
+                          ID: {g.groupId}
+                          {g.memberCount !== undefined ? ` · ${g.memberCount} thành viên` : ''}
+                        </span>
+                      </div>
+                      {selected && (
+                        <span className="text-xs font-medium text-primary">⭐ Đã chọn</span>
+                      )}
                     </div>
                   </button>
                 )
@@ -92,6 +141,7 @@ export function StatusCard({ status, onUpdate }: Props) {
             </div>
           )}
 
+          {/* Manual input */}
           <div className="border-t border-hairline pt-3 mt-3">
             <label className="block text-xs text-ink-muted-48 mb-1">Hoặc nhập groupId thủ công</label>
             <div className="flex gap-2">
@@ -108,15 +158,31 @@ export function StatusCard({ status, onUpdate }: Props) {
                 disabled={loading || !manualGroupId}
                 className="px-3 py-2 bg-canvas border border-hairline rounded-md text-sm disabled:opacity-50"
               >
-                Lưu
+                📌 Lưu
               </button>
             </div>
-            {config?.groupId && (
-              <p className="text-xs text-green-600 mt-2">✓ Đã chọn group: {config.groupId}</p>
-            )}
+            <p className="text-xs text-ink-muted-48 mt-1">
+              ℹ️ Lấy groupId: Mở group Zalo → ⋮ Menu → Group info
+            </p>
           </div>
+
+          {/* Current selection */}
+          {config?.groupId && (
+            <div className="mt-3 flex items-center justify-between">
+              <p className="text-xs text-green-600">
+                ✓ Đang gửi đến: {groups.find((g) => g.groupId === config.groupId)?.name ?? config.groupId}
+              </p>
+              <button
+                onClick={loadData}
+                className="text-xs text-primary hover:underline"
+              >
+                🔄 Refresh danh sách
+              </button>
+            </div>
+          )}
         </>
       )}
+
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
     </section>
   )

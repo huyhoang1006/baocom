@@ -2,6 +2,7 @@
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { authApi } from "@/lib/api"
+import { ZaloStatusDot } from "../zalo-bot/ZaloStatusDot"
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" },
@@ -63,6 +64,7 @@ export function AdminSidebar({ adminName = "Admin" }: Props) {
             >
               <span className="material-symbols-outlined">{item.icon}</span>
               <span className="font-medium" style={{ fontSize: '12px' }}>{item.label}</span>
+              {item.href === '/admin/zalo-bot' && <ZaloStatusDot />}
               {isActive && (
                 <span className="ml-auto ml-2 material-symbols-outlined text-sm">chevron_right</span>
               )}
