@@ -12,7 +12,9 @@ function detectKind(err: ZaloErrorShape): ZaloErrorKind {
   // Auth / expired cookie (zca-js codes 120/121 or message match)
   if (err.code === 120 || err.code === 121) return 'expired'
   if (err.code === 401 || err.code === 403) return 'auth'
-  // Server-side transient
+  // Our internal: BOT_NOT_SETUP (no credentials) → auth, not transient
+  if (typeof err.message === 'string' && err.message.includes('BOT_NOT_SETUP')) return 'auth'
+  // Server-side transient (500-599 EXCEPT the BOT_NOT_SETUP 503 which we caught above)
   if (err.code !== undefined && err.code >= 500 && err.code < 600) return 'transient'
   // Zca-js typed errors
   if (err.name === 'ZaloApiLoginQRAborted' || err.name === 'ZaloApiLoginQRDeclined') return 'fatal'

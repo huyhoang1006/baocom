@@ -39,4 +39,12 @@ describe('classifyZaloError', () => {
     expect(result.retryable).toBe(false)
     expect(result.httpStatus).toBe(500)
   })
+
+  it('classifies BOT_NOT_SETUP as auth, 503', () => {
+    const err = Object.assign(new Error('BOT_NOT_SETUP'), { code: 503 })
+    const result = classifyZaloError(err)
+    expect(result.kind).toBe('auth')
+    expect(result.httpStatus).toBe(503)
+    expect(result.retryable).toBe(false)
+  })
 })
