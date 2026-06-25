@@ -9,6 +9,11 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'],
     globals: true,
     css: true,
+    // Run all tests in a single forked process so DB-touching tests
+    // (ZaloConfig, etc.) don't race against each other when files run in parallel.
+    pool: 'forks',
+    poolOptions: { forks: { singleFork: true } },
+    fileParallelism: false,
   },
   resolve: {
     alias: {
