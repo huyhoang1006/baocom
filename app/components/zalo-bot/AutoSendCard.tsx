@@ -95,7 +95,7 @@ export function AutoSendCard({ onUpdate, showToast }: Props) {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { void load() }, [])
 
   async function patch(body: Record<string, unknown>) {
     setBusy(true)

@@ -37,7 +37,7 @@ export function ZaloBotClient() {
   }, [])
 
   useEffect(() => {
-    refresh()
+    void refresh()
     const interval = setInterval(refresh, status?.state === 'CONNECTING' ? 2000 : 10000)
     return () => clearInterval(interval)
   }, [refresh, status?.state])
