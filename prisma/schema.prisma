@@ -131,3 +131,9 @@ model Department {
 
   employees User[]
 }
+
+model ZaloConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
