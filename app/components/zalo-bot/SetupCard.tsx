@@ -107,6 +107,11 @@ export function SetupCard({ status, onUpdate }: Props) {
         </div>
       )}
 
+      {status.lastError && (
+        <p className="text-xs text-orange-600 mt-3">
+          Lần cuối: {status.lastError.message}
+        </p>
+      )}
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
     </section>
   )
