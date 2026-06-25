@@ -80,16 +80,16 @@ class ZaloBot {
     this.zalo
       .loginQR({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) baocom-bot/1.0' }, (event) => {
         switch (event.type) {
-          case LoginQRCallbackEventType.QRCodeGenerated:
-            this._currentQr = {
-              image: event.data.image,
-              token: event.data.token,
-            }
-            onEvent({
-              type: 'qr',
-              qr: { image: event.data.image, token: event.data.token },
-            })
+          case LoginQRCallbackEventType.QRCodeGenerated: {
+            // zca-js strips the "data:image/png;base64," prefix from qrGenResult.data.image
+            // (see node_modules/zca-js/dist/apis/loginQR.js:272). We re-add it so the browser
+            // treats the src as an inline data URL instead of a relative path.
+            const rawImage = event.data.image as string
+            const image = rawImage.startsWith('data:') ? rawImage : `data:image/png;base64,${rawImage}`
+            this._currentQr = { image, token: event.data.token }
+            onEvent({ type: 'qr', qr: { image, token: event.data.token } })
             break
+          }
           case LoginQRCallbackEventType.QRCodeScanned:
             onEvent({
               type: 'scanned',

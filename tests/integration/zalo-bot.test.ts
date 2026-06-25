@@ -152,4 +152,51 @@ describe('zalo bot state machine', () => {
     await bot.ensureLoggedIn()
     await expect(bot.send('hello', '')).rejects.toThrow(/threadId/)
   })
+
+  it('QR image gets data: prefix prepended when zca-js strips it', async () => {
+    // Trigger initQR then simulate GotLoginInfo (which will time out, but we capture
+    // the QR event in between)
+    let receivedQr: { image: string; token: string } | null = null
+    await bot.initQR({
+      onEvent: (e) => { if (e.type === 'qr') receivedQr = e.qr },
+    })
+    // Fire a fake QRCodeGenerated event from our mock by calling the callback
+    // The mock's loginQR stored the callback at (mockZaloInstance.current as any)._cb
+    const cb = (mockZaloInstance.current as unknown as { _cb?: (e: unknown) => unknown })._cb
+    cb?.({
+      type: 0, // QRCodeGenerated
+      data: {
+        code: 'c',
+        // Simulate zca-js behavior: image without data: prefix
+        image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+        token: 'mock-token',
+        options: {},
+      },
+      actions: {},
+    })
+    await new Promise((r) => setTimeout(r, 20))
+    expect(receivedQr).not.toBeNull()
+    expect(receivedQr!.image.startsWith('data:image/png;base64,')).toBe(true)
+    expect(bot.status().qr?.image.startsWith('data:image/png;base64,')).toBe(true)
+  })
+
+  it('QR image keeps data: prefix if zca-js already includes it', async () => {
+    let receivedQr: { image: string; token: string } | null = null
+    await bot.initQR({
+      onEvent: (e) => { if (e.type === 'qr') receivedQr = e.qr },
+    })
+    const cb = (mockZaloInstance.current as unknown as { _cb?: (e: unknown) => unknown })._cb
+    cb?.({
+      type: 0,
+      data: {
+        code: 'c',
+        image: 'data:image/png;base64,ABCDEF',
+        token: 'tok',
+        options: {},
+      },
+      actions: {},
+    })
+    await new Promise((r) => setTimeout(r, 20))
+    expect(receivedQr!.image).toBe('data:image/png;base64,ABCDEF') // not double-prefixed
+  })
 })
