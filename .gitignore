@@ -49,3 +49,10 @@ next-env.d.ts
 
 # bv (beads viewer) local config and caches
 .bv/
+
+# Hermes local artifacts (plans, scripts cache)
+/.hermes/
+
+# Zalo bot credentials (sensitive — contains cookie/imei/userAgent)
+/data/zalo-bot-credentials.json
+/data/zalo-bot-errors.log
