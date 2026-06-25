@@ -10,6 +10,7 @@ const navItems = [
   { label: "Nhân sự", href: "/admin/employees", icon: "group" },
   { label: "Phòng ban", href: "/admin/departments", icon: "apartment" },
   { label: "Báo cáo", href: "/admin/reports", icon: "description" },
+  { label: "Zalo Bot", href: "/admin/zalo-bot", icon: "chat" },
 ]
 
 interface Props {
