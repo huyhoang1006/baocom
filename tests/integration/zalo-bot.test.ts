@@ -28,10 +28,15 @@ vi.mock('@/lib/zalo/paths', () => ({
 }))
 
 vi.mock('zca-js', () => {
+  // vi.fn() is callable at runtime; cast to plain functions to satisfy TS
+  const loginFn = (creds: unknown) =>
+    (mockZaloInstance.current!.login as unknown as (c: unknown) => unknown)(creds)
+  const loginQRFn = (opts: unknown, cb: (event: unknown) => unknown) =>
+    (mockZaloInstance.current!.loginQR as unknown as (o: unknown, c: (event: unknown) => unknown) => unknown)(opts, cb)
   return {
     Zalo: class MockZalo {
-      login = (...args: unknown[]) => mockZaloInstance.current!.login(...(args as [unknown]))
-      loginQR = (...args: unknown[]) => mockZaloInstance.current!.loginQR(...(args as [unknown, (event: unknown) => unknown]))
+      login = loginFn
+      loginQR = loginQRFn
     },
     LoginQRCallbackEventType: {
       QRCodeGenerated: 0,
@@ -88,9 +93,9 @@ describe('zalo bot state machine', () => {
     })
     // Allow microtasks to flush
     await new Promise((r) => setTimeout(r, 20))
-    expect(receivedQr?.image).toContain('FAKE')
+    expect((receivedQr as unknown as { image: string } | null)?.image).toContain('FAKE')
     expect(bot.status().state).toBe('CONNECTING')
-    expect(bot.status().qr?.image).toContain('FAKE')
+    expect(((bot.status() as unknown as { qr: { image: string } }).qr?.image)).toContain('FAKE')
   })
 
   it('trigger GotLoginInfo transitions to CONNECTED and saves credentials', async () => {

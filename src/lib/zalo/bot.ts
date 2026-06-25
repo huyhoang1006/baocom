@@ -18,6 +18,11 @@ export interface InitQROptions {
 
 const ThreadType = { Group: 1, User: 2 } as const
 
+interface DiscoveredGroup extends GroupInfo {
+  // raw version string from gridVerMap, used as freshness hint
+  version?: string
+}
+
 class ZaloBot {
   private state: BotState = 'DISCONNECTED'
   private zalo: Zalo | null = null
@@ -28,6 +33,8 @@ class ZaloBot {
   private onEvent: ((e: BotEvents) => void) | null = null
   private loginInFlight: Promise<ZaloAPI> | null = null
   private expiredLoginFailures = 0
+  private _currentQr: { image: string; token: string } | null = null
+  private _groupsCache: DiscoveredGroup[] | null = null
 
   /** Reset all state — for tests only */
   reset() {
@@ -40,6 +47,8 @@ class ZaloBot {
     this.onEvent = null
     this.loginInFlight = null
     this.expiredLoginFailures = 0
+    this._currentQr = null
+    this._groupsCache = null
   }
 
   /** TEST-ONLY helper: simulate a GotLoginInfo event without waiting for real QR scan */
@@ -57,12 +66,11 @@ class ZaloBot {
     }
   }
 
-  private _currentQr: { image: string; token: string } | null = null
-
   async initQR({ onEvent }: InitQROptions): Promise<void> {
     this.state = 'CONNECTING'
     this.lastError = undefined
     this._currentQr = null
+    this._groupsCache = null
     this.onEvent = onEvent
 
     this.zalo = new Zalo({ selfListen: false, logging: false })
@@ -93,7 +101,7 @@ class ZaloBot {
             break
           case LoginQRCallbackEventType.GotLoginInfo:
             void this.handleGotLoginInfo({
-              cookie: event.data.cookie,
+              cookie: event.data.cookie as unknown as string | string[],
               imei: event.data.imei,
               userAgent: event.data.userAgent,
             })
@@ -109,12 +117,10 @@ class ZaloBot {
             break
           case LoginQRCallbackEventType.QRCodeExpired:
             this._currentQr = null
-            // Don't change state — UI should re-trigger QR
             break
         }
       })
       .then((api) => {
-        // loginQR resolves when fully logged in (after scan + confirm)
         this.api = api
         this.state = 'CONNECTED'
         this.expiredLoginFailures = 0
@@ -138,7 +144,6 @@ class ZaloBot {
         userAgent: payload.userAgent,
       })
       this.onEvent?.({ type: 'login', login: payload })
-      // The API instance is set when loginQR().then() resolves
     } catch (err) {
       const c = classifyZaloError(err)
       this.lastError = { kind: c.kind, message: c.userMessage, at: new Date().toISOString() }
@@ -199,27 +204,57 @@ class ZaloBot {
     }
     const api = await this.ensureLoggedIn()
     const result = await api.sendMessage({ msg: text }, threadId, ThreadType.Group)
-    return {
-      msgId: String((result as unknown as { msgId?: string }).msgId ?? `sent-${Date.now()}`),
-      sentAt: new Date().toISOString(),
-    }
+    // Handle both real zca-js shape ({ message: { msgId } }) and our mock shape ({ msgId })
+    const direct = (result as unknown as { msgId?: string | number }).msgId
+    const nested = (result as unknown as { message?: { msgId?: number } | null }).message?.msgId
+    const msgId = direct != null ? String(direct) : nested != null ? String(nested) : `sent-${Date.now()}`
+    return { msgId, sentAt: new Date().toISOString() }
   }
 
+  /**
+   * Discover groups the bot account is in.
+   *
+   * NOTE: zca-js's getAllGroups() only returns a gridVerMap of {groupId: version}
+   * (no name/memberCount). To get names we need to call getGroupInfo() per id.
+   * This is expensive for large group lists, so we cache and only fetch on first call.
+   */
   async listGroups(): Promise<GroupInfo[]> {
     const api = await this.ensureLoggedIn()
-    const groups = await api.getAllGroups()
-    return groups.map((g) => ({
-      groupId: String((g as unknown as { groupId: string }).groupId),
-      name: String((g as unknown as { name: string }).name),
-      memberCount: (g as unknown as { memberCount?: number }).memberCount,
-      avatar: (g as unknown as { avatar?: string }).avatar,
-    }))
+    if (this._groupsCache) return this._groupsCache
+
+    const raw = await api.getAllGroups()
+    const gridVerMap = (raw as unknown as { gridVerMap?: Record<string, string> }).gridVerMap ?? {}
+    const ids = Object.keys(gridVerMap)
+    if (ids.length === 0) return []
+
+    // Fetch each group info (best-effort; skip on error)
+    const results = await Promise.allSettled(
+      ids.map(async (id) => {
+        const info = await (api as unknown as {
+          getGroupInfo: (id: string) => Promise<{
+            gridInfoMap?: Record<string, { name?: string; totalMember?: number; avt?: string }>
+          }>
+        }).getGroupInfo(id)
+        const data = info?.gridInfoMap?.[id]
+        return {
+          groupId: id,
+          name: data?.name ?? `Group ${id}`,
+          memberCount: data?.totalMember,
+          avatar: data?.avt,
+          version: gridVerMap[id],
+        } as DiscoveredGroup
+      })
+    )
+    this._groupsCache = results
+      .filter((r): r is PromiseFulfilledResult<DiscoveredGroup> => r.status === 'fulfilled')
+      .map((r) => r.value)
+    return this._groupsCache
   }
 
   async logout(): Promise<void> {
     if (this.api) {
       try {
-        await this.api.logout()
+        // API doesn't expose logout(); rely on credentials.clear + state reset
       } catch {
         /* ignore */
       }
@@ -230,6 +265,7 @@ class ZaloBot {
     this.account = null
     this.state = 'DISCONNECTED'
     this._currentQr = null
+    this._groupsCache = null
   }
 }
 
