@@ -6,12 +6,16 @@ const KEYS = {
   autoSendEnabled: 'zalo.autoSend.enabled',
   cron: 'zalo.autoSend.cron',
   template: 'zalo.autoSend.template',
+  mode: 'zalo.autoSend.mode',
+  manualDate: 'zalo.autoSend.manualDate',
 } as const
 
 const DEFAULTS = {
   autoSendEnabled: 'false',
   cron: '0 8 * * 1-5',
-  template: '🍱 Báo cơm {date}\n{menu}',
+  template: '🍱 Báo cơm {date}\n\n{registrations}\n\n📋 Thực đơn:\n{menu}',
+  mode: 'auto',
+  manualDate: '',
 }
 
 async function readValue(key: string): Promise<string | null> {
@@ -70,11 +74,41 @@ export async function setTemplate(value: string): Promise<void> {
 }
 
 export async function getAll() {
-  const [groupId, autoSendEnabled, cron, template] = await Promise.all([
+  const [groupId, autoSendEnabled, cron, template, mode, manualDate] = await Promise.all([
     getGroupId(),
     isAutoSendEnabled(),
     getCron(),
     getTemplate(),
+    getSendMode(),
+    getManualDate(),
   ])
-  return { groupId, autoSendEnabled, cron, template }
+  return { groupId, autoSendEnabled, cron, template, mode, manualDate }
+}
+
+export type SendMode = 'auto' | 'today' | 'manual'
+
+const VALID_MODES: readonly SendMode[] = ['auto', 'today', 'manual']
+
+export async function getSendMode(): Promise<SendMode> {
+  const v = (await readValue(KEYS.mode)) ?? DEFAULTS.mode
+  if (v === 'auto' || v === 'today' || v === 'manual') return v
+  return 'auto'
+}
+
+export async function setSendMode(value: SendMode): Promise<void> {
+  if (!VALID_MODES.includes(value)) {
+    throw new Error(`SendMode không hợp lệ: "${value}" (chỉ chấp nhận: ${VALID_MODES.join(', ')})`)
+  }
+  await writeValue(KEYS.mode, value)
+}
+
+export async function getManualDate(): Promise<Date | null> {
+  const v = await readValue(KEYS.manualDate)
+  if (!v) return null
+  const d = new Date(v)
+  return isNaN(d.getTime()) ? null : d
+}
+
+export async function setManualDate(date: Date | null): Promise<void> {
+  await writeValue(KEYS.manualDate, date ? date.toISOString() : '')
 }
