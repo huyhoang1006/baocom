@@ -1,20 +1,14 @@
-import { redirect } from 'next/navigation'
-import { getCurrentUser } from '@/lib/auth-server'
-import { ZaloBotClient } from './ZaloBotClient'
+import { ZaloBotPage } from './ZaloBotPage'
 
-export default async function ZaloBotPage() {
-  const user = await getCurrentUser()
-  if (!user || user.role !== 'admin') redirect('/login')
-
-  return (
-    <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Zalo Bot</h1>
-        <p className="text-sm text-ink-muted-48 mt-1">
-          Kết nối tài khoản Zalo để gửi thông báo &quot;báo cơm&quot; vào group nội bộ.
-        </p>
-      </header>
-      <ZaloBotClient />
-    </div>
-  )
+/**
+ * Hub mặc định cho /admin/zalo-bot.
+ * - state != CONNECTED → render SetupCard (QR / logout / error).
+ * - CONNECTED → render ZaloBotPageContent với ?tab=X query string.
+ *   Tab mặc định: dashboard. Click nav → router.push('?tab=X').
+ *
+ * Page này chỉ là thin wrapper quanh ZaloBotPage (client component)
+ * để tránh lỗi `next/dynamic` ssr:false trong Server Component.
+ */
+export default function ZaloBotHubPage() {
+  return <ZaloBotPage />
 }

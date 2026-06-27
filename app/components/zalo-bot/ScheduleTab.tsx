@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { CronBuilder } from './CronBuilder'
 import type { ToastType } from './Toast'
 
 interface Props {
@@ -252,33 +253,49 @@ export function ScheduleTab({ onUpdate, showToast }: Props) {
     <div>
       <h3 className="text-sm font-medium mb-3">⏰ Lịch tự động gửi &quot;báo cơm&quot;</h3>
 
-      <label className="flex items-center gap-3 mb-4 cursor-pointer">
-        <div className="relative">
-          <input
-            type="checkbox"
-            checked={cfg.enabled}
-            onChange={(e) => patch({ autoSendEnabled: e.target.checked })}
-            disabled={busy}
-            className="sr-only peer"
-            aria-label="Bật gửi tự động"
-          />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:bg-primary transition-colors" />
-          <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform" />
-        </div>
-        <span className="text-sm font-medium">Bật gửi tự động</span>
-      </label>
+      {/* Section 1: Bật/tắt — luôn mở */}
+      <details open className="border-t border-hairline py-3" data-testid="schedule-section-toggle">
+        <summary className="cursor-pointer font-medium text-sm flex items-center gap-2">
+          <span>1️⃣</span> Bật / tắt auto-send
+        </summary>
+        <div className="mt-3">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={cfg.enabled}
+                onChange={(e) => patch({ autoSendEnabled: e.target.checked })}
+                disabled={busy}
+                className="sr-only peer"
+                aria-label="Bật gửi tự động"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:bg-primary transition-colors" />
+              <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform" />
+            </div>
+            <span className="text-sm font-medium">Bật gửi tự động</span>
+          </label>
 
-      {!cfg.enabled ? (
-        <div className="text-center py-8 border-t border-hairline">
-          <div className="text-4xl mb-3">⏸️</div>
-          <p className="text-sm text-ink-muted-48 mb-1">Auto-send đang tắt</p>
-          <p className="text-xs text-ink-muted-48">
-            Tin nhắn sẽ chỉ gửi khi bạn bấm &quot;Gửi thử ngay&quot; bên dưới.
-          </p>
+          {!cfg.enabled && (
+            <div className="text-center py-6 mt-3">
+              <div className="text-4xl mb-2">⏸️</div>
+              <p className="text-sm text-ink-muted-48 mb-1">Auto-send đang tắt</p>
+              <p className="text-xs text-ink-muted-48">
+                Tin nhắn sẽ chỉ gửi khi bạn bấm &quot;Gửi thử ngay&quot; ở section 5.
+              </p>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="border-t border-hairline pt-4 space-y-4">
-          <div>
+      </details>
+
+      {!cfg.enabled ? null : (
+        <div data-testid="schedule-sections">
+          {/* Section 2: Chọn ngày — mở mặc định */}
+          <details open className="border-t border-hairline py-3" data-testid="schedule-section-mode">
+            <summary className="cursor-pointer font-medium text-sm flex items-center gap-2">
+              <span>2️⃣</span> Chọn ngày gửi (mode + manual date)
+            </summary>
+            <div className="mt-3 space-y-3">
+            <div>
             <label className="block text-sm font-medium mb-2">🎯 Phương thức chọn ngày</label>
             <div className="space-y-2">
               {SEND_MODES.map((m) => (
@@ -307,17 +324,26 @@ export function ScheduleTab({ onUpdate, showToast }: Props) {
             {mode === 'manual' && (
               <div className="mt-2">
                 <label className="block text-xs text-ink-muted-48 mb-1">Ngày gửi cụ thể</label>
-                <input
-                  type="date"
-                  value={manualDate}
-                  onChange={(e) => setManualDate(e.target.value)}
-                  onBlur={() => {
-                    if (!manualDate) return
-                    patch({ manualDate: new Date(manualDate).toISOString() })
-                  }}
-                  disabled={busy}
-                  className="w-full px-3 py-2 border border-hairline rounded-md text-sm bg-white"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={manualDate}
+                    onChange={(e) => setManualDate(e.target.value)}
+                    disabled={busy}
+                    className="flex-1 px-3 py-2 border border-hairline rounded-md text-sm bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!manualDate) return
+                      patch({ manualDate: new Date(manualDate).toISOString() })
+                    }}
+                    disabled={busy || !manualDate}
+                    className="px-3 py-2 bg-canvas border border-hairline rounded-md text-sm disabled:opacity-50 hover:bg-canvas/80"
+                  >
+                    💾 Lưu ngày
+                  </button>
+                </div>
                 {manualDate && isWeekend(new Date(manualDate)) && (
                   <p className="text-xs text-orange-600 mt-1">
                     ⚠️ Đã chọn ngày T7/CN — tin nhắn sẽ gửi cho ngày này (admin quyết định).
@@ -354,94 +380,125 @@ export function ScheduleTab({ onUpdate, showToast }: Props) {
                 </span>
               </div>
             )}
-          </div>
+            </div>
+            </div>
+          </details>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">📅 Khi nào gửi?</label>
-            <select
-              value={preset}
-              onChange={(e) => {
-                const newPreset = e.target.value as CronPreset
-                setPreset(newPreset)
-                const found = CRON_PRESETS.find((p) => p.value === newPreset)
-                if (found && newPreset !== 'custom') {
-                  patch({ cron: found.expr })
-                }
-                setShowAdvanced(newPreset === 'custom')
-              }}
-              disabled={busy}
-              className="w-full px-3 py-2 border border-hairline rounded-md text-sm bg-white"
-            >
-              {CRON_PRESETS.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}</option>
-              ))}
-            </select>
-          </div>
+          {/* Section 3: Cài đặt giờ gửi — đóng mặc định */}
+          <details className="border-t border-hairline py-3" data-testid="schedule-section-cron">
+            <summary className="cursor-pointer font-medium text-sm flex items-center gap-2">
+              <span>3️⃣</span> Cài đặt giờ gửi (cron)
+            </summary>
+            <div className="mt-3 space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-2">📅 Khi nào gửi?</label>
+                <select
+                  value={preset}
+                  onChange={(e) => {
+                    const newPreset = e.target.value as CronPreset
+                    setPreset(newPreset)
+                    const found = CRON_PRESETS.find((p) => p.value === newPreset)
+                    if (found && newPreset !== 'custom') {
+                      patch({ cron: found.expr })
+                    }
+                    setShowAdvanced(newPreset === 'custom')
+                  }}
+                  disabled={busy}
+                  className="w-full px-3 py-2 border border-hairline rounded-md text-sm bg-white"
+                >
+                  {CRON_PRESETS.map((p) => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
 
-          {showAdvanced && (
-            <div className="bg-canvas rounded-md p-3">
-              <label className="block text-xs text-ink-muted-48 mb-1">Cron expression</label>
-              <input
-                type="text"
+              <CronBuilder
                 value={cfg.cron}
-                onChange={(e) => setCfg({ ...cfg, cron: e.target.value })}
-                onBlur={() => cfg.cron && patch({ cron: cfg.cron })}
+                onChange={(cron) => {
+                  setCfg({ ...cfg, cron })
+                  patch({ cron })
+                }}
                 disabled={busy}
-                className="w-full px-3 py-2 border border-hairline rounded-md text-sm font-mono"
-                placeholder="0 8 * * 1-5"
               />
-              <p className="text-xs text-ink-muted-48 mt-2">
-                📝 phút · giờ · ngày · tháng · thứ
-                <br />
-                Ví dụ: <code className="bg-gray-100 px-1 rounded">0 8 * * 1-5</code> = 8h sáng T2-T6
-              </p>
-            </div>
-          )}
 
-          {cfg.cron && (
-            <div className="flex items-center gap-2 text-sm text-ink-muted-80">
-              <span>🕐</span>
-              <span>
-                Lần gửi tiếp: <strong>{getHumanReadable(cfg.cron)}</strong>
-                {' → '}
-                {formatNextFire(cfg.cron)}
-              </span>
-            </div>
-          )}
+              {showAdvanced && (
+                <div className="bg-canvas rounded-md p-3">
+                  <label className="block text-xs text-ink-muted-48 mb-1">Cron expression</label>
+                  <input
+                    type="text"
+                    value={cfg.cron}
+                    onChange={(e) => setCfg({ ...cfg, cron: e.target.value })}
+                    onBlur={() => cfg.cron && patch({ cron: cfg.cron })}
+                    disabled={busy}
+                    className="w-full px-3 py-2 border border-hairline rounded-md text-sm font-mono"
+                    placeholder="0 8 * * 1-5"
+                  />
+                  <p className="text-xs text-ink-muted-48 mt-2">
+                    📝 phút · giờ · ngày · tháng · thứ
+                    <br />
+                    Ví dụ: <code className="bg-gray-100 px-1 rounded">0 8 * * 1-5</code> = 8h sáng T2-T6
+                  </p>
+                </div>
+              )}
 
-          <div className="border-t border-hairline pt-4">
-            <label className="block text-sm font-medium mb-2">🍱 Nội dung tin nhắn</label>
-            <textarea
-              value={cfg.template}
-              onChange={(e) => setCfg({ ...cfg, template: e.target.value })}
-              onBlur={() => cfg.template && patch({ template: cfg.template })}
-              maxLength={2000}
-              rows={3}
-              disabled={busy}
-              className="w-full px-3 py-2 border border-hairline rounded-md text-sm"
-            />
-            <div className="text-xs text-ink-muted-48 mt-1 space-y-1">
-              <p className="font-medium text-ink-muted-80">Sử dụng các placeholder:</p>
-              <ul className="list-disc list-inside space-y-0.5 ml-1">
-                <li><code className="bg-gray-100 px-1 rounded">{'{date}'}</code> — Ngày hiện tại (dd/mm/yyyy)</li>
-                <li><code className="bg-gray-100 px-1 rounded">{'{registrations}'}</code> — Danh sách người ăn theo phòng ban, hiển thị username</li>
-                <li><code className="bg-gray-100 px-1 rounded">{'{menu}'}</code> — Thực đơn hôm nay</li>
-              </ul>
+              {cfg.cron && (
+                <div className="flex items-center gap-2 text-sm text-ink-muted-80">
+                  <span>🕐</span>
+                  <span>
+                    Lần gửi tiếp: <strong>{getHumanReadable(cfg.cron)}</strong>
+                    {' → '}
+                    {formatNextFire(cfg.cron)}
+                  </span>
+                </div>
+              )}
             </div>
-          </div>
+          </details>
 
-          <div className="border-t border-hairline pt-4">
-            <label className="block text-sm font-medium mb-2">👁 Xem trước</label>
-            <div className="bg-canvas rounded-md p-3 text-sm whitespace-pre-wrap border border-hairline">
-              {previewText ?? 'Đang tải preview...'}
+          {/* Section 4: Soạn nội dung — đóng mặc định */}
+          <details className="border-t border-hairline py-3" data-testid="schedule-section-template">
+            <summary className="cursor-pointer font-medium text-sm flex items-center gap-2">
+              <span>4️⃣</span> Soạn nội dung (template)
+            </summary>
+            <div className="mt-3">
+              <label className="block text-sm font-medium mb-2">🍱 Nội dung tin nhắn</label>
+              <textarea
+                value={cfg.template}
+                onChange={(e) => setCfg({ ...cfg, template: e.target.value })}
+                onBlur={() => cfg.template && patch({ template: cfg.template })}
+                maxLength={2000}
+                rows={3}
+                disabled={busy}
+                className="w-full px-3 py-2 border border-hairline rounded-md text-sm"
+              />
+              <div className="text-xs text-ink-muted-48 mt-1 space-y-1">
+                <p className="font-medium text-ink-muted-80">Sử dụng các placeholder:</p>
+                <ul className="list-disc list-inside space-y-0.5 ml-1">
+                  <li><code className="bg-gray-100 px-1 rounded">{'{date}'}</code> — Ngày hiện tại (dd/mm/yyyy)</li>
+                  <li><code className="bg-gray-100 px-1 rounded">{'{registrations}'}</code> — Danh sách người ăn theo phòng ban, hiển thị username</li>
+                  <li><code className="bg-gray-100 px-1 rounded">{'{menu}'}</code> — Thực đơn hôm nay</li>
+                </ul>
+              </div>
             </div>
-            <button
-              onClick={loadPreview}
-              className="text-xs text-primary hover:underline mt-2"
-            >
-              🔄 Cập nhật preview
-            </button>
-          </div>
+          </details>
+
+          {/* Section 5: Xem trước & test — đóng mặc định */}
+          <details className="border-t border-hairline py-3" data-testid="schedule-section-preview">
+            <summary className="cursor-pointer font-medium text-sm flex items-center gap-2">
+              <span>5️⃣</span> Xem trước &amp; test
+            </summary>
+            <div className="mt-3">
+              <label className="block text-sm font-medium mb-2">👁 Xem trước</label>
+              <div className="bg-canvas rounded-md p-3 text-sm whitespace-pre-wrap border border-hairline">
+                {previewText ?? 'Đang tải preview...'}
+              </div>
+              <button
+                onClick={loadPreview}
+                className="text-xs text-primary hover:underline mt-2"
+              >
+                🔄 Cập nhật preview
+              </button>
+            </div>
+          </details>
         </div>
       )}
 

@@ -51,7 +51,7 @@ export class UserService {
       password: hashedPassword,
       name: data.name,
       role: data.role || 'employee',
-      departmentId: data.departmentId
+      ...(data.departmentId ? { department: { connect: { id: data.departmentId } } } : {})
     })
 
     return {

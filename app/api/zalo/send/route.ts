@@ -3,6 +3,7 @@ import { withAdmin } from '@/lib/authMiddleware'
 import { bot } from '@/lib/zalo/bot'
 import { getGroupId } from '@/lib/zalo/config'
 import { classifyZaloError } from '@/lib/zalo/errors'
+import { appendSend } from '@/lib/zalo/send-log'
 
 export const POST = withAdmin(async (req: NextRequest) => {
   let body: { text?: string; threadId?: string }
@@ -24,6 +25,13 @@ export const POST = withAdmin(async (req: NextRequest) => {
 
   try {
     const result = await bot.send(text, threadId)
+    appendSend({
+      timestamp: new Date().toISOString(),
+      kind: 'manual',
+      status: 'success',
+      threadId,
+      preview: text.slice(0, 100),
+    })
     return NextResponse.json(result)
   } catch (err) {
     const c = classifyZaloError(err)

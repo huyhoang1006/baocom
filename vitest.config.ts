@@ -12,7 +12,6 @@ export default defineConfig({
     // Run all tests in a single forked process so DB-touching tests
     // (ZaloConfig, etc.) don't race against each other when files run in parallel.
     pool: 'forks',
-    poolOptions: { forks: { singleFork: true } },
     fileParallelism: false,
   },
   resolve: {

@@ -9,7 +9,7 @@ export const POST = withAdmin(async (_req: NextRequest) => {
     return NextResponse.json(bot.status())
   }
   try {
-    await bot.initQR({
+    await bot.initQRAndWait({
       onEvent: () => {
         // Events are streamed via /api/zalo/status polling; no SSE for Phase 1
       },

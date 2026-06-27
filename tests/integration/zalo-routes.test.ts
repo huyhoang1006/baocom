@@ -46,7 +46,7 @@ describe('zalo API routes (smoke)', () => {
     }
     mockZaloInstance.current = {
       login: vi.fn(async () => mockApiState.current),
-      loginQR: vi.fn(async (_o: unknown, _cb: unknown) => new Promise(() => {})),
+      loginQR: vi.fn(async () => new Promise(() => {})),
     }
     bot.reset()
     await prisma.zaloConfig.deleteMany()
@@ -94,7 +94,7 @@ describe('zalo API routes (smoke)', () => {
     await setCron('*/10 * * * *')
     expect(await getCron()).toBe('*/10 * * * *')
 
-    expect(await getTemplate()).toBe('🍱 Báo cơm {date}\n{menu}')
+    expect(await getTemplate()).toBe('🍱 Báo cơm {date}\n\n{registrations}\n\n📋 Thực đơn:\n{menu}')
     const all = await getAll()
     expect(all.groupId).toBe('9876543210')
     expect(all.autoSendEnabled).toBe(true)

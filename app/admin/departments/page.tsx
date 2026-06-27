@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { departmentsApi } from "@/lib/api"
 
 interface Department {
@@ -27,22 +27,26 @@ export default function DepartmentsPage() {
   const [formData, setFormData] = useState({ name: "", description: "" })
   const [formErrors, setFormErrors] = useState<{ name?: string }>({})
 
-  useEffect(() => {
-    fetchDepartments()
-  }, [])
-
-  const fetchDepartments = async () => {
+  const fetchDepartments = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       const data = await departmentsApi.getAll()
-      setDepartments(data.departments)
+      setDepartments(data.departments.map((dept) => ({
+        ...dept,
+        description: dept.description ?? null,
+      })))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load departments')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const id = setTimeout(() => { void fetchDepartments() }, 0)
+    return () => clearTimeout(id)
+  }, [fetchDepartments])
 
   const validateForm = () => {
     const errors: { name?: string } = {}
@@ -149,6 +153,12 @@ export default function DepartmentsPage() {
             <input type="text" placeholder="Tìm kiếm..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-full text-sm bg-surface-container border border-hairline focus:outline-none focus:border-primary" />
           </div>
+
+          {error && (
+            <div className="rounded-xl border border-error bg-error-bg px-4 py-3 text-sm text-error">
+              {error}
+            </div>
+          )}
 
           <div className="bg-canvas border border-hairline rounded-[18px] overflow-hidden">
             <table className="w-full">

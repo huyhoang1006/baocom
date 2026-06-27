@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import type { BotStatus } from '@/lib/zalo/types'
 import type { ToastType } from './Toast'
@@ -81,6 +82,14 @@ export function SetupCard({ status, onUpdate, showToast }: Props) {
         </div>
       )}
 
+      {status.state === 'CONNECTING' && !status.qr && (
+        <div className="text-center py-6">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3" />
+          <p className="text-sm text-primary font-medium">Đang tạo QR code...</p>
+          <p className="text-xs text-ink-muted-48 mt-1">Vui lòng đợi trong giây lát</p>
+        </div>
+      )}
+
       {status.state === 'CONNECTING' && status.qr && (
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -91,9 +100,12 @@ export function SetupCard({ status, onUpdate, showToast }: Props) {
             <p className="text-sm text-ink-muted-48 mb-3">
               Mở Zalo trên điện thoại → quét mã bên dưới:
             </p>
-            <img
+            <Image
               src={status.qr.image}
               alt="Zalo QR code"
+              width={256}
+              height={256}
+              unoptimized
               className="w-64 h-64 border border-hairline rounded-md mx-auto"
             />
             <p className="text-xs text-ink-muted-48 mt-2">

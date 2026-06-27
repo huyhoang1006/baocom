@@ -8,14 +8,14 @@ const controller = new UsersController()
 const auditService = new AuditLogService()
 const userService = new UserService()
 
-export const GET = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
+export const GET = withAdmin(async (_req: NextRequest, _userId: string, _role: string, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params
   return controller.getOne(id)
 })
 
-export const PATCH = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
+export const PATCH = withAdmin(async (req: NextRequest, userId: string, _role: string, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params
-  let body: Record<string, unknown> | null = null
+  let body: Record<string, unknown>
   try {
     body = await req.json()
   } catch {
@@ -37,7 +37,7 @@ export const PATCH = withAdmin(async (req: NextRequest, userId: string, role: st
   return result
 })
 
-export const DELETE = withAdmin(async (req: NextRequest, userId: string, role: string, context: { params: Promise<{ id: string }> }) => {
+export const DELETE = withAdmin(async (_req: NextRequest, userId: string, _role: string, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params
 
   // Ngăn admin tự xóa chính mình
