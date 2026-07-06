@@ -3,10 +3,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // Mock zca-js trước khi import bot
 const mockLogin = vi.fn()
 
+class MockZalo {
+  login = mockLogin
+}
+
 vi.mock('zca-js', () => ({
-  Zalo: vi.fn().mockImplementation(() => ({
-    login: mockLogin,
-  })),
+  Zalo: MockZalo,
   LoginQRCallbackEventType: {
     QRCodeGenerated: 0,
     QRCodeScanned: 1,
@@ -50,7 +52,7 @@ describe('ZaloBot keepAlive', () => {
     vi.useRealTimers()
   })
 
-  it('giữ interval mặc định 5 phút (300000ms)', async () => {
+  it('giữ interval mặc định 15 phút (900000ms)', async () => {
     const bot = await importBot()
     bot.reset()
 
@@ -62,7 +64,7 @@ describe('ZaloBot keepAlive', () => {
 
     bot.startKeepAlive()
 
-    expect((bot as unknown as { keepAliveIntervalMs: number }).keepAliveIntervalMs).toBe(5 * 60 * 1000)
+    expect((bot as unknown as { keepAliveIntervalMs: number }).keepAliveIntervalMs).toBe(15 * 60 * 1000)
 
     bot.stopKeepAlive()
   })
@@ -95,6 +97,144 @@ describe('ZaloBot keepAlive', () => {
     await bot.debugKeepAliveNow()
 
     expect((bot as unknown as { keepAliveFailureCount: number }).keepAliveFailureCount).toBe(0)
+  })
+
+  it('SESSION_MAX_AGE_MS = 4 giờ', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    const ZaloBotClass = Object.getPrototypeOf(bot).constructor as { SESSION_MAX_AGE_MS: number }
+    expect(ZaloBotClass.SESSION_MAX_AGE_MS).toBe(4 * 60 * 60 * 1000)
+  })
+
+  it('startKeepAlive ghi nhận sessionStartedAt', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    const api = { keepAlive: vi.fn().mockResolvedValue({ config_vesion: 1 }) }
+    // @ts-expect-error - inject for test
+    bot.api = api
+    // @ts-expect-error - inject for test
+    bot.state = 'CONNECTED'
+
+    const before = Date.now()
+    bot.startKeepAlive()
+    const after = Date.now()
+
+    const startedAt = (bot as unknown as { sessionStartedAt: number | null }).sessionStartedAt
+    expect(startedAt).not.toBeNull()
+    expect(startedAt!).toBeGreaterThanOrEqual(before)
+    expect(startedAt!).toBeLessThanOrEqual(after)
+
+    bot.stopKeepAlive()
+  })
+
+  it('tryReLoginFromCredentials set state = RECONNECTING trước khi login', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    const stateChanges: string[] = []
+    // @ts-expect-error - inject for test
+    bot.onEvent = (e: { type: string; state?: string }) => {
+      if (e.type === 'state' && e.state) stateChanges.push(e.state)
+    }
+
+    mockLoadCredentials.mockReturnValue({
+      cookie: 'test-cookie',
+      imei: 'test-imei',
+      userAgent: 'test-ua',
+    })
+    mockLogin.mockResolvedValue({ keepAlive: vi.fn() })
+
+    // @ts-expect-error - access private method for test
+    await bot.tryReLoginFromCredentials()
+
+    expect(stateChanges).toContain('RECONNECTING')
+    expect(stateChanges).toContain('CONNECTED')
+  })
+
+  it('tryReLoginFromCredentials set sessionStartedAt khi thành công', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    mockLoadCredentials.mockReturnValue({
+      cookie: 'test-cookie',
+      imei: 'test-imei',
+      userAgent: 'test-ua',
+    })
+    mockLogin.mockResolvedValue({ keepAlive: vi.fn() })
+
+    const before = Date.now()
+    // @ts-expect-error - access private method for test
+    await bot.tryReLoginFromCredentials()
+    const after = Date.now()
+
+    const startedAt = (bot as unknown as { sessionStartedAt: number | null }).sessionStartedAt
+    expect(startedAt).not.toBeNull()
+    expect(startedAt!).toBeGreaterThanOrEqual(before)
+    expect(startedAt!).toBeLessThanOrEqual(after)
+  })
+
+  it('sessionStatus trả về đúng shape', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    // @ts-expect-error - inject for test
+    bot.sessionStartedAt = Date.now() - 3600_000 // 1 giờ trước
+
+    const status = bot.sessionStatus()
+    expect(status).toHaveProperty('startedAt')
+    expect(status).toHaveProperty('ageMs')
+    expect(status).toHaveProperty('maxAgeMs')
+    expect(status).toHaveProperty('nextRecycleAt')
+    expect(status).toHaveProperty('recycleCount')
+    expect(status.maxAgeMs).toBe(4 * 60 * 60 * 1000)
+    expect(status.ageMs).toBeGreaterThan(0)
+    expect(status.recycleCount).toBe(0)
+  })
+
+  it('recycleSession skip nếu loginInFlight', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    // @ts-expect-error - inject for test
+    bot.loginInFlight = Promise.resolve({})
+
+    // @ts-expect-error - access private method for test
+    const result = await bot.recycleSession()
+    expect(result).toBe(false)
+  })
+
+  it('recycleSession tăng recycleCount khi thành công', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    mockLoadCredentials.mockReturnValue({
+      cookie: 'test-cookie',
+      imei: 'test-imei',
+      userAgent: 'test-ua',
+    })
+    mockLogin.mockResolvedValue({ keepAlive: vi.fn() })
+
+    // @ts-expect-error - access private method for test
+    const result = await bot.recycleSession()
+    expect(result).toBe(true)
+    expect((bot as unknown as { recycleCount: number }).recycleCount).toBe(1)
+    expect((bot as unknown as { sessionStartedAt: number | null }).sessionStartedAt).not.toBeNull()
+  })
+
+  it('ensureLoggedIn handle RECONNECTING state', async () => {
+    const bot = await importBot()
+    bot.reset()
+
+    const mockApi = { keepAlive: vi.fn() }
+    // @ts-expect-error - inject for test
+    bot.api = mockApi
+    // @ts-expect-error - inject for test
+    bot.state = 'RECONNECTING'
+
+    const result = await bot.ensureLoggedIn()
+    expect(result).toBe(mockApi)
   })
 })
 

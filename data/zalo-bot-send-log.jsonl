@@ -1,11 +1,9 @@
-{"timestamp":"2026-06-26T06:26:12.705Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 26/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
-{"timestamp":"2026-06-26T07:43:33.110Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍽️ Test template UAT - 26/06/2026\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc"}
-{"timestamp":"2026-06-26T07:53:05.397Z","kind":"manual","status":"success","threadId":"5506436216265422412","preview":"Test manual log fix UAT - 26/06"}
-{"timestamp":"2026-06-26T08:08:00.148Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 26/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
-{"timestamp":"2026-06-26T08:10:00.187Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 26/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
-{"timestamp":"2026-06-26T08:12:00.179Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 26/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
-{"timestamp":"2026-06-26T08:14:00.186Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 26/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
-{"timestamp":"2026-06-26T08:16:00.203Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 26/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
-{"timestamp":"2026-06-26T09:31:00.136Z","kind":"auto","status":"fail","threadId":"111","preview":"","error":"Lỗi hệ thống, vui lòng thử lại."}
-{"timestamp":"2026-06-26T11:27:43.520Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 29/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
-{"timestamp":"2026-06-26T11:30:00.204Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 29/06/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
+{"timestamp":"2026-07-06T08:06:37.570Z","kind":"manual","status":"success","threadId":"6910594314981483821","preview":"Hello cả nhà nhaa, em yêu mọi người"}
+{"timestamp":"2026-07-06T08:06:48.346Z","kind":"manual","status":"success","threadId":"6910594314981483821","preview":"⚠️ Thông báo: Ngày mai (06/07/2026) công ty nghỉ. Chúc mọi người cuối tuần vui vẻ!"}
+{"timestamp":"2026-07-06T08:07:35.381Z","kind":"auto","status":"success","threadId":"6910594314981483821","preview":"🍱 Báo cơm 07/07/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}
+{"timestamp":"2026-07-06T08:10:00.011Z","kind":"auto","status":"fail","threadId":"6910594314981483821","preview":"","error":"Bot chưa được xác thực."}
+{"timestamp":"2026-07-06T08:22:48.229Z","kind":"manual","status":"success","threadId":"5506436216265422412","preview":"⚠️ Thông báo: Ngày mai (06/07/2026) công ty nghỉ. Chúc mọi người cuối tuần vui vẻ!"}
+{"timestamp":"2026-07-06T09:44:15.955Z","kind":"manual","status":"success","threadId":"5506436216265422412","preview":"UAT Test Message"}
+{"timestamp":"2026-07-06T09:44:16.010Z","kind":"manual","status":"success","threadId":"5506436216265422412","preview":"test no thread"}
+{"timestamp":"2026-07-06T09:45:18.850Z","kind":"manual","status":"success","threadId":"5506436216265422412","preview":"UAT Test - Tin nhắn kiểm tra từ Chrome DevTools"}
+{"timestamp":"2026-07-06T09:50:00.232Z","kind":"auto","status":"success","threadId":"5506436216265422412","preview":"🍱 Báo cơm 07/07/2026\n\n1. Khác: 09 suất a/c (final_verify_5, hoangvane, lehuongg, levanc, ngothih, p"}

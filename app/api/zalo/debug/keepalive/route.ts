@@ -25,6 +25,7 @@ export const GET = withAdmin(async () => {
   return NextResponse.json({
     bot: compactBotStatus(),
     keepAlive: bot.keepAliveStatus(),
+    session: bot.sessionStatus(),
   })
 })
 
@@ -61,6 +62,7 @@ export const POST = withAdmin(async (req: NextRequest) => {
         result,
         bot: compactBotStatus(),
         keepAlive: bot.keepAliveStatus(),
+        session: bot.sessionStatus(),
       })
     } catch (err) {
       const c = classifyZaloError(err)
@@ -71,6 +73,7 @@ export const POST = withAdmin(async (req: NextRequest) => {
           kind: c.kind,
           bot: compactBotStatus(),
           keepAlive: bot.keepAliveStatus(),
+          session: bot.sessionStatus(),
         },
         { status: c.httpStatus }
       )
@@ -81,5 +84,6 @@ export const POST = withAdmin(async (req: NextRequest) => {
     ok: true,
     bot: bot.status(),
     keepAlive: bot.keepAliveStatus(),
+    session: bot.sessionStatus(),
   })
 })

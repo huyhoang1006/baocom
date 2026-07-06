@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react'
 
-type BotState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'EXPIRED'
+type BotState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'EXPIRED'
 
 const DOT_STYLES: Record<BotState, string> = {
   DISCONNECTED: 'bg-gray-400',
   CONNECTING: 'bg-yellow-400 animate-pulse',
   CONNECTED: 'bg-emerald-500',
+  RECONNECTING: 'bg-orange-400 animate-pulse',
   EXPIRED: 'bg-red-500',
 }
 
@@ -40,6 +41,7 @@ export function ZaloStatusDot() {
       title={
         state === 'CONNECTED' ? 'Bot kết nối'
         : state === 'CONNECTING' ? 'Đang kết nối...'
+        : state === 'RECONNECTING' ? 'Đang kết nối lại...'
         : state === 'EXPIRED' ? 'Bot hết hạn'
         : 'Bot chưa kết nối'
       }

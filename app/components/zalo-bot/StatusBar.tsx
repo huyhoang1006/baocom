@@ -18,6 +18,7 @@ const STATE_META: Record<BotState, StateMeta> = {
   DISCONNECTED: { label: 'Bot chưa kết nối', dot: 'bg-gray-400', tone: 'text-gray-700' },
   CONNECTING: { label: 'Đang kết nối...', dot: 'bg-yellow-400 animate-pulse', tone: 'text-yellow-700' },
   CONNECTED: { label: 'Đã kết nối', dot: 'bg-emerald-500', tone: 'text-emerald-700' },
+  RECONNECTING: { label: 'Đang kết nối lại...', dot: 'bg-orange-400 animate-pulse', tone: 'text-orange-700' },
   EXPIRED: { label: 'Bot hết hạn', dot: 'bg-red-500', tone: 'text-red-700' },
 }
 
@@ -60,6 +61,9 @@ function AccountInfo({ status }: { status: BotStatus }) {
       </p>
       {status.state === 'CONNECTED' && relative && (
         <p className="text-xs text-ink-muted-48 mt-0.5">Hoạt động {relative}</p>
+      )}
+      {status.state === 'RECONNECTING' && (
+        <p className="text-xs text-orange-600 mt-0.5">Đang khôi phục kết nối...</p>
       )}
       {status.state === 'EXPIRED' && status.lastError && (
         <p className="text-xs text-red-600 mt-0.5">{status.lastError.message}</p>

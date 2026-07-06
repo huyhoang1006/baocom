@@ -42,7 +42,8 @@ class ZaloBot {
   private _groupsCacheAt: number = 0
   private static readonly GROUPS_CACHE_TTL_MS = 5 * 60 * 1000
   private keepAliveTimer: NodeJS.Timeout | null = null
-  private keepAliveIntervalMs: number = 5 * 60 * 1000
+  private static readonly KEEPALIVE_INTERVAL_MS = 15 * 60 * 1000
+  private keepAliveIntervalMs: number = ZaloBot.KEEPALIVE_INTERVAL_MS
   private lastKeepAliveAt: string | null = null
   private lastKeepAliveResult: { config_vesion: number } | null = null
   private keepAliveFailureCount: number = 0
@@ -54,6 +55,11 @@ class ZaloBot {
   /** Fail count tại đó ta emit warning (admin biết trước khi EXPIRED) */
   private static readonly KEEPALIVE_WARNING_THRESHOLD = 3
   private keepAliveRetryTimer: NodeJS.Timeout | null = null
+
+  /** Proactive session recycling — track session age */
+  private sessionStartedAt: number | null = null
+  private recycleCount = 0
+  private static readonly SESSION_MAX_AGE_MS = 4 * 60 * 60 * 1000
 
   /** Reset all state — for tests only */
   reset() {
@@ -72,6 +78,8 @@ class ZaloBot {
     this.lastKeepAliveAt = null
     this.lastKeepAliveResult = null
     this.keepAliveFailureCount = 0
+    this.sessionStartedAt = null
+    this.recycleCount = 0
     if (this.keepAliveTimer) {
       clearInterval(this.keepAliveTimer)
       this.keepAliveTimer = null
@@ -156,6 +164,7 @@ class ZaloBot {
         this.state = 'CONNECTED'
         this.expiredLoginFailures = 0
         this.lastConnectedAt = new Date().toISOString()
+        this.sessionStartedAt = Date.now()
         this.account = { displayName: 'Bot Zalo' }
         onEvent({ type: 'state', state: this.state })
       })
@@ -198,7 +207,7 @@ class ZaloBot {
   }
 
   async ensureLoggedIn(): Promise<ZaloAPI> {
-    if (this.api && this.state === 'CONNECTED') return this.api
+    if (this.api && (this.state === 'CONNECTED' || this.state === 'RECONNECTING')) return this.api
     if (this.loginInFlight) return this.loginInFlight
 
     this.loginInFlight = (async () => {
@@ -219,6 +228,7 @@ class ZaloBot {
         this.api = api
         this.state = 'CONNECTED'
         this.expiredLoginFailures = 0
+        this.sessionStartedAt = Date.now()
         return api
       } catch (err) {
         const classified = classifyZaloError(err)
@@ -330,6 +340,8 @@ class ZaloBot {
     this._groupsCacheAt = 0
     this.lastKeepAliveAt = null
     this.lastKeepAliveResult = null
+    this.sessionStartedAt = null
+    this.recycleCount = 0
   }
 
   /**
@@ -341,6 +353,7 @@ class ZaloBot {
   startKeepAlive(intervalMs?: number): void {
     if (this.keepAliveTimer) return
     if (intervalMs) this.keepAliveIntervalMs = intervalMs
+    if (!this.sessionStartedAt) this.sessionStartedAt = Date.now()
     this.keepAliveTimer = setInterval(() => {
       void this.runKeepAlive()
     }, this.keepAliveIntervalMs)
@@ -375,6 +388,29 @@ class ZaloBot {
     }
   }
 
+  sessionStatus(): {
+    startedAt: string | null
+    ageMs: number | null
+    maxAgeMs: number
+    nextRecycleAt: string | null
+    recycleCount: number
+  } {
+    const startedAt = this.sessionStartedAt
+      ? new Date(this.sessionStartedAt).toISOString()
+      : null
+    const ageMs = this.sessionStartedAt ? Date.now() - this.sessionStartedAt : null
+    const nextRecycleAt = this.sessionStartedAt
+      ? new Date(this.sessionStartedAt + ZaloBot.SESSION_MAX_AGE_MS).toISOString()
+      : null
+    return {
+      startedAt,
+      ageMs,
+      maxAgeMs: ZaloBot.SESSION_MAX_AGE_MS,
+      nextRecycleAt,
+      recycleCount: this.recycleCount,
+    }
+  }
+
   /** Manual trigger for debug endpoint only. */
   async debugKeepAliveNow(): Promise<{ config_vesion: number }> {
     return this.runKeepAlive()
@@ -388,6 +424,16 @@ class ZaloBot {
       this.lastKeepAliveResult = result
       this.keepAliveFailureCount = 0
       console.log('[zalo-bot] keepAlive OK')
+
+      // Proactive session recycling — re-login trước khi session expire
+      if (
+        this.sessionStartedAt &&
+        Date.now() - this.sessionStartedAt > ZaloBot.SESSION_MAX_AGE_MS
+      ) {
+        console.log('[zalo-bot] Session too old, proactive recycle...')
+        await this.recycleSession()
+      }
+
       return result
     } catch (err) {
       this.keepAliveFailureCount++
@@ -438,6 +484,32 @@ class ZaloBot {
   }
 
   /**
+   * Proactive session recycling — re-login từ credentials trước khi session expire.
+   * Trả về true nếu thành công, false nếu fail (giữ session cũ).
+   */
+  private async recycleSession(): Promise<boolean> {
+    if (this.loginInFlight) {
+      console.log('[zalo-bot] recycle skipped: another login in flight')
+      return false
+    }
+
+    try {
+      const ok = await this.tryReLoginFromCredentials()
+      if (ok) {
+        this.sessionStartedAt = Date.now()
+        this.recycleCount++
+        this.keepAliveFailureCount = 0
+        console.log('[zalo-bot] Proactive recycle OK')
+        return true
+      }
+      return false
+    } catch {
+      console.warn('[zalo-bot] Proactive recycle failed, keeping current session')
+      return false
+    }
+  }
+
+  /**
    * Thử re-login từ credentials đã lưu.
    * Trả về true nếu thành công, false nếu fail.
    *
@@ -459,6 +531,9 @@ class ZaloBot {
 
     try {
       this.loginInFlight = (async () => {
+        this.state = 'RECONNECTING'
+        this.onEvent?.({ type: 'state', state: this.state })
+
         const zalo = new Zalo({ selfListen: false, logging: false })
         const api = await zalo.login({
           cookie: creds.cookie as never,
@@ -474,6 +549,7 @@ class ZaloBot {
         this.state = 'CONNECTED'
         this.expiredLoginFailures = 0
         this.lastConnectedAt = new Date().toISOString()
+        this.sessionStartedAt = Date.now()
         this.onEvent?.({ type: 'state', state: this.state })
         console.log('[zalo-bot] re-login OK, state=CONNECTED')
         return api
@@ -498,7 +574,8 @@ const existingBot = globalForBot.__zaloBot
 export const bot =
   existingBot &&
   typeof (existingBot as { keepAliveStatus?: unknown }).keepAliveStatus === 'function' &&
-  typeof (existingBot as { debugKeepAliveNow?: unknown }).debugKeepAliveNow === 'function'
+  typeof (existingBot as { debugKeepAliveNow?: unknown }).debugKeepAliveNow === 'function' &&
+  typeof (existingBot as { sessionStatus?: unknown }).sessionStatus === 'function'
     ? existingBot
     : new ZaloBot()
 if (globalForBot.__zaloBot !== bot) globalForBot.__zaloBot = bot

@@ -1,6 +1,6 @@
 // src/lib/zalo/types.ts
 
-export type BotState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'EXPIRED'
+export type BotState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'EXPIRED'
 
 export interface StoredCreds {
   cookie: string | string[]

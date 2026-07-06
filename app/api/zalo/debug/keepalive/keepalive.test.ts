@@ -11,6 +11,7 @@ const debugKeepAliveNowMock = vi.fn()
 const stopKeepAliveMock = vi.fn()
 const startKeepAliveMock = vi.fn()
 const statusMock = vi.fn()
+const sessionStatusMock = vi.fn()
 
 vi.mock('@/lib/zalo/bot', () => ({
   bot: {
@@ -19,6 +20,7 @@ vi.mock('@/lib/zalo/bot', () => ({
     stopKeepAlive: stopKeepAliveMock,
     startKeepAlive: startKeepAliveMock,
     status: statusMock,
+    sessionStatus: sessionStatusMock,
   },
 }))
 
@@ -46,6 +48,7 @@ describe('GET/POST /api/zalo/debug/keepalive', () => {
     statusMock.mockReset()
     keepAliveStatusMock.mockReturnValue({ active: true, intervalMs: 1800000 })
     statusMock.mockReturnValue({ state: 'CONNECTED', account: { displayName: 'Bot Zalo' } })
+    sessionStatusMock.mockReturnValue({ startedAt: null, ageMs: null, maxAgeMs: 14400000, nextRecycleAt: null, recycleCount: 0 })
   })
 
   it('GET returns compact bot status and keepAlive status', async () => {
