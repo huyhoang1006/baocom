@@ -20,6 +20,7 @@ CREATE TABLE "new_User" (
     "role" TEXT NOT NULL DEFAULT 'employee',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "tokenVersion" INTEGER NOT NULL DEFAULT 0,
+    
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );

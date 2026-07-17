@@ -28,12 +28,21 @@ const nextConfig: NextConfig = {
     "*.ngrok-free.app",
     "*.ngrok.io",
   ],
+  allowedDevOrigins: ["192.168.0.102", "192.168.4.98", "127.0.0.1", "localhost", "*.trycloudflare.com"],
 
   async headers() {
     return [
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, PATCH, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
       },
     ]
   },
