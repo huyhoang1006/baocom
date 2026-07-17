@@ -149,6 +149,22 @@ export function dayNameVi(date: Date): string {
   return names[date.getDay()]
 }
 
+/** yyyy-mm-dd theo giờ máy chủ (khớp với nextWorkday dùng setHours cục bộ) */
+function localDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** Tập dateKey các ngày lễ đang hiệu lực từ `from` trở đi (bếp không nấu) */
+async function getUpcomingHolidayKeys(from: Date): Promise<Set<string>> {
+  const start = new Date(from)
+  start.setHours(0, 0, 0, 0)
+  const holidays = await prisma.holiday.findMany({
+    where: { isActive: true, date: { gte: start } },
+    select: { date: true },
+  })
+  return new Set(holidays.map((h) => localDateKey(h.date)))
+}
+
 /**
  * Chọn ngày mục tiêu cho tin nhắn auto-send dựa trên SendMode.
  *
@@ -156,6 +172,8 @@ export function dayNameVi(date: Date): string {
  * - `today`: now nếu workday, nếu T7/CN → workday kế tiếp (vd T7 → T2)
  * - `manual`: manualDate trong DB; nếu null → fallback `auto`
  *
+ * NGÀY LỄ: với auto/today, nếu ngày chọn trùng ngày lễ (bếp không nấu) thì tự
+ * nhảy tới ngày làm việc kế tiếp không phải lễ. Manual do admin chọn → tôn trọng.
  * Lưu ý: T7/CN vẫn có thể là manualDate (admin chọn), UI sẽ cảnh báo.
  */
 export async function pickTargetDate(now: Date = new Date()): Promise<Date> {
@@ -164,11 +182,23 @@ export async function pickTargetDate(now: Date = new Date()): Promise<Date> {
     const manual = await getManualDate()
     if (manual) return manual
   }
+
+  let target: Date
   if (mode === 'today') {
-    return isWorkday(now) ? now : nextWorkday(now)
+    target = isWorkday(now) ? now : nextWorkday(now)
+  } else {
+    // mode === 'auto' (default): luôn workday kế tiếp sau now
+    target = nextWorkday(now)
   }
-  // mode === 'auto' (default): luôn workday kế tiếp sau now
-  return nextWorkday(now)
+
+  // Né ngày lễ (chỉ query khi thực sự cần)
+  const holidayKeys = await getUpcomingHolidayKeys(now)
+  if (holidayKeys.size > 0) {
+    while (holidayKeys.has(localDateKey(target))) {
+      target = nextWorkday(target)
+    }
+  }
+  return target
 }
 
 /**

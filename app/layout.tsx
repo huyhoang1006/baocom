@@ -43,6 +43,14 @@ export default function RootLayout({
   return (
     <html lang="vi" data-scroll-behavior="smooth" className={`${inter.variable} ${beVietnamPro.variable}`}>
       <head>
+        {/* Vượt trang cảnh báo của ngrok: đính header vào MỌI request cùng origin
+            (API + điều hướng RSC của Next). Chỉ áp dụng same-origin để không phá CORS. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var o=window.fetch;window.fetch=function(input,init){try{var u=typeof input==='string'?input:(input&&input.url)||'';var abs=new URL(u,location.href);if(abs.origin===location.origin){init=init||{};var h=new Headers(init.headers||(typeof input!=='string'&&input&&input.headers)||{});h.set('ngrok-skip-browser-warning','true');init.headers=h;}}catch(e){}return o.call(this,input,init);};}catch(e){}})();",
+          }}
+        />
         <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
       </head>
       <body className="antialiased">
