@@ -34,7 +34,7 @@ export default function BookPage() {
       return {
         ...day,
         locked: day.locked || isPastOrToday,
-        status: (rawStatus || "eating") as Status,
+        status: (rawStatus || "not-eating") as Status,
         isDefault: rawStatus === null,
       }
     })
@@ -73,6 +73,12 @@ export default function BookPage() {
           <p className="text-base text-ink-muted-80 mt-2">
             Xem tuần hiện tại và 4 tuần tới. Bạn chỉ chỉnh được các ngày tương lai chưa khóa.
           </p>
+          <div className="mt-3 flex items-start gap-2 rounded-xl bg-primary-bg px-4 py-3">
+            <span className="material-symbols-outlined text-primary text-xl">info</span>
+            <p className="text-sm text-primary">
+              <span className="font-semibold">Mặc định bạn KHÔNG ăn.</span> Hãy bấm <span className="font-semibold">"Có ăn"</span> cho những ngày bạn muốn ăn cơm. Trạng thái sẽ được giữ cho các ngày sau tới khi bạn đổi lại.
+            </p>
+          </div>
         </div>
       </header>
 
@@ -167,7 +173,8 @@ type Day = ReturnType<typeof useRegistrations> extends ReturnType<typeof useRegi
 
 function DayCard({ day, onStatusChange }: { day: Day; onStatusChange: (dateKey: string, status: Status) => void }) {
   const isEating = day.status === "eating"
-  const isNotEating = day.status === "not-eating"
+  // Ngày mặc định (chưa từng báo) = không ăn nhưng hiển thị trung tính, không tô đỏ
+  const isNotEating = day.status === "not-eating" && !day.isDefault
 
   return (
     <div
@@ -202,19 +209,19 @@ function DayCard({ day, onStatusChange }: { day: Day; onStatusChange: (dateKey: 
           <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-medium text-ink-muted-80">
             Đã chốt
           </span>
+        ) : day.isDefault ? (
+          <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-medium text-ink-muted-80">
+            Mặc định không ăn
+          </span>
         ) : isNotEating ? (
           <span className="px-2.5 py-1 rounded-full bg-error-bg text-xs font-medium text-error">
             Đã báo nghỉ
           </span>
-        ) : isEating && !day.isDefault ? (
+        ) : isEating ? (
           <span className="px-2.5 py-1 rounded-full bg-success-bg text-xs font-medium text-success">
             Đã đăng ký
           </span>
-        ) : (
-          <span className="px-2.5 py-1 rounded-full bg-primary/10 text-xs font-medium text-primary">
-            Mặc định có cơm
-          </span>
-        )}
+        ) : null}
       </div>
 
       <div className="grid grid-cols-2 gap-2">

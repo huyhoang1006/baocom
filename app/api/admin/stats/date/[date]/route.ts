@@ -10,7 +10,8 @@ export const GET = withAdmin(async (req: NextRequest, userId: string, role: stri
   if (isNaN(parsedDate.getTime())) {
     return NextResponse.json({ error: 'Invalid date' }, { status: 400 })
   }
-  // Ensure default registrations exist before returning stats
-  await controller.ensureDefaultRegistrations(parsedDate)
+  // KHÔNG materialize bản ghi mặc định nữa: thống kê dùng trạng thái hiệu lực
+  // (carry-forward) tính trực tiếp. Materialize sẽ ghi đè trạng thái "không ăn"
+  // đã carry-forward bằng bản ghi "có ăn" mới → sai nghiệp vụ.
   return controller.getStatsForDate(parsedDate)
 })

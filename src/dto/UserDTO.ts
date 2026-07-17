@@ -12,6 +12,7 @@ export interface UpdateUserDTO {
   role?: 'admin' | 'employee'
   isActive?: boolean
   departmentId?: string | null
+  workEndDate?: string | null  // 'YYYY-MM-DD' hoặc null để bỏ; ngày làm việc cuối cùng
 }
 
 export interface UserResponseDTO {

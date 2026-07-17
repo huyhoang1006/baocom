@@ -20,6 +20,25 @@ function findRegistrationByDate(registrations: Registration[], dateStr: string):
   return registrations.find(r => getRegistrationDateKey(r) === dateStr)
 }
 
+/**
+ * Carry-forward: trạng thái hiệu lực cho `dateStr` = bản ghi tường minh gần nhất
+ * có ngày <= dateStr. Trạng thái báo cơm được giữ nguyên cho các ngày sau tới khi
+ * người dùng báo lại. Không có bản ghi nào <= dateStr → null (mặc định có cơm).
+ * dateKey dạng YYYY-MM-DD nên so sánh chuỗi là đúng thứ tự ngày.
+ */
+function findEffectiveRegistration(registrations: Registration[], dateStr: string): Registration | undefined {
+  let best: Registration | undefined
+  let bestKey = ''
+  for (const r of registrations) {
+    const k = getRegistrationDateKey(r)
+    if (k <= dateStr && k > bestKey) {
+      best = r
+      bestKey = k
+    }
+  }
+  return best
+}
+
 export function useRegistrations(startDate?: string, endDate?: string) {
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,7 +63,7 @@ export function useRegistrations(startDate?: string, endDate?: string) {
   }, [fetchRegistrations])
 
   const getStatusForDate = useCallback((dateStr: string): UIStatus | null => {
-    const reg = findRegistrationByDate(registrations, dateStr)
+    const reg = findEffectiveRegistration(registrations, dateStr)
     return reg ? toUIStatus(reg.status as 'eating' | 'not_eating') : null
   }, [registrations])
 
@@ -56,7 +75,9 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     }
 
     const apiStatus = toAPIStatus(status)
-    const prev = getStatusForDate(date)
+    // Rollback dùng bản ghi tường minh của đúng ngày đó (không carry-forward)
+    const prevReg = findRegistrationByDate(registrations, date)
+    const prev = prevReg ? toUIStatus(prevReg.status as 'eating' | 'not_eating') : null
 
     // Optimistic update
     setRegistrations((current) => {
@@ -84,8 +105,8 @@ export function useRegistrations(startDate?: string, endDate?: string) {
       setRegistrations((current) => {
         const next = current.filter((item) => getRegistrationDateKey(item) !== date)
         if (prev) {
-          const prevReg: Registration = { id: `prev-${date}`, date, status: toAPIStatus(prev) }
-          return [...next, prevReg]
+          const restored: Registration = { id: `prev-${date}`, date, status: toAPIStatus(prev) }
+          return [...next, restored]
         }
         return next
       })
@@ -94,7 +115,7 @@ export function useRegistrations(startDate?: string, endDate?: string) {
     } finally {
       saving.current = false
     }
-  }, [fetchRegistrations, getStatusForDate])
+  }, [fetchRegistrations, registrations])
 
   const toggle = useCallback(async (date: string, currentStatus: UIStatus) => {
     const newStatus = currentStatus === 'eating' ? 'not-eating' : 'eating'

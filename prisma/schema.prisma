@@ -14,6 +14,7 @@ model User {
   role          String @default("employee")
   isActive      Boolean @default(true)
   tokenVersion  Int @default(0)
+  workEndDate   DateTime?
   departmentId  String?
   department    Department? @relation(fields: [departmentId], references: [id])
 

@@ -3,6 +3,7 @@ import { UserRepository } from '@/repositories/UserRepository'
 import { CreateUserDTO, UpdateUserDTO, UserResponseDTO } from '@/dto/UserDTO'
 import { hashPassword } from '@/lib/auth'
 import { generateUsername, generatePassword, generateUniqueUsername } from '@/lib/utils'
+import { parseLocalDate } from '@/lib/registrationWindow'
 
 export interface CreateUserResult {
   user: UserResponseDTO
@@ -83,6 +84,10 @@ export class UserService {
     if (typeof data.isActive === 'boolean') updateData.isActive = data.isActive
     if (data.password) updateData.password = await hashPassword(data.password)
     if (data.departmentId !== undefined) updateData.departmentId = data.departmentId
+    if (data.workEndDate !== undefined) {
+      // parseLocalDate: coi 'YYYY-MM-DD' là nửa đêm giờ VN; null để bỏ đánh dấu
+      updateData.workEndDate = data.workEndDate ? parseLocalDate(data.workEndDate) : null
+    }
 
     return this.userRepository.update(id, updateData)
   }

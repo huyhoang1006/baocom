@@ -23,6 +23,7 @@ interface User {
   id: string
   name: string
   username: string
+  workEndDate?: string | null
 }
 
 export default function EmployeeRegistrationHistoryPage() {
@@ -38,6 +39,12 @@ export default function EmployeeRegistrationHistoryPage() {
   const [filterStart, setFilterStart] = useState("")
   const [filterEnd, setFilterEnd] = useState("")
   const [page, setPage] = useState(1)
+  const [reload, setReload] = useState(0)
+  const [editDate, setEditDate] = useState("")
+  const [editNote, setEditNote] = useState("")
+  const [workEndInput, setWorkEndInput] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const LIMIT = 10
 
   useEffect(() => {
@@ -55,6 +62,7 @@ export default function EmployeeRegistrationHistoryPage() {
         }>(`/admin/employees/${userId}/registrations${query}`)
 
         setUser(data.user)
+        setWorkEndInput(data.user.workEndDate ?? "")
         setRegistrations(data.registrations)
         setStats(data.stats)
         setError(null)
@@ -66,7 +74,49 @@ export default function EmployeeRegistrationHistoryPage() {
       }
     }
     fetchData()
-  }, [userId, filterStart, filterEnd])
+  }, [userId, filterStart, filterEnd, reload])
+
+  const handleSetWorkEnd = async (value: string | null) => {
+    setSaving(true)
+    setSaveMsg(null)
+    try {
+      await apiFetch(`/users/${userId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ workEndDate: value }),
+      })
+      setSaveMsg({
+        type: "success",
+        text: value ? `Đã đặt ngày làm cuối: ${value}. Sau ngày này không tính cơm.` : "Đã bỏ ngày làm cuối.",
+      })
+      setReload(r => r + 1)
+    } catch {
+      setSaveMsg({ type: "error", text: "Lưu ngày làm cuối thất bại" })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleAdminSet = async (status: "eating" | "not_eating") => {
+    if (!editDate) {
+      setSaveMsg({ type: "error", text: "Chọn ngày cần điều chỉnh" })
+      return
+    }
+    setSaving(true)
+    setSaveMsg(null)
+    try {
+      await apiFetch(`/admin/employees/${userId}/registrations`, {
+        method: "POST",
+        body: JSON.stringify({ date: editDate, status, note: editNote || undefined }),
+      })
+      setSaveMsg({ type: "success", text: `Đã đặt ${editDate}: ${status === "eating" ? "Có ăn" : "Không ăn"}` })
+      setEditNote("")
+      setReload(r => r + 1)
+    } catch {
+      setSaveMsg({ type: "error", text: "Lưu thất bại" })
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
@@ -159,6 +209,93 @@ export default function EmployeeRegistrationHistoryPage() {
             >
               Xóa lọc
             </button>
+          </div>
+
+          {/* Admin điều chỉnh báo cơm */}
+          <div className="bg-primary-bg border border-hairline rounded-[18px] p-4 lg:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-primary">edit_calendar</span>
+              <h2 className="text-sm lg:text-base font-semibold text-ink">Điều chỉnh báo cơm (admin)</h2>
+            </div>
+            <p className="text-xs text-ink-muted-80 mb-3">
+              Đặt trạng thái cho một ngày bất kỳ, kể cả ngày đã khóa. Mọi thay đổi được ghi log.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <input
+                type="date"
+                value={editDate}
+                onChange={e => setEditDate(e.target.value)}
+                className="form-input h-10 w-full sm:w-40"
+              />
+              <input
+                type="text"
+                value={editNote}
+                onChange={e => setEditNote(e.target.value)}
+                placeholder="Ghi chú (tuỳ chọn)"
+                className="form-input h-10 flex-1"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleAdminSet("eating")}
+                  disabled={saving}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-success text-on-primary hover:opacity-90 transition disabled:opacity-50"
+                >
+                  Có ăn
+                </button>
+                <button
+                  onClick={() => handleAdminSet("not_eating")}
+                  disabled={saving}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-error text-on-primary hover:opacity-90 transition disabled:opacity-50"
+                >
+                  Không ăn
+                </button>
+              </div>
+            </div>
+            {saveMsg && (
+              <p className={`text-sm mt-2 ${saveMsg.type === "success" ? "text-success" : "text-error"}`}>
+                {saveMsg.text}
+              </p>
+            )}
+          </div>
+
+          {/* Ngày làm cuối (nghỉ việc) */}
+          <div className="bg-surface-container-low border border-hairline rounded-[18px] p-4 lg:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-ink-muted-80">event_available</span>
+              <h2 className="text-sm lg:text-base font-semibold text-ink">Ngày làm cuối (nghỉ việc)</h2>
+            </div>
+            <p className="text-xs text-ink-muted-80 mb-3">
+              Đặt ngày làm việc cuối cùng khi nhân viên nghỉ. Báo cáo chỉ tính cơm tới hết ngày này; sau đó bạn có thể xóa tài khoản.
+              {user?.workEndDate && (
+                <span className="block mt-1 font-medium text-ink">Hiện tại: {user.workEndDate}</span>
+              )}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <input
+                type="date"
+                value={workEndInput}
+                onChange={e => setWorkEndInput(e.target.value)}
+                className="form-input h-10 w-full sm:w-40"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleSetWorkEnd(workEndInput || null)}
+                  disabled={saving || !workEndInput}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-primary text-on-primary hover:bg-primary-hover transition disabled:opacity-50"
+                >
+                  Lưu ngày nghỉ
+                </button>
+                {user?.workEndDate && (
+                  <button
+                    onClick={() => { setWorkEndInput(""); handleSetWorkEnd(null) }}
+                    disabled={saving}
+                    className="px-4 py-2 rounded-full text-sm font-medium text-ink bg-surface-container hover:bg-surface-container-high transition disabled:opacity-50"
+                  >
+                    Bỏ đánh dấu
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Table - Desktop only */}

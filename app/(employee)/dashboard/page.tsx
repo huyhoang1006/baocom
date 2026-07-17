@@ -43,11 +43,10 @@ function getWeekDates(): Date[] {
 export default function EmployeeDashboard() {
   const weekDates = useMemo(() => getWeekDates(), [])
 
-  const startDate = formatDateKey(weekDates[0])
-  const endDate = formatDateKey(weekDates[4])
-
   const { menus, getMenuByDate, getDishesByType, loading: menusLoading } = useDailyMenus(5)
-  const { getStatusForDate, loading: regsLoading } = useRegistrations(startDate, endDate)
+  // Fetch toàn bộ bản ghi (không giới hạn range) để carry-forward trạng thái báo cơm
+  // đúng: trạng thái gần nhất trước tuần này vẫn được giữ nguyên.
+  const { getStatusForDate, loading: regsLoading } = useRegistrations()
 
   const [selectedDayIndex, setSelectedDayIndex] = useState(0)
 

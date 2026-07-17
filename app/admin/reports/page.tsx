@@ -7,15 +7,7 @@ import { toDateKey } from "@/lib/registrationWindow"
 interface ReportRow {
   stt: number
   name: string
-  phone: string
-  date: string
-  status: string
-  department?: string
-}
-
-interface AggregatedUser {
-  name: string
-  phone: string
+  username: string
   department: string
   eating: number
   notEating: number
@@ -69,7 +61,8 @@ export default function ReportsPage() {
 })
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(0)
-  const [rawData, setRawData] = useState<ReportRow[]>([])
+  const [rows, setRows] = useState<ReportRow[]>([])
+  const [holidays, setHolidays] = useState<Array<{ dateKey: string; description: string }>>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
@@ -90,38 +83,14 @@ export default function ReportsPage() {
     return ""
   }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
 
-  const aggregatedData = useMemo(() => {
-    const userMap: Record<string, AggregatedUser> = {}
-
-    rawData.forEach(r => {
-      if (!userMap[r.name]) {
-        userMap[r.name] = { 
-          name: r.name, 
-          phone: r.phone, 
-          department: (r as { department?: string }).department ?? '',
-          eating: 0, 
-          notEating: 0 
-        }
-      }
-      if (r.status === 'eating' || r.status === 'registered') {
-        userMap[r.name].eating++
-      } else if (r.status === 'not_eating') {
-        userMap[r.name].notEating++
-      }
-    })
-
-    return Object.values(userMap).map((user, idx) => ({
-      stt: idx + 1,
-      ...user
-    }))
-  }, [rawData])
+  const aggregatedData = rows
 
   const totals = useMemo(() => {
-    return aggregatedData.reduce((acc, user) => ({
+    return rows.reduce((acc, user) => ({
       eating: acc.eating + user.eating,
       notEating: acc.notEating + user.notEating
     }), { eating: 0, notEating: 0 })
-  }, [aggregatedData])
+  }, [rows])
 
   const handlePreview = useCallback(async () => {
     setLoading(true)
@@ -154,24 +123,14 @@ export default function ReportsPage() {
         throw new Error("Vui lòng chọn ngày")
       }
 
-      // Fetch raw data with status included
-      const params = new URLSearchParams({ startDate, endDate })
-      const data = await adminReportsApi.getReport(startDate, endDate, false)
-
-      const rows: ReportRow[] = (data.reportData || []).map((r: { stt: number; name: string; phone: string; date: string; status?: string; department?: string }, idx: number) => ({
-        stt: idx + 1,
-        name: r.name || '',
-        phone: r.phone || '',
-        date: r.date || '',
-        status: (r as { status?: string }).status || 'eating',
-        department: r.department || '',
-      }))
-
-      setRawData(rows)
+      const data = await adminReportsApi.getReport(startDate, endDate)
+      setRows(data.rows || [])
+      setHolidays(data.holidays || [])
       setShowAll(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể tải báo cáo")
-      setRawData([])
+      setRows([])
+      setHolidays([])
     } finally {
       setLoading(false)
     }
@@ -183,7 +142,7 @@ export default function ReportsPage() {
 
   const handleReportTypeChange = useCallback((type: "day" | "week" | "month") => {
     setReportType(type)
-    setRawData([])
+    setRows([])
   }, [])
 
   useEffect(() => {
@@ -375,6 +334,23 @@ export default function ReportsPage() {
             </div>
           )}
 
+          {/* Ngày lễ trong kỳ */}
+          {aggregatedData.length > 0 && holidays.length > 0 && (
+            <div className="rounded-[18px] bg-warning-bg border border-warning p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-warning">event_busy</span>
+                <span className="text-sm font-semibold text-warning">Ngày lễ trong kỳ — không tính cơm</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {holidays.map((h) => (
+                  <span key={h.dateKey} className="px-3 py-1 rounded-full bg-canvas text-xs font-medium text-ink border border-hairline">
+                    {h.dateKey.split("-").reverse().slice(0, 2).join("/")}{h.description ? ` · ${h.description}` : ""}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Table */}
           {aggregatedData.length > 0 && (
             <div className="rounded-[18px] bg-canvas border border-hairline overflow-hidden">
@@ -389,18 +365,29 @@ export default function ReportsPage() {
 
               {/* Table Body */}
               <div className="divide-y divide-hairline">
-                {displayedData.map((row, idx) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-[48px_1fr_100px_100px_100px] gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors"
-                  >
-                    <span className="text-sm text-ink-muted-48">{row.stt}</span>
-                    <span className="text-sm font-medium text-ink">{row.name}</span>
-                    <span className="text-sm text-ink">{row.department}</span>
-                    <span className="text-sm text-success font-medium">{row.eating}</span>
-                    <span className="text-sm text-error font-medium">{row.notEating}</span>
-                  </div>
-                ))}
+                {displayedData.map((row, idx) => {
+                  const prevDept = idx > 0 ? displayedData[idx - 1].department : null
+                  const showGroupHeader = row.department !== prevDept
+                  return (
+                    <div key={idx}>
+                      {showGroupHeader && (
+                        <div className="px-5 py-2 bg-primary-bg border-t border-hairline flex items-center gap-2">
+                          <span className="material-symbols-outlined text-base text-primary">groups</span>
+                          <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                            {row.department || "Chưa có phòng ban"}
+                          </span>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-[48px_1fr_100px_100px_100px] gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                        <span className="text-sm text-ink-muted-48">{row.stt}</span>
+                        <span className="text-sm font-medium text-ink">{row.name}</span>
+                        <span className="text-sm text-ink">{row.department}</span>
+                        <span className="text-sm text-success font-medium">{row.eating}</span>
+                        <span className="text-sm text-error font-medium">{row.notEating}</span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
 
               {/* Summary Row */}

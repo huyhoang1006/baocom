@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAdmin } from '@/lib/authMiddleware'
 import { RegistrationService } from '@/services/RegistrationService'
-import { UserService } from '@/services/UserService'
-import { toDateKey } from '@/lib/registrationWindow'
 import ExcelJS from 'exceljs'
 
 // BUG-013: Standardize reports query params with friendly errors.
@@ -37,11 +35,9 @@ function parseDateRange(searchParams: URLSearchParams):
 
 export class AdminReportsController {
   private registrationService: RegistrationService
-  private userService: UserService
 
   constructor() {
     this.registrationService = new RegistrationService()
-    this.userService = new UserService()
   }
 
   async getReport(req: NextRequest) {
@@ -50,43 +46,17 @@ export class AdminReportsController {
       return NextResponse.json({ error: range.error }, { status: 400 })
     }
     const { startDate, endDate } = range
-    const includeSundays = req.nextUrl.searchParams.get('includeSundays') === 'true'
 
-    const registrations = await this.registrationService.findByDateRange(startDate, endDate)
-
-    // Filter out Sundays and admin accounts from results (no lunch service on Sundays, admin accounts excluded)
-    const filtered = registrations.filter(r => {
-      const day = new Date(r.date).getDay()
-      if (day === 0 && !includeSundays) return false
-
-      const userRole = (r.user as { role?: string })?.role
-      if (userRole === 'admin') return false
-
-      return true
-    })
-
-    // Group by date for stats
-    const dateGroups: Record<string, number> = {}
-    filtered.forEach(r => {
-      const dateKey = toDateKey(new Date(r.date))
-      dateGroups[dateKey] = (dateGroups[dateKey] || 0) + 1
-    })
-
-    const reportData = filtered.map((r, idx) => ({
-      stt: idx + 1,
-      name: r.user?.name,
-      phone: (r.user as { phone?: string })?.phone ?? r.user?.username ?? '',
-      date: new Date(r.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-      status: r.status,
-      department: (r.user as { department?: { name?: string } })?.department?.name ?? ''
-    }))
+    // Carry-forward: tổng hợp theo nhân viên, sắp theo phòng ban.
+    // Cùng nguồn với export → preview trên màn hình == file tải về.
+    const { rows, totals, workdays, holidays } = await this.registrationService.getReportByDateRange(startDate, endDate)
 
     return NextResponse.json({
-      reportData,
-      stats: {
-        total: reportData.length,
-        byDate: dateGroups
-      }
+      rows,
+      totals,
+      workdays,
+      holidays,
+      stats: { totalEmployees: rows.length, ...totals },
     })
   }
 
@@ -96,23 +66,9 @@ export class AdminReportsController {
       return NextResponse.json({ error: range.error }, { status: 400 })
     }
     const { startDate, endDate } = range
-    const includeSundays = req.nextUrl.searchParams.get('includeSundays') === 'true'
 
-    const registrations = await this.registrationService.findByDateRange(startDate, endDate)
-    const filtered = registrations.filter(r => {
-      const day = new Date(r.date).getDay()
-      if (day === 0 && !includeSundays) return false
-
-      const userRole = (r.user as { role?: string })?.role
-      if (userRole === 'admin') return false
-
-      return true
-    })
-
-    const totalEmployees = await this.userService.count()
-    const eatingCount = filtered.filter(r => r.status === 'eating').length
-    const notEatingCount = filtered.filter(r => r.status === 'not_eating').length
-    const absentUsers = filtered.filter(r => r.status === 'not_eating').map(r => r.user?.name)
+    // Carry-forward: cùng nguồn với preview/Excel
+    const { rows, totals, workdays, holidays } = await this.registrationService.getReportByDateRange(startDate, endDate)
 
     const now = new Date()
     const generatedAt = now.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
@@ -122,12 +78,16 @@ export class AdminReportsController {
       `Date Range,${startDate} - ${endDate}`,
       `Generated,${generatedAt}`,
       `Timezone,Asia/Ho_Chi_Minh`,
-      `Total Employees,${totalEmployees}`,
-      `Eating,${eatingCount}`,
-      `Not Eating,${notEatingCount}`,
+      `So ngay lam viec,${workdays}`,
+      `Tong nhan vien,${rows.length}`,
+      `Tong suat an,${totals.eating}`,
+      `Tong suat cat com,${totals.notEating}`,
       ``,
-      `Absent Employees,${absentUsers.length}`,
-      ...absentUsers.map((name, i) => `${i + 1},${name}`),
+      `Ngay le (khong tinh com),${holidays.length}`,
+      ...holidays.map((h) => `${h.dateKey},${h.description || 'Ngay le'} - khong an`),
+      ``,
+      `STT,Ho ten,Phong ban,Tong bao com,Bao cat com`,
+      ...rows.map((r) => `${r.stt},${r.name},${r.department},${r.eating},${r.notEating}`),
     ]
 
     const csv = csvRows.join('\n')
@@ -146,27 +106,8 @@ export class AdminReportsController {
     }
     const { startDate, endDate } = range
 
-    const registrations = await this.registrationService.findByDateRange(startDate, endDate)
-
-    // Group by user and count eating/not_eating
-    const userStats: Record<string, { name: string; department: string; eating: number; notEating: number }> = {}
-    registrations.forEach(r => {
-      if (!r.userId) return
-
-      const userRole = (r.user as { role?: string })?.role
-      if (userRole === 'admin') return
-
-      const name = r.user?.name || 'Unknown'
-      const department = (r.user as { department?: { name?: string } })?.department?.name ?? ''
-      if (!userStats[r.userId]) {
-        userStats[r.userId] = { name, department, eating: 0, notEating: 0 }
-      }
-      if (r.status === 'eating' || r.status === 'registered') {
-        userStats[r.userId].eating++
-      } else if (r.status === 'not_eating') {
-        userStats[r.userId].notEating++
-      }
-    })
+    // Carry-forward: cùng nguồn với preview/CSV, đã sắp theo phòng ban
+    const { rows, holidays } = await this.registrationService.getReportByDateRange(startDate, endDate)
 
     // Create workbook
     const workbook = new ExcelJS.Workbook()
@@ -210,21 +151,30 @@ export class AdminReportsController {
       }
     })
 
-    // Data rows
+    // Data rows (đã sắp theo phòng ban rồi tên) — chèn dòng tiêu đề mỗi khi đổi phòng ban
     let rowNum = 5
     let totalEating = 0
     let totalNotEating = 0
-    let stt = 1
+    let prevDept: string | null = null
 
-    Object.values(userStats).forEach(stats => {
+    rows.forEach(r => {
+      if (r.department !== prevDept) {
+        prevDept = r.department
+        const header = sheet.getRow(rowNum)
+        header.getCell(1).value = r.department || 'Chưa có phòng ban'
+        header.getCell(1).font = { bold: true }
+        header.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEBFF' } }
+        sheet.mergeCells(rowNum, 1, rowNum, 5)
+        rowNum++
+      }
       const row = sheet.getRow(rowNum)
-      row.getCell(1).value = stt++
-      row.getCell(2).value = stats.name
-      row.getCell(3).value = stats.department
-      row.getCell(4).value = stats.eating
-      row.getCell(5).value = stats.notEating
-      totalEating += stats.eating
-      totalNotEating += stats.notEating
+      row.getCell(1).value = r.stt
+      row.getCell(2).value = r.name
+      row.getCell(3).value = r.department
+      row.getCell(4).value = r.eating
+      row.getCell(5).value = r.notEating
+      totalEating += r.eating
+      totalNotEating += r.notEating
       rowNum++
     })
 
@@ -242,6 +192,23 @@ export class AdminReportsController {
       type: 'pattern',
       pattern: 'solid',
       fgColor: { argb: 'FFFFFF99' }
+    }
+
+    // Ngày lễ trong kỳ (không tính cơm)
+    if (holidays.length > 0) {
+      rowNum += 2
+      const hHeader = sheet.getRow(rowNum)
+      hHeader.getCell(1).value = 'Ngày lễ trong kỳ (không tính cơm)'
+      hHeader.getCell(1).font = { bold: true }
+      sheet.mergeCells(rowNum, 1, rowNum, 5)
+      rowNum++
+      holidays.forEach((h) => {
+        const hr = sheet.getRow(rowNum)
+        hr.getCell(1).value = h.dateKey
+        hr.getCell(2).value = `${h.description || 'Ngày lễ'} — không ăn`
+        sheet.mergeCells(rowNum, 2, rowNum, 5)
+        rowNum++
+      })
     }
 
     // Auto-fit columns

@@ -45,33 +45,28 @@ export function buildMessage(template: string, parts: MessageParts): string {
 /**
  * Lấy danh sách người ăn theo nhóm phòng ban, hiển thị username
  * Format: "1. Tên phòng ban: XX suất a/c (user1, user2, ...)"
+ *
+ * LƯU Ý QUAN TRỌNG — carry-forward:
+ * Trạng thái báo cơm gần nhất được GIỮ NGUYÊN cho các ngày sau tới khi báo lại
+ * (T2 báo "có ăn" → T3, T4... vẫn "có ăn" cho tới khi báo "không ăn").
+ * Người CHƯA từng có bản ghi nào → mặc định KHÔNG ĂN.
+ * Vì vậy danh sách người ăn = nhân viên active có trạng thái HIỆU LỰC 'eating'
+ * (đã tick "có ăn" gần nhất và chưa hủy) — không lọc theo status='eating' riêng
+ * ngày đó (sẽ bỏ sót người đã tick từ tuần trước rồi để nguyên).
+ *
+ * Nguồn chân lý: RegistrationService.getEffectiveStatusesForDate.
  */
 export async function getRegistrationsByDepartment(date: Date): Promise<string> {
-  const dayStart = new Date(date)
-  dayStart.setHours(0, 0, 0, 0)
-  const dayEnd = new Date(dayStart)
-  dayEnd.setDate(dayEnd.getDate() + 1)
+  const { RegistrationService } = await import('@/services/RegistrationService')
+  const effective = await new RegistrationService().getEffectiveStatusesForDate(date)
 
-  const registrations = await prisma.registration.findMany({
-    where: {
-      date: { gte: dayStart, lt: dayEnd },
-      status: 'eating',
-      user: { isActive: true, role: 'employee' },
-    },
-    include: {
-      user: {
-        select: { username: true, name: true, department: { select: { name: true } } },
-      },
-    },
-    orderBy: { user: { name: 'asc' } },
-  })
-
-  // Nhóm theo phòng ban
+  // Nhóm theo phòng ban — chỉ những người có trạng thái hiệu lực 'eating'
   const grouped = new Map<string, string[]>()
-  for (const reg of registrations) {
-    const deptName = reg.user.department?.name ?? 'Khác'
+  for (const emp of effective) {
+    if (emp.status !== 'eating') continue
+    const deptName = emp.department ?? 'Khác'
     if (!grouped.has(deptName)) grouped.set(deptName, [])
-    grouped.get(deptName)!.push(reg.user.username)
+    grouped.get(deptName)!.push(emp.username)
   }
 
   // Format: "1. NCPT: 07 suất a/c (user1, user2, ...)"
