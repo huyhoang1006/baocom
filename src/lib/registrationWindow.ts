@@ -120,14 +120,19 @@ function isWithinBookingWindow(targetDate: Date, now: Date): boolean {
   return target >= currentWeekStart && target < maxWindowEnd
 }
 
-export function isAllowedRegistrationDate(targetDate: Date, now = new Date()): RegistrationDateValidation {
+export function isAllowedRegistrationDate(
+  targetDate: Date,
+  now = new Date(),
+  config?: CutoffTimeConfig
+): RegistrationDateValidation {
   const target = startOfLocalDay(targetDate)
   const today = startOfLocalDay(now)
 
   if (target <= today) return { ok: false, reason: 'DATE_NOT_FUTURE' }
   if (isWeekend(target)) return { ok: false, reason: 'WEEKEND' }
   if (!isWithinBookingWindow(target, now)) return { ok: false, reason: 'OUTSIDE_CURRENT_WEEK' }
-  if (now >= getCutoffAt(target)) return { ok: false, reason: 'LOCKED' }
+  // Dùng giờ chốt cấu hình (nếu có); không truyền config → mặc định 23:00.
+  if (now >= getCutoffAt(target, config)) return { ok: false, reason: 'LOCKED' }
 
   return { ok: true }
 }

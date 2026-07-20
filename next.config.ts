@@ -27,8 +27,8 @@ const nextConfig: NextConfig = {
     "*.ngrok-free.dev",
     "*.ngrok-free.app",
     "*.ngrok.io",
+    "*.trycloudflare.com",
   ],
-  allowedDevOrigins: ["192.168.0.102", "192.168.4.98", "127.0.0.1", "localhost", "*.trycloudflare.com"],
 
   async headers() {
     return [

@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { RegistrationRepository } from '@/repositories/RegistrationRepository'
 import { CreateRegistrationDTO, UpdateRegistrationDTO, RegistrationStatus } from '@/dto/RegistrationDTO'
-import { isAllowedRegistrationDate, startOfLocalDay, parseLocalDate, toDateKey } from '@/lib/registrationWindow'
+import { isAllowedRegistrationDate, startOfLocalDay, parseLocalDate, toDateKey, type CutoffTimeConfig } from '@/lib/registrationWindow'
+import { getCutoffConfig } from '@/lib/cutoffConfig'
 import { AuditLogService } from './AuditLogService'
 
 export type RegistrationWithUser = {
@@ -40,8 +41,14 @@ export class RegistrationService {
     this.registrationRepository = new RegistrationRepository(prisma)
   }
 
-  private validateEditableDate(date: Date, now = new Date()) {
-    const validation = isAllowedRegistrationDate(date, now)
+  /** Đọc giờ chốt cấu hình (Admin → Cài đặt) từ DB, map sang CutoffTimeConfig. */
+  private async getCutoffTimeConfig(): Promise<CutoffTimeConfig> {
+    const c = await getCutoffConfig()
+    return { hour: c.cutoffHour, minute: c.cutoffMinute }
+  }
+
+  private validateEditableDate(date: Date, now = new Date(), config?: CutoffTimeConfig) {
+    const validation = isAllowedRegistrationDate(date, now, config)
     if (validation.ok) return
 
     if (validation.reason === 'LOCKED') {
@@ -85,7 +92,8 @@ export class RegistrationService {
     }
 
     const date = parseLocalDate(data.date)
-    this.validateEditableDate(date, now)
+    const cutoff = await this.getCutoffTimeConfig()
+    this.validateEditableDate(date, now, cutoff)
 
     return this.registrationRepository.upsert(userId, date, data.status)
   }
@@ -135,9 +143,11 @@ export class RegistrationService {
       throw new Error('Forbidden')
     }
 
+    const cutoff = await this.getCutoffTimeConfig()
+
     const wasLocked = (() => {
       try {
-        this.validateEditableDate(registration.date)
+        this.validateEditableDate(registration.date, new Date(), cutoff)
         return false
       } catch {
         return true
@@ -145,7 +155,7 @@ export class RegistrationService {
     })()
 
     if (role !== 'admin') {
-      this.validateEditableDate(registration.date)
+      this.validateEditableDate(registration.date, new Date(), cutoff)
     }
 
     const updateData: Record<string, unknown> = {}
