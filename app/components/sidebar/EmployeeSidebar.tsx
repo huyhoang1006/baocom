@@ -7,6 +7,7 @@ const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
   { label: "Báo cơm", href: "/book", icon: "restaurant" },
   { label: "Lịch sử", href: "/my-history", icon: "history" },
+  { label: "Hồ sơ", href: "/profile", icon: "person" },
 ]
 
 interface Props {

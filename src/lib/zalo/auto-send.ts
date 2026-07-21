@@ -27,10 +27,12 @@ export interface MessageParts {
   menu: string[]
   /** pre-formatted multi-line text; empty string renders as "(Chưa có ai đăng ký)" */
   registrations: string
+  /** total eating portions */
+  total: number
 }
 
 /**
- * Pure: render template với đầy đủ 3 placeholder `{date}` `{menu}` `{registrations}`.
+ * Pure: render template với các placeholder `{date}` `{menu}` `{registrations}` `{total}`.
  * Single source of truth cho cả auto-send (`runNow`) và preview UI.
  */
 export function buildMessage(template: string, parts: MessageParts): string {
@@ -40,11 +42,13 @@ export function buildMessage(template: string, parts: MessageParts): string {
     .replace('{date}', parts.date)
     .replace('{menu}', menuText)
     .replace('{registrations}', regText)
+    .replace('{total}', String(parts.total))
 }
 
 /**
- * Lấy danh sách người ăn theo nhóm phòng ban, hiển thị username
- * Format: "1. Tên phòng ban: XX suất a/c (user1, user2, ...)"
+ * Lấy danh sách người ăn theo nhóm phòng ban, hiển thị họ tên
+ * Format: "- Phòng ban: Tên người 1, Tên người 2"
+ * Kèm tổng số suất ăn.
  *
  * LƯU Ý QUAN TRỌNG — carry-forward:
  * Trạng thái báo cơm gần nhất được GIỮ NGUYÊN cho các ngày sau tới khi báo lại
@@ -56,7 +60,7 @@ export function buildMessage(template: string, parts: MessageParts): string {
  *
  * Nguồn chân lý: RegistrationService.getEffectiveStatusesForDate.
  */
-export async function getRegistrationsByDepartment(date: Date): Promise<string> {
+export async function getRegistrationsByDepartment(date: Date): Promise<{ registrations: string; total: number }> {
   const { RegistrationService } = await import('@/services/RegistrationService')
   const effective = await new RegistrationService().getEffectiveStatusesForDate(date)
 
@@ -66,18 +70,18 @@ export async function getRegistrationsByDepartment(date: Date): Promise<string> 
     if (emp.status !== 'eating') continue
     const deptName = emp.department ?? 'Khác'
     if (!grouped.has(deptName)) grouped.set(deptName, [])
-    grouped.get(deptName)!.push(emp.username)
+    grouped.get(deptName)!.push(emp.name)
   }
 
-  // Format: "1. NCPT: 07 suất a/c (user1, user2, ...)"
+  let total = 0
   const lines: string[] = []
-  let index = 1
-  for (const [dept, usernames] of grouped) {
-    lines.push(`${index}. ${dept}: ${String(usernames.length).padStart(2, '0')} suất a/c (${usernames.join(', ')})`)
-    index++
+  for (const [dept, names] of grouped) {
+    lines.push(`- ${dept}: ${names.join(', ')}`)
+    total += names.length
   }
 
-  return lines.length > 0 ? lines.join('\n') : '(Chưa có ai đăng ký)'
+  const registrations = lines.length > 0 ? lines.join('\n') : '(Chưa có ai đăng ký)'
+  return { registrations, total }
 }
 
 export interface ShouldRunArgs {
@@ -208,14 +212,15 @@ export async function pickTargetDate(now: Date = new Date()): Promise<Date> {
 export async function renderPreview(): Promise<string> {
   const template = await getTemplate()
   const target = await pickTargetDate()
-  const [menu, registrations] = await Promise.all([
+  const [menu, regResult] = await Promise.all([
     getMenuForDate(target),
     getRegistrationsByDepartment(target),
   ])
   return buildMessage(template, {
     date: formatDateKey(target),
     menu,
-    registrations,
+    registrations: regResult.registrations,
+    total: regResult.total,
   })
 }
 

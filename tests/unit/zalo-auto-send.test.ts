@@ -13,6 +13,7 @@ describe('buildMessage', () => {
       date: '25/06/2026',
       menu: ['Phở bò', 'Cơm gà'],
       registrations: '',
+      total: 0,
     })
     expect(result).toBe('🍱 Báo cơm 25/06/2026\n- Phở bò\n- Cơm gà')
   })
@@ -22,6 +23,7 @@ describe('buildMessage', () => {
       date: '25/06/2026',
       menu: [],
       registrations: '',
+      total: 0,
     })
     expect(result).toBe('🍱 25/06/2026\n(Chưa có món)')
   })
@@ -31,6 +33,7 @@ describe('buildMessage', () => {
       date: '01/01/2026',
       menu: ['Món A'],
       registrations: '',
+      total: 0,
     })
     expect(result).toBe('🍱 01/01/2026\n- Món A')
   })
@@ -40,6 +43,7 @@ describe('buildMessage', () => {
       date: '26/06/2026',
       menu: [],
       registrations: '1. NCPT: 01 suất a/c (a)',
+      total: 0,
     })
     expect(result).toBe('26/06/2026\n1. NCPT: 01 suất a/c (a)')
   })
@@ -49,17 +53,29 @@ describe('buildMessage', () => {
       date: '26/06/2026',
       menu: [],
       registrations: '',
+      total: 0,
     })
     expect(result).toBe('(Chưa có ai đăng ký)')
   })
 
-  it('substitutes all three placeholders together (DRY guarantee)', () => {
-    const result = buildMessage('🍱 {date}\n\n{registrations}\n\n📋 {menu}', {
+  it('substitutes {total} placeholder', () => {
+    const result = buildMessage('Tổng: {total} suất ăn', {
+      date: '26/06/2026',
+      menu: [],
+      registrations: '',
+      total: 5,
+    })
+    expect(result).toBe('Tổng: 5 suất ăn')
+  })
+
+  it('substitutes all placeholders together', () => {
+    const result = buildMessage('🍱 {date}\n\n{registrations}\n\nTổng: {total} suất ăn', {
       date: '26/06/2026',
       menu: ['Phở', 'Cơm gà'],
-      registrations: '1. NCPT: 02 suất a/c (a, b)',
+      registrations: '- NCPT: An, Bình',
+      total: 2,
     })
-    expect(result).toBe('🍱 26/06/2026\n\n1. NCPT: 02 suất a/c (a, b)\n\n📋 - Phở\n- Cơm gà')
+    expect(result).toBe('🍱 26/06/2026\n\n- NCPT: An, Bình\n\nTổng: 2 suất ăn')
   })
 })
 

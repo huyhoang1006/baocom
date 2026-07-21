@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { adminReportsApi } from "@/lib/api"
 import { toDateKey } from "@/lib/registrationWindow"
 
@@ -13,75 +13,20 @@ interface ReportRow {
   notEating: number
 }
 
-function formatDisplayDate(date: Date): string {
-  const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
-  const dayName = days[date.getDay()]
-  const day = date.getDate().toString().padStart(2, "0")
-  const month = (date.getMonth() + 1).toString().padStart(2, "0")
-  return `${dayName}, ${day}/${month}`
-}
-
-function getWeekOptions(): { label: string; start: Date; end: Date }[] {
-  const weeks = []
-  const now = new Date()
-  for (let i = 0; i < 4; i++) {
-    const weekStart = new Date(now)
-    weekStart.setDate(now.getDate() - now.getDay() + 1 - i * 7)
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekStart.getDate() + 6)
-    weeks.push({
-      label: `${formatDisplayDate(weekStart)} - ${formatDisplayDate(weekEnd)}`,
-      start: weekStart,
-      end: weekEnd,
-    })
-  }
-  return weeks
-}
-
-function getMonthOptions(): { label: string; year: number; month: number }[] {
-  const months = []
-  const now = new Date()
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    months.push({
-      label: `Tháng ${d.getMonth() + 1}/${d.getFullYear()}`,
-      year: d.getFullYear(),
-      month: d.getMonth() + 1,
-    })
-  }
-  return months
-}
-
 export default function ReportsPage() {
-  const [reportType, setReportType] = useState<"day" | "week" | "month">("day")
-  const [selectedDate, setSelectedDate] = useState(() => {
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  return toDateKey(tomorrow)
-})
-  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
-  const [selectedMonthIndex, setSelectedMonthIndex] = useState(0)
+  const [fromDate, setFromDate] = useState(() => toDateKey(new Date()))
+  const [toDate, setToDate] = useState(() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 6)
+    return toDateKey(d)
+  })
   const [rows, setRows] = useState<ReportRow[]>([])
   const [holidays, setHolidays] = useState<Array<{ dateKey: string; description: string }>>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
 
-  const weekOptions = useMemo(() => getWeekOptions(), [])
-  const monthOptions = useMemo(() => getMonthOptions(), [])
-
-  const todayStr = toDateKey(new Date())
-
-  const dateRangeLabel = useMemo(() => {
-    if (reportType === "day" && selectedDate) {
-      return `Ngày ${selectedDate}`
-    } else if (reportType === "week") {
-      return weekOptions[selectedWeekIndex]?.label || ""
-    } else if (reportType === "month") {
-      return monthOptions[selectedMonthIndex]?.label || ""
-    }
-    return ""
-  }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
+  const dateRangeLabel = fromDate && toDate ? `${fromDate} → ${toDate}` : ""
 
   const aggregatedData = rows
 
@@ -93,37 +38,20 @@ export default function ReportsPage() {
   }, [rows])
 
   const handlePreview = useCallback(async () => {
+    if (!fromDate || !toDate) {
+      setError("Vui lòng chọn từ ngày và đến ngày")
+      return
+    }
+    if (fromDate > toDate) {
+      setError("Từ ngày phải trước đến ngày")
+      return
+    }
+
     setLoading(true)
     setError(null)
 
     try {
-      let startDate: string
-      let endDate: string
-
-      if (reportType === "day" && selectedDate) {
-        startDate = endDate = selectedDate
-      } else if (reportType === "week") {
-        const opt = weekOptions[selectedWeekIndex]
-        if (opt) {
-          startDate = toDateKey(opt.start)
-          endDate = toDateKey(opt.end)
-        } else {
-          throw new Error("Vui lòng chọn tuần")
-        }
-      } else if (reportType === "month") {
-        const opt = monthOptions[selectedMonthIndex]
-        if (opt) {
-          const lastDay = new Date(opt.year, opt.month, 0).getDate()
-          startDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-01`
-          endDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-${lastDay}`
-        } else {
-          throw new Error("Vui lòng chọn tháng")
-        }
-      } else {
-        throw new Error("Vui lòng chọn ngày")
-      }
-
-      const data = await adminReportsApi.getReport(startDate, endDate)
+      const data = await adminReportsApi.getReport(fromDate, toDate)
       setRows(data.rows || [])
       setHolidays(data.holidays || [])
       setShowAll(false)
@@ -134,53 +62,13 @@ export default function ReportsPage() {
     } finally {
       setLoading(false)
     }
-  }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
-
-  const handleDateChange = useCallback(() => {
-    handlePreview()
-  }, [handlePreview])
-
-  const handleReportTypeChange = useCallback((type: "day" | "week" | "month") => {
-    setReportType(type)
-    setRows([])
-  }, [])
-
-  useEffect(() => {
-    if (selectedDate) {
-      handlePreview()
-    }
-  }, [reportType, handlePreview])
+  }, [fromDate, toDate])
 
   const handleExport = useCallback(() => {
-    let startDate: string
-    let endDate: string
-
-    if (reportType === "day" && selectedDate) {
-      startDate = endDate = selectedDate
-    } else if (reportType === "week") {
-      const opt = weekOptions[selectedWeekIndex]
-      if (opt) {
-        startDate = toDateKey(opt.start)
-        endDate = toDateKey(opt.end)
-      } else {
-        return
-      }
-    } else if (reportType === "month") {
-      const opt = monthOptions[selectedMonthIndex]
-      if (opt) {
-        const lastDay = new Date(opt.year, opt.month, 0).getDate()
-        startDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-01`
-        endDate = `${opt.year}-${String(opt.month).padStart(2, '0')}-${lastDay}`
-      } else {
-        return
-      }
-    } else {
-      return
-    }
-
-    const url = adminReportsApi.exportXlsxUrl(startDate, endDate)
+    if (!fromDate || !toDate || fromDate > toDate) return
+    const url = adminReportsApi.exportXlsxUrl(fromDate, toDate)
     window.open(url, '_blank')
-  }, [reportType, selectedDate, selectedWeekIndex, selectedMonthIndex, weekOptions, monthOptions])
+  }, [fromDate, toDate])
 
   const displayedData = useMemo(() => showAll ? aggregatedData : aggregatedData.slice(0, 5), [showAll, aggregatedData])
 
@@ -194,7 +82,7 @@ export default function ReportsPage() {
             <p className="text-xs sm:text-sm font-medium text-ink-muted-48 uppercase tracking-wider">Báo cáo</p>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-ink mb-1">Xuất Báo Cáo</h1>
-          <p className="text-sm sm:text-base text-ink-muted-48">Tạo báo cáo suất ăn cho bếp nấu theo ngày, tuần hoặc tháng</p>
+          <p className="text-sm sm:text-base text-ink-muted-48">Chọn khoảng thời gian để xem báo cáo suất ăn</p>
         </div>
       </header>
 
@@ -211,80 +99,33 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* Report Type Selector */}
-          <div className="rounded-[18px] bg-surface-container-low p-1 flex">
-            {[
-              { id: "day" as const, label: "Ngày", icon: "today" },
-              { id: "week" as const, label: "Tuần", icon: "date_range" },
-              { id: "month" as const, label: "Tháng", icon: "calendar_month" },
-            ].map((type) => (
-              <button
-                key={type.id}
-                onClick={() => handleReportTypeChange(type.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-[14px] text-sm font-medium transition-all ${
-                  reportType === type.id
-                    ? "bg-canvas shadow-sm text-ink"
-                    : "text-ink-muted-48 hover:text-ink"
-                }`}
-              >
-                <span className="material-symbols-outlined text-lg">{type.icon}</span>
-                {type.label}
-              </button>
-            ))}
-          </div>
-
           {/* Date Selector */}
           <div className="rounded-[18px] bg-canvas border border-hairline p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <div className="flex items-center gap-2 text-ink-muted-48">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+              <div className="flex items-center gap-2 text-ink-muted-48 self-center">
                 <span className="material-symbols-outlined text-xl">schedule</span>
                 <span className="text-sm font-medium">Phạm vi:</span>
               </div>
 
-              <div className="flex-1">
-                {reportType === "day" && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-4 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-ink-muted-48">Từ</span>
                   <input
                     type="date"
-                    value={selectedDate}
-                    onChange={(e) => {
-                      setSelectedDate(e.target.value)
-                      handleDateChange()
-                    }}
-                    className="form-input w-full sm:max-w-[240px]"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="form-input w-full sm:w-[200px]"
                   />
-                )}
-                {reportType === "week" && (
-                  <select
-                    value={selectedWeekIndex}
-                    onChange={(e) => {
-                      setSelectedWeekIndex(parseInt(e.target.value))
-                      handleDateChange()
-                    }}
-                    className="form-input w-full sm:max-w-[280px]"
-                  >
-                    {weekOptions.map((opt, idx) => (
-                      <option key={idx} value={idx}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                {reportType === "month" && (
-                  <select
-                    value={selectedMonthIndex}
-                    onChange={(e) => {
-                      setSelectedMonthIndex(parseInt(e.target.value))
-                      handleDateChange()
-                    }}
-                    className="form-input w-full sm:max-w-[240px]"
-                  >
-                    {monthOptions.map((opt, idx) => (
-                      <option key={idx} value={idx}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-ink-muted-48">Đến</span>
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="form-input w-full sm:w-[200px]"
+                  />
+                </div>
               </div>
 
               <button
@@ -416,7 +257,7 @@ export default function ReportsPage() {
           )}
 
           {/* Empty State */}
-          {!loading && aggregatedData.length === 0 && reportType && (
+          {!loading && aggregatedData.length === 0 && (
             <div className="rounded-[18px] bg-surface-container-low border border-hairline border-dashed py-16 text-center">
               <span className="material-symbols-outlined text-5xl text-ink-muted-48 mb-4">assignment</span>
               <p className="text-base text-ink-muted-80 mb-1">Chưa có dữ liệu báo cáo</p>

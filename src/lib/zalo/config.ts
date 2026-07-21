@@ -13,7 +13,7 @@ const KEYS = {
 const DEFAULTS = {
   autoSendEnabled: 'false',
   cron: '0 8 * * 1-5',
-  template: '🍱 Báo cơm {date}\n\n{registrations}\n\n📋 Thực đơn:\n{menu}',
+  template: '🍱 Báo cơm {date}\n\n{registrations}\n\nTổng: {total} suất ăn',
   mode: 'auto',
   manualDate: '',
 }

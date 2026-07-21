@@ -133,7 +133,7 @@ export class AdminReportsController {
     sheet.mergeCells('A3:E3')
 
     // Header row (row 4)
-    const headers = ['STT', 'Họ tên', 'Phòng ban', 'Tổng báo cơm', 'Báo cắt cơm']
+    const headers = ['STT', 'Họ tên', 'Phòng ban', 'Tổng báo ăn cơm', 'Tổng báo cắt cơm']
     headers.forEach((header, idx) => {
       const cell = sheet.getCell(4, idx + 1)
       cell.value = header

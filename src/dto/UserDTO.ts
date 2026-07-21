@@ -15,6 +15,11 @@ export interface UpdateUserDTO {
   workEndDate?: string | null  // 'YYYY-MM-DD' hoặc null để bỏ; ngày làm việc cuối cùng
 }
 
+export interface ChangePasswordDTO {
+  currentPassword: string
+  newPassword: string
+}
+
 export interface UserResponseDTO {
   id: string
   username: string

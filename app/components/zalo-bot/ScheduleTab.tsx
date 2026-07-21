@@ -474,8 +474,9 @@ export function ScheduleTab({ onUpdate, showToast }: Props) {
                 <p className="font-medium text-ink-muted-80">Sử dụng các placeholder:</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
                   <li><code className="bg-gray-100 px-1 rounded">{'{date}'}</code> — Ngày hiện tại (dd/mm/yyyy)</li>
-                  <li><code className="bg-gray-100 px-1 rounded">{'{registrations}'}</code> — Danh sách người ăn theo phòng ban, hiển thị username</li>
+                  <li><code className="bg-gray-100 px-1 rounded">{'{registrations}'}</code> — Danh sách người ăn theo phòng ban, hiển thị họ tên</li>
                   <li><code className="bg-gray-100 px-1 rounded">{'{menu}'}</code> — Thực đơn hôm nay</li>
+                  <li><code className="bg-gray-100 px-1 rounded">{'{total}'}</code> — Tổng số suất ăn</li>
                 </ul>
               </div>
             </div>

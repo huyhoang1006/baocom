@@ -1,9 +1,14 @@
 import { prisma } from '@/lib/prisma'
 import { UserRepository } from '@/repositories/UserRepository'
 import { CreateUserDTO, UpdateUserDTO, UserResponseDTO } from '@/dto/UserDTO'
-import { hashPassword } from '@/lib/auth'
-import { generateUsername, generatePassword, generateUniqueUsername } from '@/lib/utils'
+import { hashPassword, verifyPassword, signToken } from '@/lib/auth'
+import { generateUsername, generateUniqueUsername } from '@/lib/utils'
 import { parseLocalDate } from '@/lib/registrationWindow'
+
+// Mật khẩu mặc định cố định cho tài khoản tạo mới.
+// Yêu cầu nghiệp vụ: người dùng không tự đổi mật khẩu, hệ thống chỉ dùng nội bộ
+// công ty nên đặt mật khẩu dễ nhớ, cố định. Admin có thể đổi sau ở màn hình sửa.
+const DEFAULT_NEW_USER_PASSWORD = '123456'
 
 export interface CreateUserResult {
   user: UserResponseDTO
@@ -43,8 +48,8 @@ export class UserService {
       }
     }
 
-    // Generate password if not provided
-    const password = data.password || generatePassword()
+    // Mật khẩu: dùng giá trị admin nhập (nếu có), mặc định là 123456
+    const password = data.password || DEFAULT_NEW_USER_PASSWORD
     const hashedPassword = await hashPassword(password)
 
     const user = await this.userRepository.create({
@@ -98,5 +103,24 @@ export class UserService {
 
   async count() {
     return this.userRepository.count({ role: 'employee', isActive: true })
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.userRepository.findOne(userId)
+    if (!user) throw new Error('User not found')
+
+    const isValid = await verifyPassword(currentPassword, user.password)
+    if (!isValid) throw new Error('Current password is incorrect')
+
+    const hashedPassword = await hashPassword(newPassword)
+
+    // Increment tokenVersion to invalidate other sessions
+    const updatedUser = await this.userRepository.update(userId, {
+      password: hashedPassword,
+      tokenVersion: { increment: 1 }
+    })
+
+    const token = await signToken(updatedUser.id, updatedUser.role, updatedUser.tokenVersion)
+    return { token }
   }
 }
